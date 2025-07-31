@@ -11,6 +11,11 @@ const staffRoutes = require('./routes/staffRoutes');
 const app = express();
 const PORT = 5000;
 
+// app.use(cors({
+//   origin: 'https://office-attendance-six.vercel.app/',
+//   credentials: true,
+// }));
+
 app.use(cors());
 app.use(bodyParser.json());
 app.use('/api/attendance', attendanceRoutes);
