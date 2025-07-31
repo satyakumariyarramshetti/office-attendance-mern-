@@ -1,0 +1,301 @@
+/* Container */
+.staff-details-container {
+  padding: 2.5rem;
+  background-color: #ffffff; /* white background */
+  border-radius: 12px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #212529;
+  max-width: 1100px;
+  margin: 1.5rem auto;
+  user-select: none;
+}
+
+/* Heading */
+.staff-details-container h2 {
+  margin-bottom: 2rem;
+  color: #172a38; /* Darker blue */
+  font-weight: 700;
+  font-size: 2.2rem;
+  text-align: center;
+}
+
+/* Department buttons container */
+.dept-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+}
+
+/* Department buttons */
+.dept-buttons button {
+  padding: 0.55rem 1.4rem;
+  background-color: #5a6876; /* lighter blue */
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: 600;
+  color: rgb(241, 239, 239); /* Darker blue text */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  user-select: none;
+}
+
+.dept-buttons button:hover:not(.active) {
+  background-color: #172a38; /* medium blue on hover */
+  transform: translateY(-2px);
+}
+
+/* Active department button */
+.dept-buttons button.active {
+  background: linear-gradient(135deg, #4a90e2, #154eac); /* blue gradient */
+  color: #e0f0ff;
+}
+
+/* Add staff button */
+.add-staff-btn {
+  margin-left: auto;
+  background: linear-gradient(135deg, #172a38, #050708); /* bright blue */
+  color: white !important;
+  border-radius: 30px;
+  font-weight: 700;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+.add-staff-btn:hover {
+  background: linear-gradient(135deg, #104d9e, #063270);
+  transform: translateY(-2px);
+}
+
+/* Search Input */
+.search-input {
+  margin: 0 auto 2rem;
+  padding: 10px 16px;
+  font-size: 1rem;
+  width: 320px;
+  max-width: 90%;
+  border: 2px solid #172a38;
+  border-radius: 30px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  display: block;
+  outline-offset: 2px;
+}
+
+.search-input:focus {
+  border-color: #172a38;
+  box-shadow: 0 0 12px rgba(11, 43, 102, 0.7);
+  outline: none;
+}
+
+/* Staff table container with shadow and rounded corners */
+.staff-table-container {
+  max-height: 450px;
+  overflow-y: auto;
+  border-radius: 12px;
+  border: 1.8px solid #050505;
+  background-color: #f0f6ff;
+  transition: box-shadow 0.3s ease;
+}
+
+/* Staff Table */
+.staff-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #212529;
+}
+
+/* Table Head - sticky on larger screens */
+.staff-table thead tr {
+  background-color: #154eac;
+  color: #e0f0ff;
+}
+
+/* Table Head - sticky (fixed) when scrolling */
+.staff-table thead th {
+  position: sticky;
+  top: 0;
+  background-color: #172a38;  /* keep blue background */
+  color: #e0f0ff;
+  z-index: 10; /* ensure it is above table body content */
+  padding: 1rem 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-align: left;
+  user-select: none;
+}
+
+.staff-table-container.scrolling tbody tr:hover {
+  background: inherit !important;
+  color: inherit !important;
+  box-shadow: none !important;
+  cursor: default;
+}
+
+/* Table cells */
+.staff-table th,
+.staff-table td {
+  padding: 0.85rem 1.5rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+/* Row styling with card-like effect */
+.staff-table tbody tr {
+  background: linear-gradient(135deg, #cbd0d9, #c2c9d5);
+  border-radius: 12px;
+  box-shadow: 0 3px 8px rgba(21, 78, 172, 0.15);
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+  cursor: default;
+}
+
+/* Hover effect */
+.staff-table tbody tr:hover {
+  color: #0a3864;
+}
+.staff-table tbody tr:hover td {
+  color: #1e85ec;
+}
+
+/* Rounded corners for first and last cells */
+.staff-table tbody tr td:first-child {
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+}
+.staff-table tbody tr td:last-child {
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+/* Remove button styling */
+.remove-btn {
+  background: linear-gradient(135deg, #d95252, #a93636);
+  border: none;
+  border-radius: 30px;
+  padding: 0.45rem 1.25rem;
+  color: white;
+  font-weight: 600;
+  transition: background 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+.remove-btn:hover:enabled {
+  background: linear-gradient(135deg, #a93636, #731c1c);
+  transform: translateY(-2px);
+}
+
+.remove-btn:disabled {
+  background: #e0a4a4;
+  cursor: not-allowed;
+  box-shadow: none;
+  color: #7a3737;
+}
+
+/* Responsive Breakpoints */
+
+/* Phone view / very small devices */
+@media (max-width: 575px) {
+  .staff-details-container {
+    padding: 1rem 0.75rem;
+  }
+  .staff-details-container h2 {
+    font-size: 1.6rem;
+    margin-bottom: 1.5rem;
+  }
+  .dept-buttons {
+    gap: 0.5rem;
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+  .dept-buttons button,
+  .add-staff-btn {
+    flex-shrink: 0;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+  }
+  .search-input {
+    width: 95%;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    margin-bottom: 1.5rem;
+  }
+  .staff-table-container {
+    max-height: 320px;
+  }
+  /* Stack rows vertically with labels */
+  .staff-table thead {
+    display: none;
+  }
+  .staff-table tbody tr {
+    display: block;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(21, 78, 172, 0.2);
+    background: #d4e2ff;
+  }
+  .staff-table tbody tr td {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-bottom: 1px solid #9bbfff;
+  }
+  .staff-table tbody tr td:last-child {
+    border-bottom: 0;
+  }
+  /* Show label before content */
+  .staff-table tbody tr td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #154eac;
+    flex-basis: 40%;
+  }
+  .remove-btn {
+    width: 100%;
+    padding: 0.6rem;
+    font-size: 0.95rem;
+    border-radius: 10px;
+  }
+}
+
+/* Tablet view */
+@media (min-width: 576px) and (max-width: 991px) {
+  .staff-details-container {
+    padding: 2rem 2rem;
+    max-width: 900px;
+  }
+  .dept-buttons {
+    justify-content: flex-start;
+  }
+  .search-input {
+    width: 80%;
+    max-width: 450px;
+  }
+  .staff-table-container {
+    max-height: 400px;
+  }
+}
+
+/* Laptop view */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .staff-details-container {
+    max-width: 1000px;
+  }
+  .search-input {
+    width: 320px;
+  }
+  .staff-table-container {
+    max-height: 480px;
+  }
+}
+
+/* Large desktop and beyond */
+@media (min-width: 1200px) {
+  .staff-details-container {
+    max-width: 1100px;
+  }
+  .staff-table-container {
+    max-height: 520px;
+  }
+}

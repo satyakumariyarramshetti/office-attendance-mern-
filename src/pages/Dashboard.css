@@ -1,0 +1,184 @@
+/* Container for the whole dashboard, sidebar + main section */
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;               /* Full viewport height */
+  background: #f0f4f8;             /* Light background */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #222;
+  overflow: auto;                /* prevent scroll bleed */
+}
+
+/* Main content area (header + content) grows to fill */
+.main-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  box-shadow: inset 0 0 10px #dbe7f5;
+  overflow: auto;
+}
+
+/* Header area: fixed height, shadow for separation */
+.main-section > header,
+.main-section > div > header {
+  height: 60px;
+  background-color: #3070d1;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 25px;
+  font-weight: 600;
+  font-size: 1.25rem;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 12px rgba(48, 112, 209, 0.4);
+  user-select: none;
+  z-index: 20;
+  flex-shrink: 0;
+}
+
+/* Content area below header - scrollable */
+.content {
+  padding: 24px;
+  flex: 1;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  background: #f9fbff; /* Slightly off-white */
+  border-radius: 0 0 12px 12px;
+  box-shadow: inset 0 0 10px rgba(48, 112, 209, 0.1);
+}
+
+/* Scrollbar customization for WebKit */
+.content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background-color: #4a7ad4;
+  border-radius: 10px;
+  border: 2px solid transparent;
+}
+
+/* Responsive behavior for smaller screens */
+@media (max-width: 900px) {
+  .dashboard-container {
+    flex-direction: column;
+  }
+  .main-section {
+    flex: 1 1 auto;
+    height: calc(100vh - 60px);
+  }
+}
+
+@media (max-width: 600px) {
+  .main-section > header,
+  .main-section > div > header {
+    font-size: 1rem;
+    padding: 0 15px;
+  }
+  .content {
+    padding: 16px;
+  }
+}
+
+/* Optional: smooth button styles inside header (like logout) */
+.main-section > header button {
+  margin-left: auto;
+  background: #1f4fa1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+  font-weight: 600;
+}
+
+.main-section > header button:hover {
+  background-color: #163b75;
+}
+/* ---------------- Existing styles stay as-is ---------------- */
+
+/* You can keep your current desktop styles unchanged */
+
+/* ---------------- Enhanced Mobile Styles (≤600px) ---------------- */
+@media (max-width: 600px) {
+  .dashboard-container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .main-section {
+    flex: 1;
+    height: auto;
+    box-shadow: none;
+    background-color: #ffffff;
+  }
+
+  .main-section > header,
+  .main-section > div > header {
+    font-size: 1rem;
+    padding: 0 15px;
+    height: 56px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .main-section > header button {
+    padding: 4px 10px;
+    font-size: 0.875rem;
+  }
+
+  .content {
+    padding: 16px 12px;
+    border-radius: 0;
+    box-shadow: none;
+    background: #ffffff;
+  }
+
+  .content::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  /* Optional: Stack cards vertically and shrink paddings inside child components */
+  .content > * {
+    margin-bottom: 20px;
+  }
+
+  /* Optional: Better spacing between components */
+  .content > *:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Optional: Make text readable */
+  .content {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+}
+@media (max-width: 600px) {
+  .dashboard-container {
+    flex-direction: column;
+    height: 100vh;              /* Force full height for scrolling */
+    overflow: hidden;           /* Prevent double scrolls */
+  }
+
+  .main-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;               /* Fill remaining space */
+    overflow: hidden;           /* Prevent internal double scrolls */
+  }
+
+  .content {
+    flex: 1;
+    overflow-y: auto;           /* Enable scroll inside content */
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
