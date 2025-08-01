@@ -3,33 +3,30 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const attendanceRoutes = require('./routes/attendanceRoutes');
 
-// 🔹 NEW: Import staff routes
+const attendanceRoutes = require('./routes/attendanceRoutes');
 const staffRoutes = require('./routes/staffRoutes');
 
 const app = express();
 const PORT = 5000;
 
-// app.use(cors({
-//   origin: 'https://office-attendance-six.vercel.app/',
-//   credentials: true,
-// }));
-
-
+// ✅ Proper CORS for Vercel
 app.use(cors({
-  origin: ['https://office-attendance-six.vercel.app'], // Replace with your actual Vercel URL
+  origin: ['https://office-attendance-six.vercel.app'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
+
 app.use(bodyParser.json());
 app.use('/api/attendance', attendanceRoutes);
-
-// 🔹 NEW: Hook up staff API
 app.use('/api/staffs', staffRoutes);
 
-const uri = process.env.ATLAS_URI;
+// ✅ Root route for health check
+app.get('/', (req, res) => {
+  res.send('Server is up and running');
+});
 
+const uri = process.env.ATLAS_URI;
 mongoose.connect(uri)
 .then(() => {
   console.log('MongoDB connected successfully');

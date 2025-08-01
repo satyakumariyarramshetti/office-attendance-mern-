@@ -22,7 +22,7 @@ const StaffDetails = () => {
   // ✅ Fetch all staff from backend
   const fetchStaff = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/staffs");
+      const response = await fetch(`${process.env.REACT_APP_API_URL}staffs`);
       const data = await response.json();
       setStaff(data);
     } catch (err) {
@@ -55,7 +55,7 @@ const StaffDetails = () => {
 
   const handleAddStaff = async newStaff => {
     try {
-      const response = await fetch("http://localhost:5000/api/staffs", {
+      const response = await fetch('${process.env.REACT_APP_API_URL}/staffs', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newStaff)
@@ -76,7 +76,7 @@ const StaffDetails = () => {
   setIsDeleting((prev) => ({ ...prev, [id]: true }));
 
   try {
-    const response = await fetch(`http://localhost:5000/api/staffs/${id}`, {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/staffs/${id}`, {
       method: "DELETE",
     });
 

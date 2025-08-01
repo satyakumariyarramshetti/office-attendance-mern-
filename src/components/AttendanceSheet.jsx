@@ -22,7 +22,7 @@ const AttendanceSheet = () => {
     setLoading(true);
     setError(null);
 
-    fetch('http://localhost:5000/api/attendance/all')
+    fetch(`${process.env.REACT_APP_API_URL}/attendance/all`)
       .then(res => res.json())
       .then(data => {
         setRecords(data);
