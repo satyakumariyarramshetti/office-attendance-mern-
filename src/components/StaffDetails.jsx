@@ -12,6 +12,7 @@ const departments = [
 ];
 
 const StaffDetails = () => {
+  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
   const [staff, setStaff] = useState([]);
   const [filteredStaff, setFilteredStaff] = useState([]);
   const [selectedDept, setSelectedDept] = useState("All");
@@ -22,7 +23,7 @@ const StaffDetails = () => {
   // ✅ Fetch all staff from backend
   const fetchStaff = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}staffs`);
+      const response = await fetch(`${API_BASE}/staffs`);
       const data = await response.json();
       setStaff(data);
     } catch (err) {
@@ -55,7 +56,7 @@ const StaffDetails = () => {
 
   const handleAddStaff = async newStaff => {
     try {
-      const response = await fetch('${process.env.REACT_APP_API_URL}/staffs', {
+      const response = await fetch('${API_BASE}/staffs', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newStaff)
@@ -76,7 +77,7 @@ const StaffDetails = () => {
   setIsDeleting((prev) => ({ ...prev, [id]: true }));
 
   try {
-    const response = await fetch(`${process.env.REACT_APP_API_URL}/staffs/${id}`, {
+    const response = await fetch(`${API_BASE}/staffs/${id}`, {
       method: "DELETE",
     });
 

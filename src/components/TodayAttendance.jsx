@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './TodayAttendance.css';
 
 const TodayAttendance = () => {
+  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
   const [viewType, setViewType] = useState(null);
   const [presentees, setPresentees] = useState([]);
   const [lateComers, setLateComers] = useState([]);
@@ -14,7 +15,7 @@ const TodayAttendance = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/attendance/today`);
+        const response = await fetch(`${API_BASE}/attendance/today`);
         if (!response.ok) {
           throw new Error(`Error: ${response.status} ${response.statusText}`);
         }
