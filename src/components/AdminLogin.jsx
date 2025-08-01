@@ -10,9 +10,12 @@ const AdminLogin = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
+    const trimmedUsername = username.trim();
+    const trimmedPassword = password.trim();
+
 
     // Hardcoded credentials for now (can replace with backend validation later)
-    if (username === 'Attendance Log' && password === 'Praxsol@241219') {
+    if (trimmedUsername === 'Attendance Log' && trimmedPassword === 'Praxsol@241219') {
       localStorage.setItem('adminToken', 'true'); // simulate login
       navigate('/admin');
     } else {
