@@ -8,7 +8,7 @@ import { debounce } from 'lodash';
 const PS_PREFIX = 'PS-';
 
 const Interface = () => {
-  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
   const [formData, setFormData] = useState({
     id: '',
     name: '',

@@ -12,20 +12,20 @@ const departments = [
 ];
 
 const StaffDetails = () => {
-  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
   const [staff, setStaff] = useState([]);
   const [filteredStaff, setFilteredStaff] = useState([]);
   const [selectedDept, setSelectedDept] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false); // 🆕 Track delete loading
-
   // ✅ Fetch all staff from backend
   const fetchStaff = async () => {
     try {
       const response = await fetch(`${API_BASE}/staffs`);
       const data = await response.json();
       setStaff(data);
+     
     } catch (err) {
       console.error("Error fetching staff:", err);
     }

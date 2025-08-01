@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './TodayAttendance.css';
 
 const TodayAttendance = () => {
-  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
   const [viewType, setViewType] = useState(null);
   const [presentees, setPresentees] = useState([]);
   const [lateComers, setLateComers] = useState([]);
