@@ -27,6 +27,10 @@ app.get('/', (req, res) => {
 });
 
 const uri = process.env.ATLAS_URI;
+app.get('/', (req, res) => {
+  res.send('API is running...');
+});
+
 mongoose.connect(uri)
 .then(() => {
   console.log('MongoDB connected successfully');
