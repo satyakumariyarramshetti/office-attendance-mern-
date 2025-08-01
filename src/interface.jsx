@@ -42,7 +42,7 @@ const Interface = () => {
       let name = '';
 
       try {
-        const staffRes = await fetch('http://localhost:5000/api/staffs/getById', {
+        const staffRes = await fetch(`${process.env.REACT_APP_API_URL}/staffs/getById`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: fullId }),
@@ -99,7 +99,7 @@ const Interface = () => {
       };
 
       try {
-        const res = await fetch('http://localhost:5000/api/attendance/getByIdDate', {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/attendance/getByIdDate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: fullId, date: formattedDate }),
@@ -226,7 +226,7 @@ const Interface = () => {
       return;
     }
     try {
-      const response = await fetch('http://localhost:5000/api/attendance/save', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/attendance/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -255,7 +255,7 @@ const Interface = () => {
       return;
     }
     try {
-      const response = await fetch('http://localhost:5000/api/attendance/save', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/attendance/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
