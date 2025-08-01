@@ -8,7 +8,7 @@ import { debounce } from 'lodash';
 const PS_PREFIX = 'PS-';
 
 const Interface = () => {
-  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
   const [formData, setFormData] = useState({
     id: '',
     name: '',
@@ -43,7 +43,7 @@ const Interface = () => {
       let name = '';
 
       try {
-        const staffRes = await fetch(`${API_BASE}/staffs/getById`, {
+        const staffRes = await fetch(`${API_BASE}/api/staffs/getById`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: fullId }),
@@ -100,7 +100,7 @@ const Interface = () => {
       };
 
       try {
-        const res = await fetch(`${API_BASE}/attendance/getByIdDate`, {
+        const res = await fetch(`${API_BASE}/api/attendance/getByIdDate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: fullId, date: formattedDate }),
@@ -227,7 +227,7 @@ const Interface = () => {
       return;
     }
     try {
-      const response = await fetch(`${API_BASE}/attendance/save`, {
+      const response = await fetch(`${API_BASE}/api/attendance/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -256,7 +256,7 @@ const Interface = () => {
       return;
     }
     try {
-      const response = await fetch(`${API_BASE}/attendance/save`, {
+      const response = await fetch(`${API_BASE}/api/attendance/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
