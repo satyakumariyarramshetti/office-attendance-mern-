@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import * as XLSX from "xlsx";   // <-- add this line
 
 const AttendanceSheet = () => {
-  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
   const [records, setRecords] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -23,7 +23,7 @@ const AttendanceSheet = () => {
     setLoading(true);
     setError(null);
 
-    fetch(`${API_BASE}/attendance/all`)
+    fetch(`${API_BASE}/api/attendance/all`)
       .then(res => res.json())
       .then(data => {
         setRecords(data);
