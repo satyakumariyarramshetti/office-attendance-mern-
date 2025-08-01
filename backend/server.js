@@ -16,7 +16,12 @@ const PORT = 5000;
 //   credentials: true,
 // }));
 
-app.use(cors());
+
+app.use(cors({
+  origin: ['https://office-attendance-six.vercel.app'], // Replace with your actual Vercel URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
+}));
 app.use(bodyParser.json());
 app.use('/api/attendance', attendanceRoutes);
 
