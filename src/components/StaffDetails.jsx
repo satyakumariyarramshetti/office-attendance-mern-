@@ -56,7 +56,7 @@ const StaffDetails = () => {
 
   const handleAddStaff = async newStaff => {
     try {
-      const response = await fetch('${API_BASE}/api/staffs', {
+      const response = await fetch(`${API_BASE}/api/staffs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newStaff)
