@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback,useRef } from 'react';
 import './interface.css';
 import { Link } from 'react-router-dom';
 import { FaClock, FaUtensils, FaDoorOpen } from 'react-icons/fa';
@@ -9,6 +9,12 @@ const PS_PREFIX = 'PS-';
 
 const Interface = () => {
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  const inTimeRef = useRef(null);
+  const lunchRef = useRef(null);
+  const outTimeRef = useRef(null);
+  const [activeForm, setActiveForm] = useState("intime"); // or 'lunch' or 'out'
+
+
   const [formData, setFormData] = useState({
     id: '',
     name: '',
@@ -297,7 +303,7 @@ const submitData = async (payload) => {
     }
   };
 
-  const StaffIdInput = ({ inputId, value, onChange, staffNotFound }) => (
+  const StaffIdInput = ({ inputId, value, onChange, staffNotFound,shouldAutoFocus}) => (
     <div className="form-group mb-2">
       <label htmlFor={inputId}>Enter your ID</label>
       <div className="input-group">
@@ -308,14 +314,16 @@ const submitData = async (payload) => {
           type="text" id={inputId} className="form-control"
           value={value.replace(/^PS-/, '')} onChange={onChange}
           maxLength={4} pattern="[0-9]*" inputMode="numeric"
-          autoComplete="off" placeholder="0003" autoFocus={inputId === "idInTime"}
-        />
+          autoComplete="off" placeholder="0003" 
+          autoFocus={shouldAutoFocus} // 👈 use dynamic autofocus   
+             />
       </div>
       {staffNotFound && (
         <small className="text-danger">Staff ID not found. Please check your ID.</small>
       )}
     </div>
   );
+  
 
   return (
     <div className="main-wrapper">
@@ -333,7 +341,7 @@ const submitData = async (payload) => {
         <div className="row justify-content-center">
           {/* In Time */}
           <div className="col-md-4">
-            <div className="card custom-card h-100">
+            <div className="card custom-card h-100" onClick={() => setActiveForm("inTime")}>
               <h5 className="card-title">
                 Intime Details <div><FaClock className="text-primary fs-4 mt-1" /></div>
               </h5>
@@ -341,6 +349,7 @@ const submitData = async (payload) => {
                 <StaffIdInput
                   inputId="idInTime" value={formData.id}
                   onChange={handleNumericIdChange} staffNotFound={staffNotFound}
+                  shouldAutoFocus={activeForm === "inTime"}
                 />
                 <div className="form-group mb-2">
                   <label>Name</label>
@@ -375,7 +384,7 @@ const submitData = async (payload) => {
           </div>
           {/* Lunch */}
           <div className="col-md-4">
-            <div className="card custom-card h-100">
+            <div className="card custom-card h-100" onClick={() => setActiveForm("lunch")}>
               <h5 className="card-title">
                 Lunch Details <div><FaUtensils className="text-warning fs-4 mt-1" /></div>
               </h5>
@@ -383,6 +392,8 @@ const submitData = async (payload) => {
                 <StaffIdInput
                   inputId="idLunch" value={formData.id}
                   onChange={handleNumericIdChange} staffNotFound={staffNotFound}
+                  shouldAutoFocus={activeForm === "lunch"
+                  }
                 />
                 <div className="form-group mb-2">
                   <label htmlFor="dateLunch">Date</label>
@@ -418,7 +429,7 @@ const submitData = async (payload) => {
           </div>
           {/* Out Time */}
           <div className="col-md-4">
-            <div className="card custom-card h-100">
+            <div className="card custom-card h-100" onClick={() => setActiveForm("out")}>
               <h5 className="card-title">
                 Out Time Details <div><FaDoorOpen className="text-danger fs-4 mt-1" /></div>
               </h5>
@@ -426,6 +437,8 @@ const submitData = async (payload) => {
                 <StaffIdInput
                   inputId="idOutTime" value={formData.id}
                   onChange={handleNumericIdChange} staffNotFound={staffNotFound}
+                  shouldAutoFocus={activeForm === "out"}
+
                 />
                 <div className="form-group mb-2">
                   <label htmlFor="dateOutTime">Date</label>
