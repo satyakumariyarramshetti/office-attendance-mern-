@@ -11,7 +11,7 @@ function App() {
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<Interface />} />
-        <Route path="/login" element={<AdminLogin />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
 
         {/* Protected route */}
         <Route
