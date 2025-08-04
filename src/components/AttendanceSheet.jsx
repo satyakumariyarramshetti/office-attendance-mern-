@@ -62,6 +62,11 @@ const AttendanceSheet = () => {
     return `${day}/${month}/${year}`;
   }
 
+  function searchTermLooksLikeDate(str) {
+  // Matches '30/07/2025' or '1/1/2024'
+  return /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str.trim());
+}
+
   const filteredGroupedRecords = Object.entries(groupedRecords).filter(
     ([id, entries]) => {
       const lowerId = id.toLowerCase();
@@ -78,8 +83,8 @@ const AttendanceSheet = () => {
         const dbDateNorm = normalizedDateString(entry.date);
         const rawDateStr = entry.date ? entry.date.toString().toLowerCase() : '';
         const searchLower = normalizedSearch;
-        const normalizedSearchIsDate =
-          Boolean(new Date(searchTerm)) && !isNaN(new Date(searchTerm));
+       const normalizedSearchIsDate = searchTermLooksLikeDate(searchTerm);
+
         let dateMatch = false;
         if (normalizedSearchIsDate) {
           const searchNormDate = normalizedDateString(searchTerm);
@@ -102,8 +107,8 @@ const AttendanceSheet = () => {
       const dbDateNorm = normalizedDateString(record.date);
       const rawDateStr = record.date ? record.date.toString().toLowerCase() : '';
       const searchLower = normalizedSearch;
-      const normalizedSearchIsDate =
-        Boolean(new Date(searchTerm)) && !isNaN(new Date(searchTerm));
+     const normalizedSearchIsDate = searchTermLooksLikeDate(searchTerm);
+
       let dateMatch = false;
       if (normalizedSearchIsDate) {
         const searchNormDate = normalizedDateString(searchTerm);
@@ -198,6 +203,8 @@ const AttendanceSheet = () => {
                   <th>Lunch In</th>
                   <th>Out Time</th>
                   <th>Leave Type</th>
+                   <th>Location</th>
+
                 </tr>
               </thead>
               <tbody>
@@ -207,8 +214,8 @@ const AttendanceSheet = () => {
                     const dbDateNorm = normalizedDateString(record.date);
                     const rawDateStr = record.date ? record.date.toString().toLowerCase() : '';
                     const searchLower = normalizedSearch;
-                    const normalizedSearchIsDate =
-                      Boolean(new Date(searchTerm)) && !isNaN(new Date(searchTerm));
+                   const normalizedSearchIsDate = searchTermLooksLikeDate(searchTerm);
+
                     let dateMatch = false;
                     if (normalizedSearchIsDate) {
                       const searchNormDate = normalizedDateString(searchTerm);
@@ -230,6 +237,9 @@ const AttendanceSheet = () => {
                       <td data-label="Lunch In">{record.lunchIn}</td>
                       <td data-label="Out Time">{record.outTime}</td>
                       <td data-label="Leave Type">{record.leaveType}</td>
+                       <td data-label="Location">
+  {record.location ? record.location : 'N/A'}
+</td>
                     </tr>
                   ));
                 })}

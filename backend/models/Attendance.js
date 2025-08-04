@@ -14,7 +14,9 @@ const AttendanceSchema = new mongoose.Schema({
   outDate: { type: String },
   outTime: { type: String },
   casualType: { type: String },
-  leaveType: { type: String }
+  leaveType: { type: String },
+  location: { type: String },
+
 });
 
 AttendanceSchema.index({ id: 1, date: 1 }, { unique: true });

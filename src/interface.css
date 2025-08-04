@@ -129,8 +129,8 @@ body {
   color: #444;
   margin-bottom: 3px;
 }
-input.form-control,
-select.form-control {
+input.form-control
+ {
   font-size: 16px;
   padding: 12px;
   border-radius: 8px;
@@ -246,10 +246,26 @@ select.form-control option[disabled] {
 
   .form-group label,
   .input-group-text,
-  input.form-control,
-  select.form-control {
+  input.form-control
+   {
     font-size: 15px;
   }
+
+  /* Style for select dropdown in the cards */
+select.form-control {
+  width: 100%;         /* full width of container */
+  padding: 0.5rem 1rem; /* consistent padding */
+  font-size: 1rem;
+  border: 2px solid #172a38;
+  border-radius: 5px;
+  box-sizing: border-box; /* include padding in width */
+  background-color: white;
+  appearance: none;     /* remove default arrow to allow styling */
+  cursor: pointer;
+}
+
+
+
 
   .btn-primary {
     font-size: 0.95rem;

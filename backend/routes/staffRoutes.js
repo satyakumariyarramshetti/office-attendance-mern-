@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Staff = require('../models/Staff');
-
+ 
 
 // 🔹 GET: All staff entries
 router.get('/', async (req, res) => {

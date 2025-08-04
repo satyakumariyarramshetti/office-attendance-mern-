@@ -20,6 +20,7 @@ const Interface = () => {
     outTime: '',
     casualType: '',
     leaveType: '',
+    location: '', // <-- Added for location data
   });
 
   const [lunchSubmitEnabled, setLunchSubmitEnabled] = useState(false);
@@ -30,16 +31,23 @@ const Interface = () => {
   // Helpers
   const getCurrentDate = () => new Date().toISOString().split('T')[0];
   const getCurrentTime = () => new Date().toTimeString().slice(0, 5);
-  const getCurrentDay = () =>
-    new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  const getCurrentDay = (dateString = null) =>
+    new Date(dateString || new Date()).toLocaleDateString('en-US', { weekday: 'long' });
+
+  const isFutureDate = (date) => {
+    if (!date) return false;
+    const selected = new Date(date).setHours(0, 0, 0, 0);
+    const today = new Date().setHours(0, 0, 0, 0);
+    return selected > today;
+  };
 
   // Debounced fetch function
   const fetchStaffAndAttendance = useCallback(
-    debounce(async (fullId) => {
+    debounce(async (fullId, date = getCurrentDate()) => {
       if (!fullId) return;
 
-      const formattedDate = getCurrentDate();
-      const currentDay = getCurrentDay();
+      const formattedDate = date;
+      const currentDay = getCurrentDay(formattedDate);
       let name = '';
 
       try {
@@ -58,18 +66,9 @@ const Interface = () => {
           name = '';
           setStaffNotFound(true);
           setMessage('⚠️ Staff ID not found.');
-          // Clear form fields except id
           setFormData((prev) => ({
             ...prev,
-            name: '',
-            date: '',
-            day: '',
-            inTime: '',
-            lunchIn: '',
-            lunchOut: '',
-            outTime: '',
-            casualType: '',
-            leaveType: '',
+            name: '', date: '', day: '', inTime: '', lunchIn: '', lunchOut: '', outTime: '', casualType: '', leaveType: '',
           }));
           setLunchSubmitEnabled(false);
           return;
@@ -85,18 +84,9 @@ const Interface = () => {
         setMessage('');
       }
 
-      // Fetch attendance for this ID and date
       let newFormData = {
-        id: fullId,
-        name,
-        date: formattedDate,
-        day: currentDay,
-        inTime: formData.inTime || getCurrentTime(),
-        lunchOut: '',
-        lunchIn: '',
-        outTime: '',
-        casualType: '',
-        leaveType: '',
+        id: fullId, name, date: formattedDate, day: currentDay, inTime: formData.inTime || getCurrentTime(),
+        lunchOut: '', lunchIn: '', outTime: '', casualType: '', leaveType: '', location: '',
       };
 
       try {
@@ -141,27 +131,13 @@ const Interface = () => {
     [formData.inTime]
   );
 
-  // Handler for numeric part of Staff ID input (all ID inputs)
   const handleNumericIdChange = (e) => {
     let value = e.target.value.replace(/\D/g, '').slice(0, 4);
-
-    setFormData((prev) => ({
-      ...prev,
-      id: value ? PS_PREFIX + value : '',
-    }));
+    setFormData((prev) => ({ ...prev, id: value ? PS_PREFIX + value : '' }));
 
     if (value.length < 4) {
       setFormData((prev) => ({
-        ...prev,
-        name: '',
-        date: '',
-        day: '',
-        inTime: '',
-        lunchIn: '',
-        lunchOut: '',
-        outTime: '',
-        casualType: '',
-        leaveType: '',
+        ...prev, name: '', date: '', day: '', inTime: '', lunchIn: '', lunchOut: '', outTime: '', casualType: '', leaveType: '',
       }));
       setLunchSubmitEnabled(false);
       setMessage('');
@@ -172,79 +148,123 @@ const Interface = () => {
     }
 
     if (value.length === 4) {
-      fetchStaffAndAttendance(PS_PREFIX + value);
+      fetchStaffAndAttendance(PS_PREFIX + value, formData.date || getCurrentDate());
     }
   };
 
-  // Generic controlled inputs handler
-  const handleChange = (e) => {
-    const { id, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
+  const handleDateChange = (e) => {
+    const selectedDate = e.target.value;
+    const selectedDay = getCurrentDay(selectedDate);
+    setFormData((prev) => ({ ...prev, date: selectedDate, day: selectedDay }));
+    if (formData.id) {
+      fetchStaffAndAttendance(formData.id, selectedDate);
+    }
   };
 
-  // Update casualType and leaveType based on outTime hour
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({ ...prev, [id]: value }));
+  };
+
   useEffect(() => {
     if (formData.outTime) {
       const [hour] = formData.outTime.split(':').map(Number);
       if (hour >= 18) {
-        setFormData((prev) => ({
-          ...prev,
-          casualType: 'Casual Type',
-          leaveType: 'Casual',
-        }));
+        setFormData((prev) => ({ ...prev, casualType: 'Casual Type', leaveType: 'Casual' }));
       } else {
-        setFormData((prev) => ({
-          ...prev,
-          casualType: '',
-          leaveType: '',
-        }));
+        setFormData((prev) => ({ ...prev, casualType: '', leaveType: '' }));
       }
     }
   }, [formData.outTime]);
 
-  // Warn if time diff between In and Out greater than 30 mins
   useEffect(() => {
     if (formData.inTime && formData.outTime) {
       const [inHour, inMin] = formData.inTime.split(':').map(Number);
       const [outHour, outMin] = formData.outTime.split(':').map(Number);
       const diff = (outHour * 60 + outMin) - (inHour * 60 + inMin);
-      setTimeDifferenceWarning(
-        diff > 30 ? '⚠️ Time difference between In and Out is more than 30 minutes.' : ''
-      );
+      setTimeDifferenceWarning(diff > 30 ? '⚠️ Time difference between In and Out is more than 30 minutes.' : '');
     } else {
       setTimeDifferenceWarning('');
     }
   }, [formData.inTime, formData.outTime]);
 
-  // Submit handler for In Time and Out Time
+  // New function to handle the actual API call
+  // In interface.jsx
+
+const submitData = async (payload) => {
+  try {
+    const response = await fetch(`${API_BASE}/api/attendance/save`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const result = await response.json();
+    alert(response.ok ? result.message || 'Submitted successfully!' : result.error || 'Submission failed!');
+
+    // --- ADD THIS 'if' BLOCK ---
+    if (response.ok) {
+      // Clear the form to prevent re-submissions and confusion
+      setFormData({
+        id: '', name: '', date: '', day: '', inTime: '',
+        lunchIn: '', lunchOut: '', outTime: '', casualType: '',
+        leaveType: '', location: '',
+      });
+      setStaffNotFound(false);
+      setMessage('');
+      setLunchSubmitEnabled(false);
+    }
+    // --- END OF BLOCK ---
+
+  } catch (err) {
+    console.error('Submission error:', err);
+    alert('Failed to submit.');
+  }
+};
+
+  // MODIFIED submit handler for In Time and Out Time
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (staffNotFound) {
       alert('Please enter a valid Staff ID before submitting.');
       return;
     }
-    try {
-      const response = await fetch(`${API_BASE}/api/attendance/save`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      const result = await response.json();
-      alert(
-        response.ok
-          ? result.message || 'Submitted successfully!'
-          : result.error || 'Submission failed!'
+    if (isFutureDate(formData.date)) {
+      alert('Attendance for future dates is not allowed.');
+      return;
+    }
+
+    // Check if submitting In-Time to request location
+    const isSubmittingInTime = e.nativeEvent.submitter.closest('form').contains(document.getElementById('idInTime'));
+
+    if (isSubmittingInTime && navigator.geolocation) {
+      // Request location
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const locationString = `${latitude}, ${longitude}`;
+          
+          // Create a new payload with the location
+          const payloadWithLocation = { ...formData, location: locationString };
+          
+          // Proceed with the submission
+          submitData(payloadWithLocation);
+        },
+        (error) => {
+          console.error("Error getting location: ", error);
+          alert("Could not get user location. Submitting without it.");
+          // Submit without location data on error
+          submitData(formData);
+        }
       );
-    } catch (err) {
-      console.error(err);
-      alert('Failed to submit.');
+    } else {
+      // If geolocation is not available or not an In-Time submission, submit without location
+      if(isSubmittingInTime) {
+        alert("Geolocation is not supported by your browser. Submitting without location.");
+      }
+      submitData(formData);
     }
   };
 
-  // Submit handler for Lunch Form
   const handleLunchSubmit = async (e) => {
     e.preventDefault();
     if (!formData.id || !formData.date) {
@@ -260,22 +280,14 @@ const Interface = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: formData.id,
-          name: formData.name,
-          date: formData.date,
-          day: formData.day,
-          lunchOut: formData.lunchOut || '',
-          lunchIn: formData.lunchIn || '',
+          id: formData.id, name: formData.name, date: formData.date, day: formData.day,
+          lunchOut: formData.lunchOut || '', lunchIn: formData.lunchIn || '',
         }),
       });
       const result = await response.json();
       alert(response.ok ? result.message || 'Lunch submitted!' : result.error || 'Submission failed.');
       if (response.ok) {
-        setFormData((prev) => ({
-          ...prev,
-          lunchOut: '',
-          lunchIn: '',
-        }));
+        setFormData((prev) => ({ ...prev, lunchOut: '', lunchIn: '' }));
         setLunchSubmitEnabled(false);
         setMessage(result.message || '');
       }
@@ -285,7 +297,6 @@ const Interface = () => {
     }
   };
 
-  // Reusable Staff ID input component for all three sections
   const StaffIdInput = ({ inputId, value, onChange, staffNotFound }) => (
     <div className="form-group mb-2">
       <label htmlFor={inputId}>Enter your ID</label>
@@ -294,17 +305,10 @@ const Interface = () => {
           <span className="input-group-text">{PS_PREFIX}</span>
         </div>
         <input
-          type="text"
-          id={inputId}
-          className="form-control"
-          value={value.replace(/^PS-/, '')}
-          onChange={onChange}
-          maxLength={4}
-          pattern="[0-9]*"
-          inputMode="numeric"
-          autoComplete="off"
-          placeholder="0003"
-          autoFocus={inputId === "idInTime"}
+          type="text" id={inputId} className="form-control"
+          value={value.replace(/^PS-/, '')} onChange={onChange}
+          maxLength={4} pattern="[0-9]*" inputMode="numeric"
+          autoComplete="off" placeholder="0003" autoFocus={inputId === "idInTime"}
         />
       </div>
       {staffNotFound && (
@@ -318,12 +322,11 @@ const Interface = () => {
       <header className="attendance-header">
         <img
           src="https://tse4.mm.bing.net/th/id/OIP.kBa9Zzw_lXJ4D67y_kWZ5QHaG7?rs=1&pid=ImgDetMain&o=7&rm=3"
-          alt="Company Logo"
-          className="company-logo"
+          alt="Company Logo" className="company-logo"
         />
         <div className="header-title">Attendance System</div>
         <div className="admin-login">
-          <Link to="/login">Admin login</Link>
+          <Link to="/admin-login">Admin login</Link>
         </div>
       </header>
       <div className="container py-5">
@@ -336,10 +339,8 @@ const Interface = () => {
               </h5>
               <form className="d-flex flex-column h-100" onSubmit={handleSubmit}>
                 <StaffIdInput
-                  inputId="idInTime"
-                  value={formData.id}
-                  onChange={handleNumericIdChange}
-                  staffNotFound={staffNotFound}
+                  inputId="idInTime" value={formData.id}
+                  onChange={handleNumericIdChange} staffNotFound={staffNotFound}
                 />
                 <div className="form-group mb-2">
                   <label>Name</label>
@@ -347,7 +348,10 @@ const Interface = () => {
                 </div>
                 <div className="form-group mb-2">
                   <label>Date</label>
-                  <input type="date" className="form-control" value={formData.date} readOnly />
+                  <input
+                    type="date" className="form-control"
+                    value={formData.date} onChange={handleDateChange} max={getCurrentDate()}
+                  />
                 </div>
                 <div className="form-group mb-2">
                   <label>Day</label>
@@ -356,19 +360,13 @@ const Interface = () => {
                 <div className="form-group mb-2">
                   <label>In Time</label>
                   <input
-                    type="time"
-                    className="form-control"
-                    value={formData.inTime}
+                    type="time" className="form-control" value={formData.inTime}
                     onChange={(e) => setFormData((prev) => ({ ...prev, inTime: e.target.value }))}
                     onClick={() => setFormData((prev) => ({ ...prev, inTime: getCurrentTime() }))}
                   />
                 </div>
                 <div className="mt-auto">
-                  <button
-                    className="btn btn-primary btn-block"
-                    type="submit"
-                    disabled={staffNotFound || !formData.id}
-                  >
+                  <button className="btn btn-primary btn-block" type="submit" disabled={staffNotFound || !formData.id}>
                     Submit
                   </button>
                 </div>
@@ -383,10 +381,8 @@ const Interface = () => {
               </h5>
               <form className="d-flex flex-column h-100" onSubmit={handleLunchSubmit}>
                 <StaffIdInput
-                  inputId="idLunch"
-                  value={formData.id}
-                  onChange={handleNumericIdChange}
-                  staffNotFound={staffNotFound}
+                  inputId="idLunch" value={formData.id}
+                  onChange={handleNumericIdChange} staffNotFound={staffNotFound}
                 />
                 <div className="form-group mb-2">
                   <label htmlFor="dateLunch">Date</label>
@@ -395,10 +391,7 @@ const Interface = () => {
                 <div className="form-group mb-2">
                   <label htmlFor="lunchOut">Lunch Out Time</label>
                   <input
-                    type="time"
-                    id="lunchOut"
-                    className="form-control"
-                    value={formData.lunchOut}
+                    type="time" id="lunchOut" className="form-control" value={formData.lunchOut}
                     onClick={() => setFormData((prev) => ({ ...prev, lunchOut: getCurrentTime() }))}
                     readOnly
                   />
@@ -406,10 +399,7 @@ const Interface = () => {
                 <div className="form-group mb-2">
                   <label htmlFor="lunchIn">Lunch In Time</label>
                   <input
-                    type="time"
-                    id="lunchIn"
-                    className="form-control"
-                    value={formData.lunchIn}
+                    type="time" id="lunchIn" className="form-control" value={formData.lunchIn}
                     onClick={() => setFormData((prev) => ({ ...prev, lunchIn: getCurrentTime() }))}
                     readOnly
                   />
@@ -418,11 +408,7 @@ const Interface = () => {
                   <div className="alert alert-warning mt-2">{timeDifferenceWarning}</div>
                 )}
                 <div className="mt-auto">
-                  <button
-                    className="btn btn-primary btn-block"
-                    disabled={!lunchSubmitEnabled || staffNotFound || !formData.id}
-                    type="submit"
-                  >
+                  <button className="btn btn-primary btn-block" disabled={!lunchSubmitEnabled || staffNotFound || !formData.id} type="submit">
                     Submit
                   </button>
                 </div>
@@ -438,10 +424,8 @@ const Interface = () => {
               </h5>
               <form className="d-flex flex-column h-100" onSubmit={handleSubmit}>
                 <StaffIdInput
-                  inputId="idOutTime"
-                  value={formData.id}
-                  onChange={handleNumericIdChange}
-                  staffNotFound={staffNotFound}
+                  inputId="idOutTime" value={formData.id}
+                  onChange={handleNumericIdChange} staffNotFound={staffNotFound}
                 />
                 <div className="form-group mb-2">
                   <label htmlFor="dateOutTime">Date</label>
@@ -450,25 +434,15 @@ const Interface = () => {
                 <div className="form-group mb-2">
                   <label htmlFor="outTime">Out Time</label>
                   <input
-                    type="time"
-                    id="outTime"
-                    className="form-control"
-                    value={formData.outTime}
+                    type="time" id="outTime" className="form-control" value={formData.outTime}
                     onClick={() => setFormData((prev) => ({ ...prev, outTime: getCurrentTime() }))}
-                    readOnly
+                    onChange={(e) => setFormData((prev) => ({ ...prev, outTime: e.target.value }))}
                   />
                 </div>
                 <div className="form-group mb-3">
                   <label htmlFor="leaveType">Permission Type</label>
-                  <select
-                    id="leaveType"
-                    className="form-control"
-                    value={formData.leaveType}
-                    onChange={handleChange}
-                  >
-                    <option disabled value="">
-                      Select permission
-                    </option>
+                  <select id="leaveType" className="form-control" value={formData.leaveType} onChange={handleChange}>
+                    <option disabled value="">Select permission</option>
                     <option value="Personal">Personal</option>
                     <option value="Health">Health</option>
                     <option value="Emergency">Emergency</option>
@@ -480,11 +454,7 @@ const Interface = () => {
                   </select>
                 </div>
                 <div className="mt-auto">
-                  <button
-                    className="btn btn-primary btn-block"
-                    type="submit"
-                    disabled={staffNotFound || !formData.id}
-                  >
+                  <button className="btn btn-primary btn-block" type="submit" disabled={staffNotFound || !formData.id}>
                     Submit
                   </button>
                 </div>
