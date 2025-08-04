@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminLogin.css';
 
-const AdminLogin = () => {
+const AdminLogin = ({ setIsAdmin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -17,6 +17,7 @@ const AdminLogin = () => {
     // Hardcoded credentials for now (can replace with backend validation later)
     if (trimmedUsername === 'Attendance Log' && trimmedPassword === 'Praxsol@241219') {
       localStorage.setItem('adminToken', 'true'); // simulate login
+      setIsAdmin(true);
       navigate('/admin');
     } else {
       setError('Invalid username or password');
@@ -26,8 +27,8 @@ const AdminLogin = () => {
   return (
     <div className="login-container">
       <h2>Admin Login</h2>
-      <form onSubmit={handleLogin}>
-        <input
+    <form onSubmit={handleLogin}>
+          <input
           type="text"
           placeholder="Username"
           value={username}
