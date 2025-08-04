@@ -5,7 +5,10 @@
   background: #f0f4f8;             /* Light background */
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #222;
-  overflow: auto;                /* prevent scroll bleed */
+  overflow: auto;   
+  @media(min-width:1025px){
+    margin-left:220px;
+  }  
 }
 
 /* Main content area (header + content) grows to fill */

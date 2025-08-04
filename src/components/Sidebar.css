@@ -9,6 +9,18 @@
   flex-direction: column;
   user-select: none;
   overflow-y: auto;
+  transition: all 0.3s ease-in-out;
+  @media (min-width: 1025px) {
+    
+  
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+  
+}
+
+
 }
 
 /* User info */
@@ -95,37 +107,38 @@
 /* ===== Responsive Styles ===== */
 
 /* Phones (max-width: 768px) */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .sidebar {
     width: 100%;
     height: auto;
-    padding: 15px 10px;
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 12px 10px;
     position: fixed;
     bottom: 0;
-    left: 0;
+    top: auto;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.2);
+    overflow-y: visible;
     z-index: 1000;
   }
 
   .user-info {
-    display: none; /* hide user info on mobile to save space */
+    display: none;
   }
 
   .menu-item {
-    flex-basis: 30%;
-    margin: 6px;
-    padding: 8px 6px;
-    text-align: center;
+    flex: 1 1 30%;
+    margin: 6px 4px;
     justify-content: center;
+    text-align: center;
     font-size: 0.85rem;
+    padding: 8px;
   }
 
   .menu-icon {
-    margin: 0 4px 0 0;
+    margin: 0 6px 0 0;
     font-size: 16px;
   }
 
@@ -135,44 +148,33 @@
 }
 
 /* Tablets (769px to 1024px) */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .sidebar {
-    width: 180px;
-    padding: 25px 15px;
-  }
 
-  .user-icon {
-    font-size: 40px;
-    margin-right: 12px;
-  }
-
-  .user-name {
-    font-size: 1.1rem;
-  }
-
-  .menu-item {
-    font-size: 0.95rem;
-    padding: 8px 12px;
-  }
-
-  .menu-icon {
-    font-size: 18px;
-    margin-right: 10px;
-  }
-}
-
-/* Laptops (1025px and up) */
 @media (min-width: 1025px) {
   .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 220px;
+    height: 100vh;
+    padding: 30px 20px 20px 20px;
+    flex-direction: column;
+    overflow-y: auto;
+    box-shadow: none;
+  }
+
+  .user-info {
+    display: flex;
   }
 
   .menu-item {
     font-size: 1.05rem;
     padding: 10px 15px;
+    justify-content: flex-start;
+    text-align: left;
   }
 
   .menu-icon {
     font-size: 20px;
+    margin-right: 12px;
   }
 }
