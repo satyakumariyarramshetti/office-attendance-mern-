@@ -210,8 +210,40 @@ select.form-control option[disabled] {
   color: #165087;
   border: 1px solid #bae1ff;
 }
+/* Add this at the end of your interface.css file */
 
+.card-stub {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
+  min-height: 100px;
+  max-width: 410px;
+  margin: auto;
+  padding: 1.7rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
 
+.card-stub:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 123, 0.2);
+}
+
+.stub-icon {
+  font-size: 2.5rem;
+  color: #007bff;
+  margin-bottom: 10px;
+}
+
+.stub-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #172a38;
+}
 
 /* Make the container scrollable on smaller screens */
 @media (max-width: 767px) {
@@ -251,6 +283,13 @@ select.form-control option[disabled] {
     font-size: 15px;
   }
 
+input.form-control {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
   /* Style for select dropdown in the cards */
 select.form-control {
   width: 100%;         /* full width of container */
@@ -264,21 +303,43 @@ select.form-control {
   cursor: pointer;
 }
 
-
-
-
   .btn-primary {
     font-size: 0.95rem;
     padding: 0.7rem 1rem;
   }
 }
 
-
 .d-flex.flex-column.h-100 {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
 }
+
+.close-btn {
+  transition: color 0.3s ease;
+}
+
+.close-btn:hover {
+  color: #007bff;
+}
+
+/* --- STYLES FOR NEW PERMISSION/LEAVE COLUMN --- */
+
+.stubs-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px; /* Creates space between the two stub cards */
+}
+
+/* Modify existing card-stub for flex layout */
+.card-stub {
+  flex: 1; /* This is key - it makes both stubs take up equal height */
+  min-height: 0;
+  margin: 0 !important; /* Override any other margins */
+  width: 100%; /* Ensure it fills the column */
+  max-width: 100%;
+}
+
 @media (max-width: 767px) {
   html,
   body {
@@ -287,7 +348,6 @@ select.form-control {
     position: relative;
   }
 }
-
 
 /* ---------- Mobile View (max-width: 767px) ---------- */
 @media (max-width: 767px) {
@@ -353,5 +413,152 @@ select.form-control {
 
   .alert {
     font-size: 0.92rem;
+  }
+}
+
+/* ---------- Mobile & iPad Mini View (max-width: 768px) ---------- */
+@media (max-width: 768px) {
+  html, body {
+    height: auto;
+    min-height: 100%;
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .main-wrapper {
+    padding-bottom: 20px;
+    overflow-y: auto;
+    max-height: 100vh;
+  }
+
+  .container {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    overflow-y: auto;
+  }
+
+  .row {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .col-md-4 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding: 0 10px;
+    margin-bottom: 0;
+  }
+
+  .card.custom-card {
+    width: 70%;
+    min-width: auto;
+    max-width: 100%;
+    height: auto;
+    min-height: auto;
+    margin: 0 auto 20px auto;
+    padding: 1.2rem 1rem;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+  }
+
+  .form-group label,
+  .input-group-text,
+  input.form-control,
+  select.form-control {
+    font-size: 15px;
+  }
+
+  .btn-primary {
+    font-size: 0.95rem;
+    padding: 0.65rem 1rem;
+  }
+
+  .alert {
+    font-size: 0.92rem;
+  }
+}
+ 
+@media screen and (max-width: 912px) and (orientation: portrait) {
+  body {
+    padding: 0;
+    margin: 0;
+    background-color: #f9f9f9; /* Optional: match app background */
+  }
+
+  .container {
+    padding: 0.5rem 0.5rem; /* Reduce side padding */
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+    margin: 0;
+  }
+
+  .col-md-4 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding: 0;
+  }
+
+.card.custom-card {
+  width: 70% !important;
+  max-width: 500px; /* Optional: max size */
+  margin: 0 auto 20px auto;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+}
+
+  .card-title {
+    font-size: 1.1rem;
+    text-align: center;
+  }
+
+  .btn-primary {
+    display: block;
+    width: 100%;
+  }
+
+  .alert {
+    font-size: 0.95rem;
+    padding: 0.5rem;
+  }
+}
+
+/* --- NEW: Tablet View (e.g., iPad Landscape, Nest Hub) --- */
+@media (min-width: 769px) and (max-width: 1280px) {
+  .card.custom-card {
+    /* Decrease the height as requested */
+    height: auto;
+    min-height: 490px; /* Adjusted from 570px */
+    padding: 1.2rem 1.1rem; /* Adjust padding for a tighter fit */
+  }
+
+  .card-title {
+    font-size: 1.25rem; /* Slightly smaller title */
+    margin-bottom: 0.6rem;
+  }
+
+   .form-group {
+    margin-bottom: 9px !important; /* Reduce space between form elements */
+  }
+
+  input.form-control, 
+  select.form-control {
+    font-size: 15px;
+    padding: 10px; /* Make input fields slightly more compact */
+  }
+
+  .mt-auto {
+    padding-bottom: 1rem; /* Bring the button up a little */
   }
 }
