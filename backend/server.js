@@ -53,6 +53,11 @@ const staffRoutes = require('./routes/staffRoutes');
 const app = express();
 const PORT = 5000;
 
+
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
 app.use(cors());
 app.use(bodyParser.json());
 app.use('/api/attendance', attendanceRoutes);
@@ -61,6 +66,9 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/staffs', staffRoutes);
 
 const uri = process.env.ATLAS_URI;
+
+// At the top with your other routes:
+
 
 mongoose.connect(uri)
 .then(() => {
