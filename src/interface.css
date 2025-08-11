@@ -314,10 +314,8 @@ select.form-control option[disabled] {
 
   .row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); /* min card width */
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* 280px matches min-width of cards */
+    gap: 50px;
   }
 
   .col-md-4 {
@@ -329,15 +327,12 @@ select.form-control option[disabled] {
   }
 
   .card.custom-card {
-    width: 80%;
-    max-width: 360px;
-    min-width: 280px;
-    min-height: 380px;
-    height: 100%; /* Allow natural growth */
-    margin: 0 auto 20px auto;
-    padding: 1.2rem 1rem;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
-    flex:1;
+    width: 100%; /* take full grid cell width */
+  max-width: 360px; /* optional */
+  min-height: 380px;
+  margin: 0 auto 20px auto;
+  padding: 1.2rem 1rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
   }
 }
 
