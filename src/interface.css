@@ -69,12 +69,7 @@ body {
   margin-bottom: 24px;
 }
 
-@media (max-width: 991px) {
-  .col-md-4 {
-    flex: 0 0 100%;
-    max-width: 100%;
-  }
-}
+
 
 .card.custom-card {
   background: #fff;
@@ -89,14 +84,7 @@ body {
   flex-direction: column;
 }
 
-@media (max-width: 991px) {
-  .card.custom-card {
-    min-width: 95vw;
-    height: auto;
-    margin-bottom: 28px;
-    max-width: 100vw;
-  }
-}
+
 /* ---- End Cards ---- */
 
 .card-title {
@@ -185,12 +173,6 @@ select.form-control option[disabled] {
   transform: scale(1.03);
 }
 
-/* Responsive Heading Font Sizes etc. */
-@media (max-width: 767px) {
-  .header-title { font-size: 1.1rem; }
-  .card-title { font-size: 1rem; }
-  .btn-primary { font-size: 0.97rem; }
-}
 
 /* Alerts and messages */
 .alert {
@@ -246,68 +228,9 @@ select.form-control option[disabled] {
 }
 
 /* Make the container scrollable on smaller screens */
-@media (max-width: 767px) {
-  .main-wrapper {
-    overflow-y: auto;
-    max-height: 100vh;
-  }
 
-  .container {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-    overflow-y: auto;
-  }
 
-  body {
-    overflow-y: auto;
-  }
-}
 
-@media (max-width: 767px) {
-  .card.custom-card {
-    min-height: auto;
-    height: auto;
-    margin-bottom: 20px;
-    padding: 1.2rem 1rem;
-  }
-
-  .row {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .form-group label,
-  .input-group-text,
-  input.form-control
-   {
-    font-size: 15px;
-  }
-
-input.form-control {
-  -webkit-user-select: text;
-  -moz-user-select: text;
-  -ms-user-select: text;
-  user-select: text;
-}
-
-  /* Style for select dropdown in the cards */
-select.form-control {
-  width: 100%;         /* full width of container */
-  padding: 0.5rem 1rem; /* consistent padding */
-  font-size: 1rem;
-  border: 2px solid #172a38;
-  border-radius: 5px;
-  box-sizing: border-box; /* include padding in width */
-  background-color: white;
-  appearance: none;     /* remove default arrow to allow styling */
-  cursor: pointer;
-}
-
-  .btn-primary {
-    font-size: 0.95rem;
-    padding: 0.7rem 1rem;
-  }
-}
 
 .d-flex.flex-column.h-100 {
   flex: 1 1 auto;
@@ -340,17 +263,34 @@ select.form-control {
   max-width: 100%;
 }
 
-@media (max-width: 767px) {
-  html,
-  body {
-    height: auto;
-    min-height: 100%;
-    position: relative;
+
+/* --- Mobile: Phones Portrait --- */
+@media (max-width: 576px) {
+  .row {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .col-md-4 {
+    display: flex;
+    justify-content: center;
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .card.custom-card {
+    width: 85%;
+    max-width: 320px;
+    min-width: 260px;
+    min-height: 360px;
+    height: auto; /* Let height adjust to content */
+    margin: 0 auto 20px;
   }
 }
 
-/* ---------- Mobile View (max-width: 767px) ---------- */
-@media (max-width: 767px) {
+/* --- Large Phones & Small Tablets (portrait) --- */
+@media (min-width: 577px) and (max-width: 768px) {
   html, body {
     height: auto;
     min-height: 100%;
@@ -378,187 +318,75 @@ select.form-control {
   }
 
   .col-md-4 {
-    flex: 0 0 100%;
+    display: flex;
+    justify-content: center;
     max-width: 100%;
     padding: 0 10px;
     margin-bottom: 0;
   }
 
   .card.custom-card {
-    width: 100%;
-    min-width: auto;
-    max-width: 100%;
-    height: auto;
-    min-height: auto;
+    width: 80%;
+    max-width: 360px;
+    min-width: 280px;
+    min-height: 380px;
+    height: auto; /* Allow natural growth */
     margin: 0 auto 20px auto;
     padding: 1.2rem 1rem;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
   }
-
-  .card-title {
-    font-size: 1.1rem;
-  }
-
-  .form-group label,
-  .input-group-text,
-  input.form-control,
-  select.form-control {
-    font-size: 15px;
-  }
-
-  .btn-primary {
-    font-size: 0.95rem;
-    padding: 0.65rem 1rem;
-  }
-
-  .alert {
-    font-size: 0.92rem;
-  }
 }
 
-/* ---------- Mobile & iPad Mini View (max-width: 768px) ---------- */
-@media (max-width: 768px) {
-  html, body {
-    height: auto;
-    min-height: 100%;
-    position: relative;
-    overflow-x: hidden;
-    overflow-y: auto;
-  }
-
-  .main-wrapper {
-    padding-bottom: 20px;
-    overflow-y: auto;
-    max-height: 100vh;
-  }
-
-  .container {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-    overflow-y: auto;
-  }
-
-  .row {
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-  }
-
-  .col-md-4 {
-    flex: 0 0 100%;
-    max-width: 100%;
-    padding: 0 10px;
-    margin-bottom: 0;
-  }
-
-  .card.custom-card {
-    width: 70%;
-    min-width: auto;
-    max-width: 100%;
-    height: auto;
-    min-height: auto;
-    margin: 0 auto 20px auto;
-    padding: 1.2rem 1rem;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
-  }
-
-  .card-title {
-    font-size: 1.1rem;
-  }
-
-  .form-group label,
-  .input-group-text,
-  input.form-control,
-  select.form-control {
-    font-size: 15px;
-  }
-
-  .btn-primary {
-    font-size: 0.95rem;
-    padding: 0.65rem 1rem;
-  }
-
-  .alert {
-    font-size: 0.92rem;
-  }
-}
- 
+/* --- Portrait tablets --- */
 @media screen and (max-width: 912px) and (orientation: portrait) {
-  body {
-    padding: 0;
-    margin: 0;
-    background-color: #f9f9f9; /* Optional: match app background */
-  }
-
   .container {
-    padding: 0.5rem 0.5rem; /* Reduce side padding */
+    padding: 0.5rem;
     width: 100%;
     max-width: 100%;
   }
 
   .row {
     flex-direction: column;
-    align-items: stretch;
+    align-items: center;
     gap: 20px;
     margin: 0;
   }
 
   .col-md-4 {
-    flex: 0 0 100%;
+    display: flex;
+    justify-content: center;
     max-width: 100%;
     padding: 0;
   }
 
-.card.custom-card {
-  width: 70% !important;
-  max-width: 500px; /* Optional: max size */
-  margin: 0 auto 20px auto;
-  padding: 1rem;
-  border-radius: 12px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
-}
-
-  .card-title {
-    font-size: 1.1rem;
-    text-align: center;
-  }
-
-  .btn-primary {
-    display: block;
-    width: 100%;
-  }
-
-  .alert {
-    font-size: 0.95rem;
-    padding: 0.5rem;
-  }
-}
-
-/* --- NEW: Tablet View (e.g., iPad Landscape, Nest Hub) --- */
-@media (min-width: 769px) and (max-width: 1280px) {
   .card.custom-card {
-    /* Decrease the height as requested */
-    height: auto;
-    min-height: 490px; /* Adjusted from 570px */
-    padding: 1.2rem 1.1rem; /* Adjust padding for a tighter fit */
-  }
-
-  .card-title {
-    font-size: 1.25rem; /* Slightly smaller title */
-    margin-bottom: 0.6rem;
-  }
-
-   .form-group {
-    margin-bottom: 9px !important; /* Reduce space between form elements */
-  }
-
-  input.form-control, 
-  select.form-control {
-    font-size: 15px;
-    padding: 10px; /* Make input fields slightly more compact */
-  }
-
-  .mt-auto {
-    padding-bottom: 1rem; /* Bring the button up a little */
+    width: 90% !important;
+    max-width: 500px;
+    min-height: 400px;
+    height: auto; /* Fix for button overflow */
+    margin: 0 auto 20px;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
   }
 }
+
+/* --- Tablets & Small Laptops --- */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .row {
+    justify-content: center;
+    gap: 24px;
+  }
+
+  .col-md-4 {
+    flex: 0 0 auto;
+    max-width: 320px;
+  }
+
+  .card.custom-card {
+    width: 100%;
+    min-height: 420px;
+    height: auto; /* Prevent clipping */
+  }
+}
+
