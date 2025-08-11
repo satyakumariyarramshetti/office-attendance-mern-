@@ -6,17 +6,13 @@ const AttendanceSchema = new mongoose.Schema({
   date: { type: String, required: true },
   day: { type: String, required: true },
   inTime: { type: String },
-  lunchId: { type: String },
-  lunchDate: { type: String },
   lunchIn: { type: String },
   lunchOut: { type: String },
-  outId: { type: String },
-  outDate: { type: String },
   outTime: { type: String },
-  casualType: { type: String },
+  permissionType: { type: String }, // For permission reason
+  hours: { type: String },           // For permission hours
   leaveType: { type: String },
   location: { type: String },
-
 });
 
 AttendanceSchema.index({ id: 1, date: 1 }, { unique: true });
