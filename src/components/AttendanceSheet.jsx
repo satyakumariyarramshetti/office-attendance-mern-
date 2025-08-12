@@ -272,7 +272,8 @@ import { useNavigate } from 'react-router-dom';
 import * as XLSX from "xlsx";  
 
 const AttendanceSheet = () => {
-  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
+ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
   const [records, setRecords] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -393,22 +394,18 @@ const AttendanceSheet = () => {
   function exportToCSV() {
     if (!displayedRows.length) return;
     const headers = [
-      "ID", "Name", "Date", "Day", "In Time", "Lunch Out", "Lunch In", "Out Time", "Leave Type"
+      "ID", "Name", "Date", "Day", "In Time", "Lunch Out", "Lunch In", "Out Time",
+      "Daily Leave Type", "Permission Type", "Hours", "Leave Type", "Location"
     ];
     const csvRows = [headers.join(",")];
     for (const record of displayedRows) {
       const row = [
-        record.id ?? '',
-        record.name ?? '',
-        formatDate(record.date),
-        record.day ?? '',
-        record.inTime ?? '',
-        record.lunchOut ?? '',
-        record.lunchIn ?? '',
-        record.outTime ?? '',
-        record.leaveType ?? ''
-      ].map(field => `"${field}"`);
-      csvRows.push(row.join(','));
+            record.id ?? '', record.name ?? '', formatDate(record.date), record.day ?? '',
+            record.inTime ?? '', record.lunchOut ?? '', record.lunchIn ?? '', record.outTime ?? '',
+            record.dailyLeaveType ?? '', // ADDED
+            record.permissionType ?? '', record.hours ?? '', record.leaveType ?? '', record.location ?? ''
+        ].map(field => `"${String(field)}"`).join(',');
+        csvRows.push(row);
     }
     const csvString = csvRows.join("\n");
     const blob = new Blob([csvString], { type: "text/csv" });
@@ -421,21 +418,22 @@ const AttendanceSheet = () => {
   // 4️⃣ EXCEL EXPORT FUNCTION
   function exportToExcel() {
     if (!displayedRows.length) return;
-    const exportArray = displayedRows.map(record => ({
-      ID: record.id,
-      Name: record.name,
-      Date: formatDate(record.date),
-      Day: record.day,
-      "In Time": record.inTime,
-      "Lunch Out": record.lunchOut,
-      "Lunch In": record.lunchIn,
-      "Out Time": record.outTime,
-      "Leave Type": record.leaveType,
-       "Permission Type": record.permissionType,
-      "Hours": record.hours,
-      
-
+   const exportArray = displayedRows.map(record => ({
+      'ID': record.id,
+      'Name': record.name,
+      'Date': formatDate(record.date),
+      'Day': record.day,
+      'In Time': record.inTime,
+      'Lunch Out': record.lunchOut,
+      'Lunch In': record.lunchIn,
+      'Out Time': record.outTime,
+      'Daily Leave Type': record.dailyLeaveType, // ADDED
+      'Permission Type': record.permissionType,
+      'Hours': record.hours,
+      'Leave Type': record.leaveType,
+      'Location': record.location
     }));
+
     const ws = XLSX.utils.json_to_sheet(exportArray);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Attendance");
@@ -464,7 +462,7 @@ const AttendanceSheet = () => {
           <div className="table-responsive scrollable-table">
             <table className="table table-bordered admin-table">
               <thead>
-                <tr>
+              <tr>
                   <th>ID</th>
                   <th>Name</th>
                   <th>Date</th>
@@ -473,12 +471,11 @@ const AttendanceSheet = () => {
                   <th>Lunch Out</th>
                   <th>Lunch In</th>
                   <th>Out Time</th>
+                  <th>Daily Leave Type</th>
+                  <th>Permission Type</th>
+                  <th>Hours</th>
                   <th>Leave Type</th>
-                  
-                   <th>Permission Type</th>
-                <th>Hours</th>
-                <th>Location</th>
-
+                  <th>Location</th>
                 </tr>
               </thead>
               <tbody>
@@ -510,10 +507,11 @@ const AttendanceSheet = () => {
                       <td data-label="Lunch Out">{record.lunchOut}</td>
                       <td data-label="Lunch In">{record.lunchIn}</td>
                       <td data-label="Out Time">{record.outTime}</td>
-                       <td data-label="Leave Type">{record.leaveType || 'N/A'}</td>
-                  <td data-label="Permission Type">{record.permissionType || 'N/A'}</td>
-                  <td data-label="Hours">{record.hours || 'N/A'}</td>
-                  <td data-label="Location">{record.location ? record.location : 'N/A'}</td>
+                         <td data-label="Daily Leave Type">{record.dailyLeaveType || 'N/A'}</td> {/* ADDED CELL */}
+                      <td data-label="Permission Type">{record.permissionType || 'N/A'}</td>
+                      <td data-label="Hours">{record.hours || 'N/A'}</td>
+                      <td data-label="Leave Type">{record.leaveType || 'N/A'}</td>
+                      <td data-label="Location">{record.location ? record.location : 'N/A'}</td>
                     </tr>
                   ));
                 })}
@@ -536,4 +534,3 @@ const AttendanceSheet = () => {
 };
 
 export default AttendanceSheet;
-

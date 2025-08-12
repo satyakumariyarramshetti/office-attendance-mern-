@@ -200,7 +200,8 @@ async function getAddressFromCoordinates(locationString) {
 // === THIS IS THE UPDATED FUNCTION ===
 router.post('/save', async (req, res) => {
   const {
-    id, date, inTime, lunchOut, lunchIn, outTime, day, permissionType, hours, leaveType, location
+    id, date, inTime, lunchOut, lunchIn, outTime, day,
+    permissionType, hours, dailyLeaveType, leaveType, location
   } = req.body;
 
   if (!id || !date) {
@@ -232,14 +233,14 @@ router.post('/save', async (req, res) => {
       if (outTime && !attendance.outTime) {
         attendance.outTime = outTime;
         // If permission type is submitted with out-time, save it too
-        if (permissionType) attendance.permissionType = permissionType;
+        if (dailyLeaveType) attendance.dailyLeaveType = dailyLeaveType;
         updated = true;
         message = 'Out Time Details Submitted Successfully';
-      } else if (leaveType && !attendance.leaveType) {
+      }else if (leaveType && !attendance.leaveType) {
         attendance.leaveType = leaveType;
         updated = true;
         message = 'Leave Submitted Successfully';
-      } else if (permissionType && !attendance.permissionType) {
+      }else if (permissionType && !attendance.permissionType) {
         attendance.permissionType = permissionType;
         if (hours) attendance.hours = hours;
         updated = true;
@@ -272,7 +273,7 @@ router.post('/save', async (req, res) => {
       // --- NO RECORD, SO WE ARE CREATING A NEW ONE ---
       const newAttendance = new Attendance({
         id: String(id).trim(), name: staffName, date, day, inTime,
-        lunchOut, lunchIn, outTime, permissionType, hours, leaveType,
+        lunchOut, lunchIn, outTime, permissionType, hours,    dailyLeaveType,leaveType,
         location: address,
       });
       await newAttendance.save();
