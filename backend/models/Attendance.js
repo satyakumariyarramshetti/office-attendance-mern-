@@ -13,6 +13,7 @@ const AttendanceSchema = new mongoose.Schema({
   hours: { type: String },           // For permission hours
   leaveType: { type: String },
   location: { type: String },
+  dailyLeaveType: { type: String },
 });
 
 AttendanceSchema.index({ id: 1, date: 1 }, { unique: true });
