@@ -4,6 +4,7 @@ const axios = require('axios');
 const Attendance = require('../models/Attendance');
 const Staff = require('../models/Staff');
 
+// getAddressFromCoordinates function remains unchanged...
 async function getAddressFromCoordinates(locationString) {
   if (!locationString) return null;
   try {
@@ -21,11 +22,14 @@ async function getAddressFromCoordinates(locationString) {
   }
 }
 
-// === THIS IS THE UPDATED FUNCTION ===
+
+// MODIFIED: /save route
 router.post('/save', async (req, res) => {
+  // --- MODIFIED: Destructure the new field ---
   const {
     id, date, inTime, lunchOut, lunchIn, outTime, day,
-    permissionType, hours, dailyLeaveType, leaveType, location
+    permissionType, hours, dailyLeaveType, leaveType, location,
+    inTimeMethod // <-- New field from frontend
   } = req.body;
 
   if (!id || !date) {
@@ -53,18 +57,16 @@ router.post('/save', async (req, res) => {
       let updated = false;
       let message = '';
 
-      // Using 'if-else if' to ensure only the most relevant message is sent
       if (outTime && !attendance.outTime) {
         attendance.outTime = outTime;
-        // If permission type is submitted with out-time, save it too
         if (dailyLeaveType) attendance.dailyLeaveType = dailyLeaveType;
         updated = true;
         message = 'Out Time Details Submitted Successfully';
-      }else if (leaveType && !attendance.leaveType) {
+      } else if (leaveType && !attendance.leaveType) {
         attendance.leaveType = leaveType;
         updated = true;
         message = 'Leave Submitted Successfully';
-      }else if (permissionType && !attendance.permissionType) {
+      } else if (permissionType && !attendance.permissionType) {
         attendance.permissionType = permissionType;
         if (hours) attendance.hours = hours;
         updated = true;
@@ -79,6 +81,8 @@ router.post('/save', async (req, res) => {
         message = 'Lunch Starting Time Attendance Submitted';
       } else if (inTime && !attendance.inTime) {
         attendance.inTime = inTime;
+        // --- MODIFIED: Save the method along with the time ---
+        if (inTimeMethod) attendance.inTimeMethod = inTimeMethod;
         if (address) attendance.location = address;
         updated = true;
         message = 'In Time submitted';
@@ -97,18 +101,16 @@ router.post('/save', async (req, res) => {
       // --- NO RECORD, SO WE ARE CREATING A NEW ONE ---
       const newAttendance = new Attendance({
         id: String(id).trim(), name: staffName, date, day, inTime,
-        lunchOut, lunchIn, outTime, permissionType, hours,    dailyLeaveType,leaveType,
+        // --- MODIFIED: Add new field on creation ---
+        inTimeMethod,
+        lunchOut, lunchIn, outTime, permissionType, hours, dailyLeaveType, leaveType,
         location: address,
       });
       await newAttendance.save();
 
-      // ** NEW LOGIC TO DETERMINE THE CORRECT MESSAGE ON CREATION **
-      let message = 'Attendance created successfully'; // Default message (for In-Time)
-      if (leaveType) {
-        message = 'Leave Submitted Successfully';
-      } else if (permissionType) {
-        message = 'Permission Submitted Successfully';
-      }
+      let message = 'Attendance created successfully';
+      if (leaveType) message = 'Leave Submitted Successfully';
+      else if (permissionType) message = 'Permission Submitted Successfully';
 
       return res.json({ message });
     }
@@ -118,7 +120,7 @@ router.post('/save', async (req, res) => {
   }
 });
 
-
+// All other routes (/all, /today, /getByIdDate) remain unchanged.
 // GET all attendance records for admin view
 router.get('/all', async (req, res) => {
   try {
@@ -135,12 +137,9 @@ router.get('/today', async (req, res) => {
     try {
         const todayDate = new Date().toISOString().split('T')[0];
         const cutoffTime = "09:15";
-
         const allStaff = await Staff.find();
         const todaysAttendance = await Attendance.find({ date: todayDate });
-
         const presentIds = new Set(todaysAttendance.map(a => a.id));
-
         const presents = todaysAttendance.map(att => ({
             id: att.id,
             name: att.name,
@@ -153,7 +152,6 @@ router.get('/today', async (req, res) => {
             hours: att.hours,
             leaveType: att.leaveType,
         }));
-
         const lateComers = presents.filter(att => att.inTime && att.inTime > cutoffTime);
         const absents = allStaff.filter(staff => !presentIds.has(staff.id)).map(st => ({
             id: st.id,
@@ -161,23 +159,15 @@ router.get('/today', async (req, res) => {
             department: st.department,
             designation: st.designation,
         }));
-
         res.json({
-            count: {
-                presents: presents.length,
-                absents: absents.length,
-                lateComers: lateComers.length,
-            },
-            presents,
-            absents,
-            lateComers,
+            count: { presents: presents.length, absents: absents.length, lateComers: lateComers.length, },
+            presents, absents, lateComers,
         });
     } catch (err) {
         console.error("Error fetching today's attendance:", err);
         res.status(500).json({ error: "Server error" });
     }
 });
-
 
 // GET attendance by ID and Date
 router.post('/getByIdDate', async (req, res) => {
