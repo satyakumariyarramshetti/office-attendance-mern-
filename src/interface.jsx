@@ -439,11 +439,15 @@ const Interface = () => {
                     <div className="form-group mb-2"><label>Day</label><input type="text" className="form-control" value={formData.day} readOnly /></div>
                     <div className="form-group mb-3"><label htmlFor="leaveType">Leave Type</label>
                       <select id="leaveType" className="form-control" value={formData.leaveType} onChange={handleChange} required>
-                        <option disabled value="">Select Leave Type</option>
-                        <option value="Sick Leave">Sick Leave</option>
+                         <option disabled value="">Select Leave Type</option>
+                         <option value="Sick Leave">Sick Leave</option>
                         <option value="Casual Leave">Casual Leave</option>
                         <option value="Privilege Leave">Privilege Leave</option>
-                        <option value="Festival Leave">Festival Leave</option>
+                       <option value="Festival Leave">Festival Leave</option>
+                       <option value="C-Off Leave">C-Off Leave</option>
+                       <option value="Compensation Leave">Compensation Leave</option>
+                        <option value="First Half Leave">First Half Leave</option>
+                       <option value="Second Half Leave">Second Half Leave</option>
                       </select>
                     </div>
                     <div className="mt-auto"><button className="btn btn-primary btn-block" type="submit" disabled={staffNotFound || !formData.id}>Submit Leave</button></div>
