@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import './AttendanceSheet.css';
 import { useNavigate } from 'react-router-dom';
-// 1️⃣ Import XLSX if you want Excel export
 import * as XLSX from "xlsx";  
 
 const AttendanceSheet = () => {
- const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
-
+  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
   const [records, setRecords] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -42,6 +40,58 @@ const AttendanceSheet = () => {
     if (isNaN(date)) return '';
     return date.toLocaleDateString();
   };
+  
+  // This function is still used for "Lunch Hours"
+  const calculateTimeDifference = (startTime, endTime) => {
+    if (!startTime || !endTime) return 'N/A';
+    const start = new Date(`1970-01-01T${startTime}`);
+    const end = new Date(`1970-01-01T${endTime}`);
+    if (isNaN(start) || isNaN(end)) return 'Invalid Time';
+    let diff = end - start;
+    if (diff < 0) return 'N/A';
+    const hours = Math.floor(diff / 1000 / 60 / 60);
+    diff -= hours * 1000 * 60 * 60;
+    const minutes = Math.floor(diff / 1000 / 60);
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  };
+
+  // --- NEW: HELPER FUNCTIONS FOR NET WORKING HOURS ---
+  const timeToMinutes = (timeStr) => {
+    if (!timeStr || !/^\d{2}:\d{2}$/.test(timeStr)) return 0;
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+  
+  const minutesToHoursMinutes = (totalMinutes) => {
+    if (isNaN(totalMinutes) || totalMinutes < 0) return '00:00';
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = Math.round(totalMinutes % 60);
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  };
+
+  // --- NEW: FUNCTION TO CALCULATE NET WORKING HOURS ---
+  const calculateNetWorkingHours = (inTime, outTime, lunchOut, lunchIn) => {
+    if (!inTime || !outTime) return 'N/A';
+
+    const inTimeMins = timeToMinutes(inTime);
+    const outTimeMins = timeToMinutes(outTime);
+
+    if (outTimeMins < inTimeMins) return 'N/A'; // Out time cannot be before in time
+
+    let lunchMins = 0;
+    if (lunchOut && lunchIn) {
+        const lunchOutMins = timeToMinutes(lunchOut);
+        const lunchInMins = timeToMinutes(lunchIn);
+        if (lunchInMins > lunchOutMins) {
+            lunchMins = lunchInMins - lunchOutMins;
+        }
+    }
+
+    const netWorkMins = (outTimeMins - inTimeMins) - lunchMins;
+
+    return minutesToHoursMinutes(netWorkMins);
+  };
+
 
   const groupedRecords = records.reduce((acc, record) => {
     if (!acc[record.id]) {
@@ -64,9 +114,8 @@ const AttendanceSheet = () => {
   }
 
   function searchTermLooksLikeDate(str) {
-  // Matches '30/07/2025' or '1/1/2024'
-  return /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str.trim());
-}
+    return /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str.trim());
+  }
 
   const filteredGroupedRecords = Object.entries(groupedRecords).filter(
     ([id, entries]) => {
@@ -99,10 +148,8 @@ const AttendanceSheet = () => {
     }
   );
 
-  // 2️⃣ COLLECT displayed (filtered) rows in flat array (for export)
   const displayedRows = [];
   filteredGroupedRecords.forEach(([id, records]) => {
-    // Use your filtering logic as in table
     records.forEach(record => {
       const nameMatch = record.name && record.name.toLowerCase().includes(normalizedSearch);
       const dbDateNorm = normalizedDateString(record.date);
@@ -123,19 +170,24 @@ const AttendanceSheet = () => {
     });
   });
 
-  // 3️⃣ CSV EXPORT FUNCTION
+  // UPDATED: CSV Export Function
   function exportToCSV() {
     if (!displayedRows.length) return;
     const headers = [
       "ID", "Name", "Date", "Day", "In Time", "Lunch Out", "Lunch In", "Out Time",
-      "Daily Leave Type", "Permission Type", "Hours", "Leave Type", "Location"
+      "Lunch Hours", "Working Hours", "Daily Leave Type", "Permission Type", "Hours", "Leave Type", "Location"
     ];
     const csvRows = [headers.join(",")];
     for (const record of displayedRows) {
+        const lunchHours = calculateTimeDifference(record.lunchOut, record.lunchIn);
+        // MODIFIED: Use the new function for working hours
+        const workingHours = calculateNetWorkingHours(record.inTime, record.outTime, record.lunchOut, record.lunchIn);
+
       const row = [
             record.id ?? '', record.name ?? '', formatDate(record.date), record.day ?? '',
             record.inTime ?? '', record.lunchOut ?? '', record.lunchIn ?? '', record.outTime ?? '',
-            record.dailyLeaveType ?? '', // ADDED
+            lunchHours, workingHours,
+            record.dailyLeaveType ?? '',
             record.permissionType ?? '', record.hours ?? '', record.leaveType ?? '', record.location ?? ''
         ].map(field => `"${String(field)}"`).join(',');
         csvRows.push(row);
@@ -147,8 +199,8 @@ const AttendanceSheet = () => {
     a.download = "attendance.csv";
     a.click();
   }
-
-  // 4️⃣ EXCEL EXPORT FUNCTION
+  
+  // UPDATED: Excel Export Function
   function exportToExcel() {
     if (!displayedRows.length) return;
    const exportArray = displayedRows.map(record => ({
@@ -160,11 +212,13 @@ const AttendanceSheet = () => {
       'Lunch Out': record.lunchOut,
       'Lunch In': record.lunchIn,
       'Out Time': record.outTime,
-      'Daily Leave Type': record.dailyLeaveType, // ADDED
+      'Lunch Hours': calculateTimeDifference(record.lunchOut, record.lunchIn),
+      // MODIFIED: Use the new function for working hours
+      'Working Hours': calculateNetWorkingHours(record.inTime, record.outTime, record.lunchOut, record.lunchIn),
+      'Daily Leave Type': record.dailyLeaveType,
       'Permission Type': record.permissionType,
       'Hours': record.hours,
       'Leave Type': record.leaveType,
-      'Location': record.location
     }));
 
     const ws = XLSX.utils.json_to_sheet(exportArray);
@@ -172,8 +226,6 @@ const AttendanceSheet = () => {
     XLSX.utils.book_append_sheet(wb, ws, "Attendance");
     XLSX.writeFile(wb, "attendance.xlsx");
   }
-
-  // ------ RENDER BELOW -------
   return (
     <div className="container admin-container mt-4">
       <h2 className="admin-title">Attendance Sheet</h2>
@@ -204,6 +256,8 @@ const AttendanceSheet = () => {
                   <th>Lunch Out</th>
                   <th>Lunch In</th>
                   <th>Out Time</th>
+                  <th>Lunch Hours</th>
+                  <th>Working Hours</th>
                   <th>Daily Leave Type</th>
                   <th>Permission Type</th>
                   <th>Hours</th>
@@ -240,7 +294,10 @@ const AttendanceSheet = () => {
                       <td data-label="Lunch Out">{record.lunchOut}</td>
                       <td data-label="Lunch In">{record.lunchIn}</td>
                       <td data-label="Out Time">{record.outTime}</td>
-                         <td data-label="Daily Leave Type">{record.dailyLeaveType || 'N/A'}</td> {/* ADDED CELL */}
+                      <td data-label="Lunch Hours">{calculateTimeDifference(record.lunchOut, record.lunchIn)}</td>
+                      {/* MODIFIED: Use the new function for working hours */}
+                      <td data-label="Working Hours">{calculateNetWorkingHours(record.inTime, record.outTime, record.lunchOut, record.lunchIn)}</td>
+                      <td data-label="Daily Leave Type">{record.dailyLeaveType || 'N/A'}</td>
                       <td data-label="Permission Type">{record.permissionType || 'N/A'}</td>
                       <td data-label="Hours">{record.hours || 'N/A'}</td>
                       <td data-label="Leave Type">{record.leaveType || 'N/A'}</td>
@@ -251,7 +308,6 @@ const AttendanceSheet = () => {
               </tbody>
             </table>
           </div>
-          {/* 5️⃣ EXPORT BUTTONS BELOW TABLE */}
           <div className="export-btn-group" style={{ marginTop: 22, marginBottom: 30, textAlign: 'right' }}>
             <button className="btn btn-outline-success me-2" onClick={exportToCSV}>
               Export to CSV

@@ -389,4 +389,25 @@ select.form-control option[disabled] {
   }
 }
 
-/* --- Larger Tablets & Medium Screens --- */
+/* Add this to your interface.css file */
+
+.time-message {
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 8px;
+  border-radius: 4px;
+  text-align: center;
+  border: 1px solid transparent;
+}
+
+.time-message.text-success {
+    background-color: #e6f7e9;
+    color: #1a642d;
+    border-color: #c3e6cb;
+}
+
+.time-message.text-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
