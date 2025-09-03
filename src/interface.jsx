@@ -229,21 +229,32 @@ const Interface = () => {
     setFormData((prev) => ({ ...prev, date: selectedDate, day: getCurrentDay(selectedDate) }));
   };
 
-   const handleChange = (e) => {
-    const { id, value } = e.target;
-    
-    // --- MODIFIED: Set inTimeMethod to 'manual' on direct change ---
-    if (id === 'inTime') {
-      setInTimeMethod('manual'); // Mark as manual entry
-    }
+  const handleChange = (e) => {
+  const { id, value } = e.target;
 
-    if (id === 'outTime') {
-      if (value > '18:00') setFormData(prev => ({...prev, outTime: value, dailyLeaveType: 'Casual Type'}));
-      else setFormData(prev => ({...prev, outTime: value, dailyLeaveType: '' }));
-    } else {
-      setFormData((prev) => ({ ...prev, [id]: value }));
-    }
-  };
+  if (id === 'inTime') {
+    setInTimeMethod('manual');
+  }
+
+ if (id === 'outTime') {
+    // Parse hours from time string
+    const [hours] = value.split(':').map(Number);
+
+    setFormData(prev => ({
+      ...prev,
+      outTime: value,
+      dailyLeaveType: hours >= 18 ? 'Casual Type' : '' // 🔥 Auto-set if >= 18:00
+    }));
+}
+ else {
+    setFormData(prev => ({
+      ...prev,
+      [id]: value
+    }));
+  }
+};
+
+
 
   // --- SUBMISSION LOGIC ---
   const submitData = async (payload) => {
@@ -336,6 +347,19 @@ const Interface = () => {
     const payload = { id: formData.id, name: formData.name, date: formData.date, day: formData.day, leaveType: formData.leaveType };
     submitData(payload);
   };
+useEffect(() => {
+  if (!formData.outTime) return;
+
+  const [hours] = formData.outTime.split(':').map(Number);
+  if (hours >= 18) {
+    setFormData((prev) => ({
+      ...prev,
+      dailyLeaveType: 'Casual Type'
+    }));
+  }
+}, [formData.outTime]);
+
+
 
   return (
     <div className="main-wrapper">
@@ -394,17 +418,33 @@ const Interface = () => {
                 <div className="form-group mb-2"><label>Date</label><input type="date" className="form-control" value={formData.date} readOnly /></div>
                 <div className="form-group mb-2"><label>Out Time</label><input type="time" id="outTime" className="form-control" value={formData.outTime} onChange={handleChange} /></div>
                 <div className="form-group mb-3"><label htmlFor="dailyLeaveType">Permission Type</label>
-                  <select id="dailyLeaveType" className="form-control" value={formData.dailyLeaveType} onChange={handleChange}>
-                    <option value="">Select Permission</option>
-                    <option value="Personal Permission">Personal Permission</option>
-                    <option value="Health Issue">Health Issue</option>
-                    <option value="Emergency Permission">Emergency Permission</option>
-                    <option value="Office Work">Office Work</option>
-                    <option value="TOM">TOM</option>
-                    <option value="FLEXI">FLEXI</option>
-                    <option value="Call">Call</option>
-                    <option value="Casual Type">Casual Type</option>
-                  </select>
+  {formData.dailyLeaveType === 'Casual Type' ? (
+    <input
+      type="text"
+      className="form-control"
+      value="Casual Type"
+      readOnly
+    />
+      ) : (
+        <select
+      id="dailyLeaveType"
+      className="form-control"
+      value={formData.dailyLeaveType}
+      onChange={handleChange}
+      required
+    >
+      <option value="">Select Permission</option>
+      <option value="Personal Permission">Personal Permission</option>
+      <option value="Health Issue">Health Issue</option>
+      <option value="Emergency Permission">Emergency Permission</option>
+      <option value="Office Work">Office Work</option>
+      <option value="TOM">TOM</option>
+      <option value="FLEXI">FLEXI</option>
+      <option value="Call">Call</option>
+    </select>
+  )}
+
+
                 </div>
                 {outTimeMessage.text && (<div className={`time-message mb-3 ${outTimeMessage.type === 'success' ? 'text-success' : 'text-danger'}`}>{outTimeMessage.text}</div>)}
                 <div className="mt-auto"><button className="btn btn-primary btn-block" type="submit" disabled={staffNotFound || !formData.id}>Submit</button></div>
