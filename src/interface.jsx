@@ -488,7 +488,7 @@ useEffect(() => {
                        <option value="Compensation Leave">Compensation Leave</option>
                         <option value="First Half Leave">First Half Leave</option>
                        <option value="Second Half Leave">Second Half Leave</option>
-                        <option value="Second Half Leave">Travel Leave</option>
+                        <option value="Travel Leave">Travel Leave</option>
 
                       </select>
                     </div>
