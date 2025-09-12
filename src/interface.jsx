@@ -488,6 +488,8 @@ useEffect(() => {
                        <option value="Compensation Leave">Compensation Leave</option>
                         <option value="First Half Leave">First Half Leave</option>
                        <option value="Second Half Leave">Second Half Leave</option>
+                        <option value="Second Half Leave">Travel Leave</option>
+
                       </select>
                     </div>
                     <div className="mt-auto"><button className="btn btn-primary btn-block" type="submit" disabled={staffNotFound || !formData.id}>Submit Leave</button></div>
