@@ -426,25 +426,19 @@ useEffect(() => {
       readOnly
     />
       ) : (
-        <select
-      id="dailyLeaveType"
-      className="form-control"
-      value={formData.dailyLeaveType}
-      onChange={handleChange}
-      required
-    >
-      <option value="">Select Permission</option>
-      <option value="Personal Permission">Personal Permission</option>
-      <option value="Health Issue">Health Issue</option>
-      <option value="Emergency Permission">Emergency Permission</option>
-      <option value="Office Work">Office Work</option>
-      <option value="TOM">TOM</option>
-      <option value="FLEXI">FLEXI</option>
-      <option value="Call">Call</option>
-      <option value="Festival">Festival</option>
-
-
-    </select>
+       <select id="dailyLeaveType" className="form-control" value={formData.dailyLeaveType} onChange={handleChange}>
+ <option value="">Select Permission</option>
+ <option value="Personal Permission">Personal Permission</option>
+ <option value="Health Issue">Health Issue</option>
+ <option value="Emergency Permission">Emergency Permission</option>
+ <option value="Office Work">Office Work</option>
+ <option value="TOM">TOM</option>
+ <option value="FLEXI">FLEXI</option>
+<option value="Call">Call</option>
+ <option value="Festival">Festival</option>
+ <option value="Casual Type">Casual Type</option>
+ <option value="Project Requirement">Project Requirement</option>
+</select>
   )}
 
 
