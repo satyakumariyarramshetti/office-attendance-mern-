@@ -8,6 +8,7 @@ const PS_PREFIX = 'PS-';
 
 
 
+
 // --- Reusable StaffIdInput Component (No changes) ---
 const StaffIdInput = ({ inputId, value, onChange, staffNotFound }) => (
   <div className="form-group mb-2">
@@ -36,6 +37,8 @@ const StaffIdInput = ({ inputId, value, onChange, staffNotFound }) => (
 );
 
 const Interface = () => {
+  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
   // --- STATE MANAGEMENT ---
   const [formData, setFormData] = useState({
    id: '', name: '', date: '', day: '',
@@ -124,7 +127,7 @@ const getNetAndGrossMins = attendance => {
     let staffName = '';
 
     try {
-      const staffRes = await fetch('http://localhost:5000/api/staffs/getById', {
+      const staffRes = await fetch(`${API_BASE}/api/staffs/getById`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: fullId }),
@@ -141,7 +144,7 @@ const getNetAndGrossMins = attendance => {
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/attendance/getByIdDate', {
+      const res = await fetch(`${API_BASE}/api/attendance/getByIdDate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: fullId, date }),
@@ -227,7 +230,7 @@ const getNetAndGrossMins = attendance => {
   }
 
   const prevDate = getPrevDate(formData.date);
-  fetch('http://localhost:5000/api/attendance/getByIdDate', {
+  fetch(`${API_BASE}/api/attendance/getByIdDate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id: formData.id, date: prevDate }), // make sure this id is like PS-0018
@@ -331,7 +334,7 @@ const getNetAndGrossMins = attendance => {
   // --- SUBMISSION LOGIC ---
  const submitData = async (payload, formType) => {
   try {
-    const response = await fetch('http://localhost:5000/api/attendance/save', {
+    const response = await fetch(`${API_BASE}/api/attendance/save`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
