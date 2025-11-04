@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './LeaveBalance.css';
 
-const API_URL = "http://localhost:5000/api/leave-balance";
-
+const API_URL = process.env.REACT_APP_API_URLL || "http://localhost:5000/api/leave-balance";
 const LeaveBalance = () => {
   const [balances, setBalances] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
