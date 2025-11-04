@@ -1,0 +1,452 @@
+/* ============================================= */
+/*          MAIN CONTAINER & BUTTONS             */
+/* ============================================= */
+.payslipContainer {
+  padding: 20px;
+}
+.payslip {
+  border: 1px solid #ccc;
+  padding: 25px;
+  background-color: white;
+  max-width: 600px; /* Keep this */
+  margin: 0; /* REMOVE auto margins */
+  font-size: 12px;
+}
+.externalButtons {
+  display: flex;
+  /* MODIFIED: Center the buttons instead of pushing them to the right */
+  justify-content: center;
+  align-items: center; /* This ensures vertical alignment */
+  gap: 10px;
+  margin-bottom: 20px; /* A little more space */
+}
+.externalButtons > button {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px; /* Slightly softer corners */
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.externalButtons > button:hover {
+  background-color: #0056b3;
+}
+
+/* NEW: Container for the grouped buttons */
+.pdfExportGroup {
+  display: flex;
+  align-items: center;
+}
+
+/* NEW: Styles for buttons INSIDE the group */
+.pdfExportGroup button {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+  border-radius: 0; /* Remove individual radius to merge them */
+  border-right: 1px solid #0069d9; /* Add a separator line */
+}
+
+.pdfExportGroup button:hover {
+  background-color: #0056b3;
+}
+
+/* NEW: Style the first button (left arrow) */
+.pdfExportGroup button:first-child {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  padding: 10px 12px; /* Make arrows slightly narrower */
+}
+
+
+
+/* NEW: Style the last button (right arrow) */
+.pdfExportGroup button:last-child {
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  border-right: none; /* No border on the very last button */
+  padding: 10px 12px; /* Make arrows slightly narrower */
+}
+
+
+
+/* ============================================= */
+/*              HEADER & EMPLOYEE DETAILS        */
+/* ============================================= */
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 30px;
+}
+.logoSection img {
+  width: 80px !important;
+  height: 70px;
+}
+.companyTitle {
+  text-align: center;
+  flex-grow: 1;
+}
+.companyTitle h2 {
+  margin: 0;
+  font-size: 16px;
+  text-decoration: underline;
+}
+.companyTitle h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: bold;
+  color: #070707;
+  margin-bottom: 20px;
+  
+}
+.employeeDetailsGrid {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 30px;
+  
+}
+.leftDetails,
+.rightDetails {
+  flex: 1;
+}
+.formGroup {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.formGroup label {
+  min-width: 100px;
+  font-weight: bold;
+  font-size: 12px;
+}
+.formGroup input, .formGroup .editInput {
+  flex: 1;
+  padding: 3px 6px;
+  font-size: 12px;
+  border: 1px solid #0c0b0b;
+  border-radius: 4px;
+}
+.inputGroup {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: #fff;
+  flex: 1;
+}
+.prefix {
+  background-color: #f0f0f0;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: #0a0a0a;
+  border-right: 1px solid #ccc;
+}
+.inputWithPrefix {
+  border: none;
+  outline: none;
+  padding: 5px 8px;
+  font-size: 12px;
+  flex: 1;
+}
+
+/* ============================================= */
+/*          NEW COMPACT TABLE STYLES             */
+/* ============================================= */
+.compactPayslipTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.compactPayslipTable th,
+.compactPayslipTable td {
+  border: 1px solid #302f2f;
+  padding: 4px 6px;
+  text-align: left;
+  vertical-align: middle;
+}
+.compactPayslipTable thead th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+  text-align: center;
+}
+.compactPayslipTable thead tr:last-child th {
+  text-align: left;
+}
+.headerInput {
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-weight: bold;
+  width: 100%;
+  font-size: 11px;
+}
+.compactPayslipTable tbody input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  text-align: right;
+  padding: 0;
+  font-size: 11px;
+}
+.subHeaderCell {
+  text-align: center !important;
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+.fixedCell {
+  text-align: center;
+  padding-right: 6px;
+}
+.netSalaryRow td {
+  background-color: #e9e9e9;
+  font-weight: bold;
+}
+.netSalaryRow input {
+  font-weight: bold;
+  font-size: 12px;
+}
+.thinColumn {
+  width: 15%;
+}
+
+/* ============================================= */
+/*                     FOOTER                    */
+/* ============================================= */
+.footerNote {
+  margin-top: 25px;
+  margin-bottom: 50px;
+  font-size: 11px;
+}
+.footerMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  border-top: 1px solid #eee;
+  padding-top: 8px;
+  margin-top: 40px;
+}
+
+/* =================================================== */
+/*         STYLES FOR PDF EXPORT ("SPAN SWAP")         */
+/* =================================================== */
+
+.editInput {
+  display: block;
+}
+.exportText {
+  display: none;
+}
+
+.exportView .editInput {
+  display: none !important;
+}
+
+.exportView .exportText {
+  display: block;
+  padding: 3px 6px;
+  min-height: 20px;
+  white-space: nowrap;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Specific alignment for right-aligned table values */
+.exportView td .exportText {
+  text-align: center;
+  font-weight: bold; /* THIS IS THE MODIFIED RULE */
+}
+.exportView th .exportText {
+  text-align: center;
+}
+
+.exportView .emailField {
+  display: none !important;
+}
+
+.mainContent {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.monthlyDetailsCard {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  width: 100%;
+  height: fit-content;
+  box-sizing: border-box;
+}
+
+.monthlyDetailsCard h3 {
+  margin-top: 0;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.methodButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.methodButtons button {
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.methodButtons button:hover {
+  background-color: #0056b3;
+}
+
+.payslip {
+  width: 100%;
+}
+
+.specialAllowanceContainer {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.specialAllowanceContainer > select,
+.specialAllowanceContainer > input {
+  width: 50%;
+}
+
+.monthlyDetailsCard .formGroup {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+.monthlyDetailsCard .formGroup label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.monthlyDetailsCard .formGroup input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.statsCard {
+  background-color: #f0f8ff;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #b0c4de;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 0;
+}
+
+.statsCard h3 {
+  margin-top: 0;
+  border-bottom: 2px solid #4682b4;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+
+.statItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.statItem span {
+  color: #34495e;
+}
+
+.statItem strong {
+  color: #2980b9;
+  font-size: 1.2rem;
+}
+
+.resetButton {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 5px;
+  border: none;
+  background-color: #e74c3c;
+  color: white;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.resetButton:hover {
+  background-color: #c0392b;
+}
+
+
+/* ============================================= */
+/*               NEW LAYOUT COLUMNS              */
+/* ============================================= */
+
+.leftColumn, .rightColumn {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.middleColumn {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+}
+
+
+.pdfWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+
+.exportView .pdfWrapper {
+  width: 210mm;
+  height: 297mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  box-sizing: border-box;
+  background-color: white;
+}
+
+.exportView .payslip {
+  flex-grow: 0;
+  flex-shrink: 0;
+  margin-top: 25mm; 
+}

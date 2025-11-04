@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './AttendanceSheet.css';
 import { useNavigate } from 'react-router-dom';
-import * as XLSX from "xlsx";  
+import * as XLSX from "xlsx";
 
 const AttendanceSheet = () => {
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
@@ -9,6 +9,8 @@ const AttendanceSheet = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,8 +42,7 @@ const AttendanceSheet = () => {
     if (isNaN(date)) return '';
     return date.toLocaleDateString();
   };
-  
-  // This function is still used for "Lunch Hours"
+
   const calculateTimeDifference = (startTime, endTime) => {
     if (!startTime || !endTime) return 'N/A';
     const start = new Date(`1970-01-01T${startTime}`);
@@ -55,13 +56,12 @@ const AttendanceSheet = () => {
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
   };
 
-  // --- NEW: HELPER FUNCTIONS FOR NET WORKING HOURS ---
   const timeToMinutes = (timeStr) => {
     if (!timeStr || !/^\d{2}:\d{2}$/.test(timeStr)) return 0;
     const [hours, minutes] = timeStr.split(':').map(Number);
     return hours * 60 + minutes;
   };
-  
+
   const minutesToHoursMinutes = (totalMinutes) => {
     if (isNaN(totalMinutes) || totalMinutes < 0) return '00:00';
     const hours = Math.floor(totalMinutes / 60);
@@ -69,22 +69,21 @@ const AttendanceSheet = () => {
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
   };
 
-  // --- NEW: FUNCTION TO CALCULATE NET WORKING HOURS ---
   const calculateNetWorkingHours = (inTime, outTime, lunchOut, lunchIn) => {
     if (!inTime || !outTime) return 'N/A';
 
     const inTimeMins = timeToMinutes(inTime);
     const outTimeMins = timeToMinutes(outTime);
 
-    if (outTimeMins < inTimeMins) return 'N/A'; // Out time cannot be before in time
+    if (outTimeMins < inTimeMins) return 'N/A';
 
     let lunchMins = 0;
     if (lunchOut && lunchIn) {
-        const lunchOutMins = timeToMinutes(lunchOut);
-        const lunchInMins = timeToMinutes(lunchIn);
-        if (lunchInMins > lunchOutMins) {
-            lunchMins = lunchInMins - lunchOutMins;
-        }
+      const lunchOutMins = timeToMinutes(lunchOut);
+      const lunchInMins = timeToMinutes(lunchIn);
+      if (lunchInMins > lunchOutMins) {
+        lunchMins = lunchInMins - lunchOutMins;
+      }
     }
 
     const netWorkMins = (outTimeMins - inTimeMins) - lunchMins;
@@ -92,11 +91,23 @@ const AttendanceSheet = () => {
     return minutesToHoursMinutes(netWorkMins);
   };
 
-
-  const groupedRecords = records.reduce((acc, record) => {
-    if (!acc[record.id]) {
-      acc[record.id] = [];
+  function computeGrossHours(lunchHours, workingHours) {
+    // If lunchHours included, add both; else, gross = workingHours
+    if (!lunchHours || lunchHours === 'N/A' || lunchHours === '00:00') {
+      return workingHours;
     }
+    if (!workingHours || workingHours === 'N/A' || workingHours === '00:00') {
+      return lunchHours;
+    }
+    const [h1, m1] = lunchHours.split(':').map(Number);
+    const [h2, m2] = workingHours.split(':').map(Number);
+    let totalMinutes = (h1 * 60 + m1) + (h2 * 60 + m2);
+    return minutesToHoursMinutes(totalMinutes);
+  }
+
+  // --- Group, filter, and search ---
+  const groupedRecords = records.reduce((acc, record) => {
+    if (!acc[record.id]) acc[record.id] = [];
     acc[record.id].push(record);
     return acc;
   }, {});
@@ -133,7 +144,7 @@ const AttendanceSheet = () => {
         const dbDateNorm = normalizedDateString(entry.date);
         const rawDateStr = entry.date ? entry.date.toString().toLowerCase() : '';
         const searchLower = normalizedSearch;
-       const normalizedSearchIsDate = searchTermLooksLikeDate(searchTerm);
+        const normalizedSearchIsDate = searchTermLooksLikeDate(searchTerm);
 
         let dateMatch = false;
         if (normalizedSearchIsDate) {
@@ -148,6 +159,7 @@ const AttendanceSheet = () => {
     }
   );
 
+  // Flat array for display/export
   const displayedRows = [];
   filteredGroupedRecords.forEach(([id, records]) => {
     records.forEach(record => {
@@ -155,7 +167,7 @@ const AttendanceSheet = () => {
       const dbDateNorm = normalizedDateString(record.date);
       const rawDateStr = record.date ? record.date.toString().toLowerCase() : '';
       const searchLower = normalizedSearch;
-     const normalizedSearchIsDate = searchTermLooksLikeDate(searchTerm);
+      const normalizedSearchIsDate = searchTermLooksLikeDate(searchTerm);
 
       let dateMatch = false;
       if (normalizedSearchIsDate) {
@@ -170,27 +182,52 @@ const AttendanceSheet = () => {
     });
   });
 
-  // UPDATED: CSV Export Function
-  function exportToCSV() {
-    if (!displayedRows.length) return;
-    const headers = [
-      "ID", "Name", "Date", "Day", "In Time", "Lunch Out", "Lunch In", "Out Time",
-      "Lunch Hours", "Working Hours", "Daily Leave Type", "Permission Type", "Hours", "Leave Type", "Location"
-    ];
-    const csvRows = [headers.join(",")];
-    for (const record of displayedRows) {
-        const lunchHours = calculateTimeDifference(record.lunchOut, record.lunchIn);
-        // MODIFIED: Use the new function for working hours
-        const workingHours = calculateNetWorkingHours(record.inTime, record.outTime, record.lunchOut, record.lunchIn);
+  // ====== MONTH & YEAR FILTERING SECTION ======
+  // Generate available years from your data
+  const allYears = Array.from(new Set(records.map(r => {
+    const d = new Date(r.date);
+    return !isNaN(d) ? d.getFullYear() : null;
+  }))).filter(Boolean).sort((a, b) => b - a);
 
-      const row = [
-            record.id ?? '', record.name ?? '', formatDate(record.date), record.day ?? '',
-            record.inTime ?? '', record.lunchOut ?? '', record.lunchIn ?? '', record.outTime ?? '',
-            lunchHours, workingHours,
-            record.dailyLeaveType ?? '',
-            record.permissionType ?? '', record.hours ?? '', record.leaveType ?? '', record.location ?? ''
-        ].map(field => `"${String(field)}"`).join(',');
-        csvRows.push(row);
+  // Filter flat rows array using selectors
+  const monthFilteredRows = displayedRows.filter(record => {
+    if (!selectedMonth && !selectedYear) return true;
+    const dateObj = new Date(record.date);
+    const recMonth = dateObj.getMonth() + 1;
+    const recYear = dateObj.getFullYear();
+    const matchesMonth = !selectedMonth || recMonth === Number(selectedMonth);
+    const matchesYear = !selectedYear || recYear === Number(selectedYear);
+    return matchesMonth && matchesYear;
+  });
+
+  // Export functions using monthFilteredRows!
+  function exportToCSV() {
+    if (!monthFilteredRows.length) return;
+   const headers = [
+  "ID", "Name", "Date", "Day", "In Time",  "Delay Reason", "Lunch Out", "Lunch In", "Out Time",
+  "Lunch Hours", "Working Hours", "Gross Hours",
+  "Daily Leave Type", "Permission Type", 
+         
+  "Hours", "Leave Type", "Location"
+];
+
+    const csvRows = [headers.join(",")];
+    for (const record of monthFilteredRows) {
+      const lunchHours = calculateTimeDifference(record.lunchOut, record.lunchIn);
+      const workingHours = calculateNetWorkingHours(record.inTime, record.outTime, record.lunchOut, record.lunchIn);
+      const grossHours = computeGrossHours(lunchHours, workingHours);
+
+     const row = [
+  record.id ?? '', record.name ?? '', formatDate(record.date), record.day ?? '',
+  record.inTime ?? '', record.delayReason ?? '', record.lunchOut ?? '', record.lunchIn ?? '', record.outTime ?? '',
+  lunchHours, workingHours, grossHours,
+  record.dailyLeaveType ?? '', record.permissionType ?? '',
+  
+  
+  record.hours ?? '', record.leaveType ?? '', record.location ?? ''
+].map(field => `"${String(field)}"`).join(',');
+
+      csvRows.push(row);
     }
     const csvString = csvRows.join("\n");
     const blob = new Blob([csvString], { type: "text/csv" });
@@ -199,36 +236,62 @@ const AttendanceSheet = () => {
     a.download = "attendance.csv";
     a.click();
   }
-  
-  // UPDATED: Excel Export Function
+
   function exportToExcel() {
-    if (!displayedRows.length) return;
-   const exportArray = displayedRows.map(record => ({
-      'ID': record.id,
-      'Name': record.name,
-      'Date': formatDate(record.date),
-      'Day': record.day,
-      'In Time': record.inTime,
-      'Lunch Out': record.lunchOut,
-      'Lunch In': record.lunchIn,
-      'Out Time': record.outTime,
-      'Lunch Hours': calculateTimeDifference(record.lunchOut, record.lunchIn),
-      // MODIFIED: Use the new function for working hours
-      'Working Hours': calculateNetWorkingHours(record.inTime, record.outTime, record.lunchOut, record.lunchIn),
-      'Daily Leave Type': record.dailyLeaveType,
-      'Permission Type': record.permissionType,
-      'Hours': record.hours,
-      'Leave Type': record.leaveType,
-    }));
+    if (!monthFilteredRows.length) return;
+    const exportArray = monthFilteredRows.map(record => {
+      const lunchHours = calculateTimeDifference(record.lunchOut, record.lunchIn);
+      const workingHours = calculateNetWorkingHours(record.inTime, record.outTime, record.lunchOut, record.lunchIn);
+      const grossHours = computeGrossHours(lunchHours, workingHours);
+      return {
+  'ID': record.id,
+  'Name': record.name,
+  'Date': formatDate(record.date),
+  'Day': record.day,
+  'In Time': record.inTime,
+  'Delay Reason': record.delayReason || '',
+  'Lunch Out': record.lunchOut,
+  'Lunch In': record.lunchIn,
+  'Out Time': record.outTime,
+  'Lunch Hours': lunchHours,
+  'Working Hours': workingHours,
+  'Gross Hours': grossHours,
+  'Daily Leave Type': record.dailyLeaveType,
+  'Permission Type': record.permissionType,
+  
+  
+  'Hours': record.hours,
+  'Leave Type': record.leaveType,
+  'Location': record.location
+      };
+});
+
 
     const ws = XLSX.utils.json_to_sheet(exportArray);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Attendance");
     XLSX.writeFile(wb, "attendance.xlsx");
   }
+
   return (
     <div className="container admin-container mt-4">
       <h2 className="admin-title">Attendance Sheet</h2>
+
+      {/* MONTH & YEAR FILTER SECTION */}
+      <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 16 }}>
+        <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)}>
+          <option value="">All Months</option>
+          {[...Array(12)].map((_, idx) => (
+            <option key={idx + 1} value={idx + 1}>{new Date(0, idx).toLocaleString('default', { month: 'long' })}</option>
+          ))}
+        </select>
+        <select value={selectedYear} onChange={e => setSelectedYear(e.target.value)}>
+          <option value="">All Years</option>
+          {allYears.map(year =>
+            <option key={year} value={year}>{year}</option>
+          )}
+        </select>
+      </div>
 
       <input
         type="text"
@@ -247,63 +310,57 @@ const AttendanceSheet = () => {
           <div className="table-responsive scrollable-table">
             <table className="table table-bordered admin-table">
               <thead>
-              <tr>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Date</th>
-                  <th>Day</th>
-                  <th>In Time</th>
-                  <th>Lunch Out</th>
-                  <th>Lunch In</th>
-                  <th>Out Time</th>
-                  <th>Lunch Hours</th>
-                  <th>Working Hours</th>
-                  <th>Daily Leave Type</th>
-                  <th>Permission Type</th>
-                  <th>Hours</th>
-                  <th>Leave Type</th>
-                  <th>Location</th>
-                </tr>
-              </thead>
+  <tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Date</th>
+    <th>Day</th>
+    <th>In Time</th>
+    <th>Delay Reason</th> {/* <-- Add this line */}
+    <th>Lunch Out</th>
+    <th>Lunch In</th>
+    <th>Out Time</th>
+    <th>Lunch Hours</th>
+    <th>Working Hours</th>
+    <th>Gross Hours</th>
+    <th>Daily Leave Type</th>
+    <th>Permission Type</th>
+    <th>Hours</th>
+    <th>Leave Type</th>
+    <th>Location</th>
+  </tr>
+</thead>
+
               <tbody>
-                {filteredGroupedRecords.map(([id, records]) => {
-                  const filteredRecords = records.filter(record => {
-                    const nameMatch = record.name && record.name.toLowerCase().includes(normalizedSearch);
-                    const dbDateNorm = normalizedDateString(record.date);
-                    const rawDateStr = record.date ? record.date.toString().toLowerCase() : '';
-                    const searchLower = normalizedSearch;
-                   const normalizedSearchIsDate = searchTermLooksLikeDate(searchTerm);
+                {monthFilteredRows.map((record, idx) => {
+                  const lunchHours = calculateTimeDifference(record.lunchOut, record.lunchIn);
+                  const workingHours = calculateNetWorkingHours(record.inTime, record.outTime, record.lunchOut, record.lunchIn);
+                  const grossHours = computeGrossHours(lunchHours, workingHours);
+               
 
-                    let dateMatch = false;
-                    if (normalizedSearchIsDate) {
-                      const searchNormDate = normalizedDateString(searchTerm);
-                      dateMatch = dbDateNorm.includes(searchNormDate) || searchNormDate.includes(dbDateNorm);
-                    } else {
-                      dateMatch = dbDateNorm.includes(searchLower) || rawDateStr.includes(searchLower);
-                    }
-                    return nameMatch || dateMatch || id.toLowerCase().includes(normalizedSearch);
-                  });
-
-                  return filteredRecords.map((record, idx) => (
-                    <tr key={`${id}-${idx}`}>
+                  return (
+                    <tr key={`${record.id}-${record.date}-${idx}`} className={record.isLOP ? 'lop-leave-row' : ''}>
                       <td data-label="ID">{record.id}</td>
                       <td data-label="Name">{record.name}</td>
                       <td data-label="Date">{formatDate(record.date)}</td>
                       <td data-label="Day">{record.day}</td>
                       <td data-label="In Time">{record.inTime}</td>
+                      <td data-label="Delay Reason">{record.delayReason || ''}</td>
+
                       <td data-label="Lunch Out">{record.lunchOut}</td>
                       <td data-label="Lunch In">{record.lunchIn}</td>
                       <td data-label="Out Time">{record.outTime}</td>
-                      <td data-label="Lunch Hours">{calculateTimeDifference(record.lunchOut, record.lunchIn)}</td>
-                      {/* MODIFIED: Use the new function for working hours */}
-                      <td data-label="Working Hours">{calculateNetWorkingHours(record.inTime, record.outTime, record.lunchOut, record.lunchIn)}</td>
-                      <td data-label="Daily Leave Type">{record.dailyLeaveType || 'N/A'}</td>
-                      <td data-label="Permission Type">{record.permissionType || 'N/A'}</td>
-                      <td data-label="Hours">{record.hours || 'N/A'}</td>
-                      <td data-label="Leave Type">{record.leaveType || 'N/A'}</td>
-                      <td data-label="Location">{record.location ? record.location : 'N/A'}</td>
+                      <td data-label="Lunch Hours">{lunchHours}</td>
+                      <td data-label="Working Hours">{workingHours}</td>
+                      <td data-label="Gross Hours">{grossHours}</td>
+                     <td data-label="Daily Leave Type">{record.dailyLeaveType || 'N/A'}</td>
+                     <td data-label="Permission Type">{record.permissionType || 'N/A'}</td>
+                     <td data-label="Hours">{record.hours || 'N/A'}</td>
+                    <td data-label="Leave Type">{record.leaveType || 'N/A'}</td>
+                    <td data-label="Location">{record.location ? record.location : 'N/A'}</td>
+
                     </tr>
-                  ));
+                  );
                 })}
               </tbody>
             </table>

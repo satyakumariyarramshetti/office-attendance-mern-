@@ -6,6 +6,8 @@ import { FaClock, FaUtensils, FaDoorOpen, FaFileAlt, FaBed } from 'react-icons/f
 // Prefix for Staff ID
 const PS_PREFIX = 'PS-';
 
+
+
 // --- Reusable StaffIdInput Component (No changes) ---
 const StaffIdInput = ({ inputId, value, onChange, staffNotFound }) => (
   <div className="form-group mb-2">
@@ -35,11 +37,13 @@ const StaffIdInput = ({ inputId, value, onChange, staffNotFound }) => (
 
 const Interface = () => {
   // --- STATE MANAGEMENT ---
-  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
   const [formData, setFormData] = useState({
-    id: '', name: '', date: '', day: '',
-    inTime: '', lunchIn: '', lunchOut: '', outTime: '',
-    permissionType: '', hours: '', dailyLeaveType: '', leaveType: '', location: '',
+   id: '', name: '', date: '', day: '',
+  inTime: '', lunchIn: '', lunchOut: '', outTime: '',
+  permissionType: '', 
+  
+  
+  hours: '', dailyLeaveType: '', leaveType: '', location: '',delayReason: '', 
   });
 
   const [idInputs, setIdInputs] = useState({
@@ -55,6 +59,10 @@ const Interface = () => {
   const [staffNotFound, setStaffNotFound] = useState(false);
   const [lunchMessage, setLunchMessage] = useState({ text: '', type: '' });
   const [outTimeMessage, setOutTimeMessage] = useState({ text: '', type: '' });
+  const [cOffEarnedDate, setCOffEarnedDate] = useState('');
+  const [isOTElligible, setIsOTElligible] = useState(false);
+
+
 
   // --- HELPER FUNCTIONS ---
   const getCurrentDate = () => new Date().toISOString().split('T')[0];
@@ -69,11 +77,35 @@ const Interface = () => {
     return selected > today;
   };
   
-  const timeToMinutes = (timeStr) => {
-    if (!timeStr || !/^\d{2}:\d{2}$/.test(timeStr)) return 0;
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    return hours * 60 + minutes;
-  };
+ // Helper to get previous day's date in YYYY-MM-DD format
+const getPrevDate = (dateString) => {
+  const d = new Date(dateString);
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().split('T')[0];
+};
+
+// Helper to calculate minutes between given times
+const timeToMinutes = (timeStr) => {
+  if (!timeStr || !/^\d{2}:\d{2}$/.test(timeStr)) return 0;
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  return hours * 60 + minutes;
+};
+
+const getNetAndGrossMins = attendance => {
+  const inMins = timeToMinutes(attendance.inTime);
+  const outMins = timeToMinutes(attendance.outTime);
+  if (!attendance.inTime || !attendance.outTime) return { net: 0, gross: 0 };
+  let lunchMins = 0;
+  if (attendance.lunchOut && attendance.lunchIn) {
+    const lOutM = timeToMinutes(attendance.lunchOut);
+    const lInM = timeToMinutes(attendance.lunchIn);
+    if (lInM > lOutM) lunchMins = lInM - lOutM;
+  }
+  const net = outMins - inMins - lunchMins;
+  const gross = outMins - inMins;
+  return { net, gross };
+};
+
 
   const minutesToHoursMinutes = (totalMinutes) => {
     if (isNaN(totalMinutes) || totalMinutes < 0) return '00:00';
@@ -92,7 +124,7 @@ const Interface = () => {
     let staffName = '';
 
     try {
-      const staffRes = await fetch(`${API_BASE}/api/staffs/getById`, {
+      const staffRes = await fetch('http://localhost:5000/api/staffs/getById', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: fullId }),
@@ -109,7 +141,7 @@ const Interface = () => {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/attendance/getByIdDate`, {
+      const res = await fetch('http://localhost:5000/api/attendance/getByIdDate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: fullId, date }),
@@ -139,12 +171,16 @@ const Interface = () => {
       }
 
       setFormData(prev => ({
-        ...prev, id: fullId, name: staffName, date: date, day: getCurrentDay(date),
-        inTime: newInTime,
-        outTime: attendanceData.outTime || (context === 'outTime' ? getCurrentTime() : ''),
-        lunchOut: newLunchOut, lunchIn: newLunchIn,
-        permissionType: attendanceData.permissionType || '', hours: attendanceData.hours || '',
-        dailyLeaveType: attendanceData.dailyLeaveType || '', leaveType: attendanceData.leaveType || '',
+       ...prev, id: fullId, name: staffName, date: date, day: getCurrentDay(date),
+  inTime: newInTime,
+  outTime: attendanceData.outTime || (context === 'outTime' ? getCurrentTime() : ''),
+  lunchOut: newLunchOut, lunchIn: newLunchIn,
+  permissionType: attendanceData.permissionType || '',
+
+  
+  hours: attendanceData.hours || '',
+  dailyLeaveType: attendanceData.dailyLeaveType || '',
+  leaveType: attendanceData.leaveType || '',
       }));
     } catch (err) {
       console.error('Error fetching attendance:', err);
@@ -182,6 +218,44 @@ const Interface = () => {
     const timer = setTimeout(() => fetchStaffAndAttendance(idInputs.leave, formData.date, 'leave'), 500);
     return () => clearTimeout(timer);
   }, [idInputs.leave, formData.date, fetchStaffAndAttendance]);
+
+  useEffect(() => {
+  if (!formData.inTime || !formData.date || !formData.id) {
+    setIsOTElligible(false);
+    if (formData.inTime <= '09:15') setFormData(prev => ({ ...prev, delayReason: "" }));
+    return;
+  }
+
+  const prevDate = getPrevDate(formData.date);
+  fetch('http://localhost:5000/api/attendance/getByIdDate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: formData.id, date: prevDate }), // make sure this id is like PS-0018
+  })
+  .then(res => res.ok ? res.json() : null)
+  .then(prevAtt => {
+    if (!prevAtt) {
+      setIsOTElligible(false);
+      return;
+    }
+    const { net, gross } = getNetAndGrossMins(prevAtt);
+    const inMinsToday = timeToMinutes(formData.inTime);
+    if ((net >= 630 && inMinsToday <= 570) || (gross >= 690 && inMinsToday <= 600)) {
+      setIsOTElligible(true);
+      setFormData(prev => ({ ...prev, delayReason: "OT Reason" }));
+    } else {
+      setIsOTElligible(false);
+      if (formData.inTime > '09:15') {
+        setFormData(prev => ({ ...prev, delayReason: prev.delayReason || "Late Mark" }));
+      } else {
+        setFormData(prev => ({ ...prev, delayReason: "" }));
+      }
+    }
+  })
+  .catch(() => setIsOTElligible(false));
+}, [formData.inTime, formData.date, formData.id]);
+
+
 
   useEffect(() => {
     if (formData.lunchOut && formData.lunchIn) {
@@ -231,11 +305,20 @@ const Interface = () => {
 
    const handleChange = (e) => {
     const { id, value } = e.target;
+
+     // Add this block right here:
+  if (id === 'delayReason') {
+    setFormData((prev) => ({ ...prev, delayReason: value }));
+    return;
+  }
     
     // --- MODIFIED: Set inTimeMethod to 'manual' on direct change ---
     if (id === 'inTime') {
       setInTimeMethod('manual'); // Mark as manual entry
     }
+     if (id === 'leaveType' && value !== 'C-Off Leave') {
+    setCOffEarnedDate('');
+  }
 
     if (id === 'outTime') {
       if (value > '18:00') setFormData(prev => ({...prev, outTime: value, dailyLeaveType: 'Casual Type'}));
@@ -246,27 +329,58 @@ const Interface = () => {
   };
 
   // --- SUBMISSION LOGIC ---
-  const submitData = async (payload) => {
-    try {
-      const response = await fetch(`${API_BASE}/api/attendance/save`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const result = await response.json();
-      alert(response.ok ? result.message || 'Submitted successfully!' : result.error || 'Submission failed!');
+ const submitData = async (payload, formType) => {
+  try {
+    const response = await fetch('http://localhost:5000/api/attendance/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const result = await response.json();
 
-      if (response.ok) {
-        setIdInputs({ inTime: '', lunch: '', outTime: '', permission: '', leave: '' });
-        setFormData({ id: '', name: '', date: '', day: '', inTime: '', lunchIn: '', lunchOut: '', outTime: '', permissionType: '', hours: '', dailyLeaveType: '', leaveType: '', location: '' });
-        setInTimeMethod(''); // Reset the method tracker
-        setStaffNotFound(false); setMessage(''); setLunchSubmitEnabled(false); setActiveSideCard(null);
+    if (response.ok) {
+      // --- ✅ Custom pop-ups ---
+      const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      let msg = '';
+      switch (formType) {
+        case 'inTime':
+          msg = `${payload.name} submitted In-Time at ${payload.inTime || now}`;
+          break;
+        case 'lunchStart':
+          msg = `${payload.name} submitted Lunch Start at ${payload.lunchOut || now}`;
+          break;
+        case 'lunchEnd':
+          msg = `${payload.name} submitted Lunch End at ${payload.lunchIn || now}`;
+          break;
+        case 'outTime':
+          msg = `${payload.name} submitted Out-Time at ${payload.outTime || now}`;
+          break;
+        case 'permission':
+          msg = `${payload.name} submitted Permission request.`;
+          break;
+        case 'leave':
+          msg = `${payload.name} submitted Leave request.`;
+          break;
+        default:
+          msg = result.message || 'Submitted successfully!';
       }
-    } catch (err) {
-      console.error('Submission error:', err);
-      alert('Failed to submit.');
+      alert(msg);
+      // -------------------------
+
+      // reset everything as before
+      setIdInputs({ inTime: '', lunch: '', outTime: '', permission: '', leave: '' });
+      setFormData({ id: '', name: '', date: '', day: '', inTime: '', lunchIn: '', lunchOut: '', outTime: '', permissionType: '', hours: '', dailyLeaveType: '', leaveType: '', location: '' });
+      setInTimeMethod('');
+      setStaffNotFound(false); setMessage(''); setLunchSubmitEnabled(false); setActiveSideCard(null);
+    } else {
+      alert(result.error || 'Submission failed!');
     }
-  };
+  } catch (err) {
+    console.error('Submission error:', err);
+    alert('Failed to submit.');
+  }
+};
+
 
   const handleSubmit = async (e, formType) => {
     e.preventDefault();
@@ -278,71 +392,117 @@ const Interface = () => {
     }
     
     const payload = { id: formData.id, name: formData.name, date: formData.date, day: formData.day };
-    
-    if (formType === 'inTime') {
-      payload.inTime = formData.inTime;
-      // --- MODIFIED: Add the inTimeMethod to the payload ---
-      payload.inTimeMethod = inTimeMethod; 
 
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            payload.location = `${position.coords.latitude}, ${position.coords.longitude}`;
-            submitData(payload);
-          },
-          (error) => {
-            console.error('Error getting location: ', error);
-            alert('Could not get user location. Submitting without it.');
-            submitData(payload);
-          }
-        );
-      } else {
-        alert('Geolocation is not supported. Submitting without location.');
-        submitData(payload);
-      }
+ if (formType === 'inTime') {
+  payload.inTime = formData.inTime;
+  payload.inTimeMethod = inTimeMethod;
+  payload.delayReason = formData.delayReason;
+
+  // The rest is unchanged
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        payload.location = `${pos.coords.latitude}, ${pos.coords.longitude}`;
+        submitData(payload, 'inTime');   // ✅ pass type
+      },
+      () => submitData(payload, 'inTime')
+    );
+  } else submitData(payload, 'inTime');
+  return;
+}
+
+
+  if (formType === 'outTime') {
+    if (formData.outTime <= '18:00' && !formData.dailyLeaveType) {
+      alert('Please select a permission type for out-time before 18:00.'); return;
+    }
+    payload.outTime = formData.outTime;
+    payload.dailyLeaveType = formData.dailyLeaveType;
+    submitData(payload, 'outTime');        // ✅
+    return;
+  }
+
+if (formType === 'permission') {
+  payload.permissionType = formData.permissionType;
+  payload.hours = formData.hours;
+
+  if (!formData.hours) {
+    alert("Please enter how many hours of permission you took.");
+    return;
+  }
+
+  submitData(payload, 'permission');
+  return;
+}
+
+
+
+};
+
+ const handleLunchSubmit = async (e) => {
+  e.preventDefault();
+  if (staffNotFound || !formData.id) {
+    alert('Please enter a valid Staff ID before submitting.'); return;
+  }
+
+  const payload = {
+    id: formData.id,
+    name: formData.name,
+    date: formData.date,
+    day: formData.day,
+    lunchOut: formData.lunchOut || '',
+    lunchIn: formData.lunchIn || ''
+  };
+
+  // decide start or end message
+  let type = '';
+  if (formData.lunchOut && !formData.lunchIn) type = 'lunchStart';
+  else if (formData.lunchOut && formData.lunchIn) type = 'lunchEnd';
+  else type = 'lunchStart';
+
+  submitData(payload, type);
+};
+
+const handleLeaveSubmit = async (e) => {
+  e.preventDefault();
+  if (staffNotFound || !formData.id) {
+    alert('Please enter a valid Staff ID before submitting.');
+    return;
+  }
+  let leaveType = formData.leaveType;
+  // If "C-Off Leave" selected, check cOffEarnedDate and combine
+  if (leaveType === 'C-Off Leave') {
+    if (!cOffEarnedDate) {
+      alert('Please select "C-Off Earned On" date.');
       return;
     }
-    
-    if (formType === 'outTime') {
-      if (formData.outTime <= '18:00' && !formData.dailyLeaveType) {
-        alert('Please select a permission type for out-time before 18:00.'); return;
-      }
-      payload.outTime = formData.outTime;
-      payload.dailyLeaveType = formData.dailyLeaveType;
-    }
-
-    if (formType === 'permission') {
-      payload.permissionType = formData.permissionType;
-      payload.hours = formData.hours;
-    }
-    
-    submitData(payload);
+    leaveType = `C-Off Leave [Earned on: ${cOffEarnedDate}]`;
+  }
+  const payload = { 
+    id: formData.id, 
+    name: formData.name, 
+    date: formData.date, 
+    day: formData.day, 
+    leaveType 
   };
+  submitData(payload, 'leave');
+};
 
-  const handleLunchSubmit = async (e) => {
-    e.preventDefault();
-    if (staffNotFound || !formData.id) {
-      alert('Please enter a valid Staff ID before submitting.'); return;
-    }
-    const payload = { id: formData.id, name: formData.name, date: formData.date, day: formData.day, lunchOut: formData.lunchOut || '', lunchIn: formData.lunchIn || '' };
-    submitData(payload);
-  };
 
-  const handleLeaveSubmit = async (e) => {
-    e.preventDefault();
-    if (staffNotFound || !formData.id) {
-      alert('Please enter a valid Staff ID before submitting.'); return;
-    }
-    const payload = { id: formData.id, name: formData.name, date: formData.date, day: formData.day, leaveType: formData.leaveType };
-    submitData(payload);
-  };
-
+ 
   return (
     <div className="main-wrapper">
       <header className="attendance-header">
          <img src="https://tse4.mm.bing.net/th/id/OIP.kBa9Zzw_lXJ4D67y_kWZ5QHaG7?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Company Logo" className="company-logo" />
         <div className="header-title">Attendance System</div>
-        <div className="admin-login"><Link to="/admin-login">Admin login</Link></div>
+        
+        {/* --- THIS IS THE SECTION TO ADD/MODIFY --- */}
+        <div className="header-links">
+          <Link to="/your-attendance" className="btn btn-outline-light me-2">Your Attendance</Link>
+          <Link to="/admin-login" className="admin-login-link">Admin login</Link>
+        </div>
+        {/* --- END OF MODIFIED SECTION --- */}
+
       </header>
      <div className="container-fluid px-4 py-5">
         <div className="row">
@@ -364,6 +524,36 @@ const Interface = () => {
                   </label>
                   <input type="time" id="inTime" className="form-control" value={formData.inTime} onChange={handleChange} />
                 </div>
+                {/* Conditionally show Delay Reason if inTime is after 09:15 */}
+      {formData.inTime && formData.inTime > '09:15' && (
+        <div className="form-group mb-2">
+          <label>Delay Reason</label>
+         <select
+  id="delayReason"
+  className="form-control"
+  value={formData.delayReason || "Late Mark"}
+  onChange={handleChange}
+  required
+  disabled={isOTElligible}
+>
+  <option value="Late Mark">Late Mark</option>
+  <option value="Permission">Permission</option>
+  <option value="TOM">TOM</option>
+  <option value="Late Flexi">Late Flexi</option>
+  <option value="Project Requirement">Project Requirement</option>
+  <option value="First 50% Leave">First 50% Leave</option>
+
+</select>
+
+{isOTElligible && (
+  <small className="text-success">OT Reason automatically applied due to previous day's extra hours.</small>
+)}
+
+
+        </div>
+      )}
+
+
                 <div className="mt-auto"><button className="btn btn-primary btn-block" type="submit" disabled={staffNotFound || !formData.id}>Submit</button></div>
               </form>
             </div>
@@ -396,6 +586,7 @@ const Interface = () => {
                 <div className="form-group mb-3"><label htmlFor="dailyLeaveType">Permission Type</label>
                   <select id="dailyLeaveType" className="form-control" value={formData.dailyLeaveType} onChange={handleChange}>
                     <option value="">Select Permission</option>
+                    <option value="Second 50% Leave">Second 50% Leave</option>
                     <option value="Personal Permission">Personal Permission</option>
                     <option value="Health Issue">Health Issue</option>
                     <option value="Emergency Permission">Emergency Permission</option>
@@ -403,7 +594,12 @@ const Interface = () => {
                     <option value="TOM">TOM</option>
                     <option value="FLEXI">FLEXI</option>
                     <option value="Call">Call</option>
+                     <option value="Festival">Festival</option>
+                     <option value="Project Requirement">Project Requirement</option>
+                     <option value="WFH">WFH</option>
+                     
                     <option value="Casual Type">Casual Type</option>
+                    
                   </select>
                 </div>
                 {outTimeMessage.text && (<div className={`time-message mb-3 ${outTimeMessage.type === 'success' ? 'text-success' : 'text-danger'}`}>{outTimeMessage.text}</div>)}
@@ -424,7 +620,22 @@ const Interface = () => {
                     <div className="form-group mb-2"><label>Date</label><input type="date" className="form-control" value={formData.date} onChange={handleDateChange} max={getCurrentDate()} /></div>
                     <div className="form-group mb-2"><label>Day</label><input type="text" className="form-control" value={formData.day} readOnly /></div>
                     <div className="form-group mb-2"><label htmlFor="permissionType">Type of Permission</label><input type="text" id="permissionType" className="form-control" value={formData.permissionType} onChange={handleChange} placeholder="e.g., Personal, Health" /></div>
-                    <div className="form-group mb-2"><label htmlFor="hours">Hours</label><input type="text" id="hours" className="form-control" value={formData.hours} onChange={handleChange} placeholder="e.g., 2 hours" /></div>
+{/* Permission Hours Input */}
+<div className="form-group mb-2">
+  <label htmlFor="hours">Hours</label>
+ <input
+  type="text"
+  id="hours"
+  className="form-control"
+  placeholder="e.g., 1 or 1.5"
+  value={formData.hours}
+  onChange={handleChange}
+/>
+
+</div>
+
+
+
                     <div className="mt-auto"><button className="btn btn-primary btn-block" type="submit" disabled={staffNotFound || !formData.id}>Submit Permission</button></div>
                   </form>
                 </div>
@@ -438,18 +649,37 @@ const Interface = () => {
                     <div className="form-group mb-2"><label>Date</label><input type="date" className="form-control" value={formData.date} onChange={handleDateChange} max={getCurrentDate()} /></div>
                     <div className="form-group mb-2"><label>Day</label><input type="text" className="form-control" value={formData.day} readOnly /></div>
                     <div className="form-group mb-3"><label htmlFor="leaveType">Leave Type</label>
-                      <select id="leaveType" className="form-control" value={formData.leaveType} onChange={handleChange} required>
-                         <option disabled value="">Select Leave Type</option>
-                         <option value="Sick Leave">Sick Leave</option>
-                        <option value="Casual Leave">Casual Leave</option>
-                        <option value="Privilege Leave">Privilege Leave</option>
-                       <option value="Festival Leave">Festival Leave</option>
-                       <option value="C-Off Leave">C-Off Leave</option>
-                       <option value="Compensation Leave">Compensation Leave</option>
-                        <option value="First Half Leave">First Half Leave</option>
-                       <option value="Second Half Leave">Second Half Leave</option>
-                      </select>
+                   <select id="leaveType" className="form-control" value={formData.leaveType} onChange={handleChange} required>
+  <option disabled value="">Select Leave Type</option>
+  <option value="Sick Leave">Sick Leave</option>
+  <option value="Casual Leave">Casual Leave</option>
+  <option value="Privilege Leave">Privilege Leave</option>
+  <option value="C-Off Leave">C-Off Leave</option>
+  <option value="Compensation Leave">Compensation Leave</option>
+  <option value="First Half Leave">First Half Leave</option>
+  <option value="Second Half Leave">Second Half Leave</option>
+  <option value="Travel Leave">Travel Leave</option>
+  <option value="Client/Site Visit">Client/Site Visit</option>
+  <option value="Over-Time Leave">Over-Time Leave</option>       {/* <-- Add this line */}
+</select>
+
                     </div>
+                  {formData.leaveType === 'C-Off Leave' && (
+  <div className="form-group mb-2">
+    <label htmlFor="cOffEarnedDate">C-Off Earned On</label>
+    <input
+      type="date"
+      id="cOffEarnedDate"
+      className="form-control"
+      value={cOffEarnedDate}
+      onChange={e => setCOffEarnedDate(e.target.value)}
+      required
+    />
+  </div>
+)}
+
+
+
                     <div className="mt-auto"><button className="btn btn-primary btn-block" type="submit" disabled={staffNotFound || !formData.id}>Submit Leave</button></div>
                   </form>
                 </div>
@@ -468,3 +698,4 @@ const Interface = () => {
 };
 
 export default Interface;
+

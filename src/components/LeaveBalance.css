@@ -1,0 +1,272 @@
+/* src/components/LeaveBalance.css */
+/* Top Heading Styling */
+
+
+
+
+
+
+.leave-balance-container {
+    padding: 2rem;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+
+.add-member-btn {
+    padding: 0.8rem 1.5rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+}
+
+td { /* Targeting TD separately from TH now */
+    padding: 1rem; 
+    text-align: left; 
+    border-bottom: 1px solid #ddd; 
+}
+
+th { 
+    padding: 1rem;
+    text-align: center !important;
+    border-bottom: 1px solid #ddd;
+    background-color: #f4f6f8;
+    
+    /* --- ADD THESE LINES FOR STICKY HEADER --- */
+    position: sticky;
+    top: 0;
+    z-index: 10; /* Ensures header is above the scrolling content */
+}
+
+.action-buttons button {
+    margin-right: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.edit-btn {
+    background-color: #ffc107;
+}
+
+.remove-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* ===== UPDATED MODAL STYLES (for a more compact look) ===== */
+/* Modal Backdrop (no changes here) */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex; justify-content: center; align-items: center;
+}
+
+/* The main modal container */
+.modal-content {
+  background: white;
+  padding: 1.5rem; /* REDUCED: Less empty space inside the modal */
+  border-radius: 8px;
+  width: 380px; /* REDUCED: Made the modal slightly narrower */
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+/* Modal Title */
+.modal-content h3 {
+    font-size: 1.3rem; /* REDUCED: Smaller heading text */
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+/* NEW: Styles for the labels above input fields */
+.modal-content label {
+    font-size: 0.8rem; /* REDUCED: Smaller label text */
+    font-weight: 600;
+    margin-bottom: -0.5rem; /* PULLS the input field closer to its label */
+}
+
+/* The form element itself */
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem; /* REDUCED: Less vertical space between each form field */
+}
+/* Input and select dropdown fields */
+.modal-content input, .modal-content select {
+  padding: 0.6rem; /* REDUCED: Less padding inside the input boxes */
+  font-size: 0.9rem; /* REDUCED: Smaller text inside the input boxes */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Container for the action buttons (e.g., Save, Cancel) */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem; /* REDUCED: Less space between buttons */
+  margin-top: 1.5rem; /* Adjusted top margin */
+}
+/* The action buttons themselves */
+.modal-actions button {
+  padding: 0.5rem 1rem; /* REDUCED: Smaller buttons */
+  font-size: 0.9rem;
+}
+
+/* Space the page below the fixed global header (tweak 56px if your top bar is taller/shorter) */
+.leave-balance-container {
+  padding: 56px 2rem 2rem;
+}
+
+/* Center content to match other pages */
+.page-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Local page header (renamed to avoid clash with global .header) */
+.lb-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 12px 0 16px;
+  position: static; /* ensure it is not sticky like the global header */
+}
+
+.lb-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* Button */
+.add-member-btn {
+  padding: 0.8rem 1.5rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+/* Card around table */
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 2px 15px rgba(0,0,0,0.06);
+  /* The padding was moved to the container for better control */
+}
+
+/* Table */
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #ddd; }
+th { background-color: #f4f6f8; }
+
+/* Action buttons */
+.action-buttons button {
+  margin-right: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.edit-btn { background-color: #f68504; }
+.remove-btn { background-color: #d82638; color: white; }
+
+/* Modal */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex; justify-content: center; align-items: center;
+}
+/* Compact modal styling */
+.modal-content {
+  background: white;
+  padding: 1rem;           /* Reduce inner space */
+  border-radius: 8px;
+  width: 340px;            /* Reduce width further */
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  max-height: 95vh;        /* Prevent overflow on small screens */
+  overflow-y: auto;
+}
+.modal-content h3 {
+    font-size: 1.05rem;
+    margin: 0 0 0.8rem 0;
+}
+.modal-content label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-bottom: -0.4rem;
+}
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;           /* Even less space between fields */
+}
+.modal-content input,
+.modal-content select {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.88rem;
+  min-height: 30px;       /* Make fields less tall */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.7rem;
+}
+.modal-actions button {
+  padding: 0.38rem 0.75rem;
+  font-size: 0.88rem;
+}
+
+
+
+.reset-leaves-btn {
+  padding: 0.8rem 1.5rem;
+  background-color: #1880a5; /* Green color */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-right: 1rem; /* Add some space between buttons */
+}
+
+.search-container {
+  margin-bottom: 1rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+.table-container {
+  max-height: 500px; /* You can adjust this value */
+  overflow-y: auto;
+  padding: 8px 8px 0; /* Moved padding from .card to here */
+}

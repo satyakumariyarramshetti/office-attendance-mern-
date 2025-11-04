@@ -1,0 +1,176 @@
+/*
+ * =============================================
+ *   Base and Desktop Styles for LeaveRecord
+ * =============================================
+ */
+
+/* UPDATED: The main container is now just for padding */
+.leave-record-container {
+  padding: 2rem;
+}
+.leave-record-title{
+  text-align: center;
+}
+
+/* NEW: Rule to center the content with a max-width */
+.page-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* NEW: Styles for the card wrapper */
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 20px; /* Add internal spacing for the card content */
+}
+
+/* NEW: Style for the "no records" message */
+.no-records-message {
+  text-align: center;
+  color: #666;
+  padding: 20px 0;
+}
+
+.leave-record-title {
+  margin-bottom: 25px;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.leave-record-search {
+  max-width: 100%; /* Allow it to fill the width of the page-wrap */
+  margin-bottom: 30px;
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+}
+
+.leave-record-search:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.month-group:not(:first-child) .month-header {
+  margin-top: 25px; /* Add space between month groups */
+}
+
+.month-header {
+  background-color: #f8f9fa;
+  padding: 12px 18px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #34495e;
+  border-left: 5px solid #1abc9c;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.leave-record-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+
+.leave-record-table thead th {
+  background-color: #34495e;
+  color: #ffffff;
+  padding: 15px;
+  text-align: center; 
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.leave-record-table tbody td {
+  padding: 15px;
+  border-bottom: 1px solid #ecf0f1;
+  vertical-align: middle;
+  color: #555;
+  text-align: center; 
+}
+
+.leave-record-table tbody tr:nth-of-type(even) {
+  background-color: #fdfdfd;
+}
+
+.leave-record-table tbody tr:hover {
+  background-color: #f1f3f5;
+}
+
+/*
+ * =============================================
+ *   Responsive Media Queries (No changes needed)
+ * =============================================
+ */
+
+/* --- For Tablets (e.g., iPads) --- */
+@media (max-width: 768px) {
+  .leave-record-container {
+    padding: 20px;
+  }
+  .leave-record-title {
+    font-size: 1.5rem;
+  }
+  .leave-record-table thead th,
+  .leave-record-table tbody td {
+    padding: 12px 10px;
+  }
+}
+
+/* --- For Mobile Phones --- */
+@media (max-width: 576px) {
+  .leave-record-container {
+    padding: 0; /* Remove padding on mobile to allow card to touch edges */
+  }
+  .page-wrap {
+    padding: 15px; /* Add padding here for mobile */
+  }
+  .card {
+    box-shadow: none;
+    border-radius: 0;
+    padding: 10px;
+  }
+  .leave-record-table thead {
+    border: none;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+  }
+  .leave-record-table tr {
+    display: block;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
+  }
+  .leave-record-table td {
+    display: block;
+    text-align: right;
+    padding: 10px;
+    border-bottom: 1px solid #f2f2f2;
+  }
+  .leave-record-table td:last-child {
+    border-bottom: none;
+  }
+  .leave-record-table td::before {
+    content: attr(data-label);
+    float: left;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: #34495e;
+  }
+}

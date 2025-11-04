@@ -1,5 +1,15 @@
 import React from 'react';
-import { FaUsers, FaCalendarCheck, FaClipboardList, FaUserCircle } from 'react-icons/fa';
+// --- MODIFIED: Import new icons ---
+import { 
+  FaUsers, 
+  FaCalendarCheck, 
+  FaClipboardList, 
+  FaUserCircle, 
+  FaFileInvoiceDollar, 
+  FaFileAlt, 
+  FaChartPie,
+  FaCalendarAlt // --- NEW: Icon for Monthly Details
+} from 'react-icons/fa';
 import './Sidebar.css';
 
 const Sidebar = ({ onSelect, selected }) => {
@@ -33,6 +43,36 @@ const Sidebar = ({ onSelect, selected }) => {
       >
         <FaClipboardList className="menu-icon" /> Attendance Sheet
       </div>
+      
+      {/* --- NEW: Monthly Details Menu Item --- */}
+      <div
+        className={`menu-item ${selected === 'monthly' ? 'active' : ''}`}
+        onClick={() => onSelect('monthly')}
+      >
+        <FaCalendarAlt className="menu-icon" /> Monthly Details
+      </div>
+
+      <div
+        className={`menu-item ${selected === 'leaveRecord' ? 'active' : ''}`}
+        onClick={() => onSelect('leaveRecord')}
+      >
+        <FaFileAlt className="menu-icon" /> Leave Record
+      </div>
+
+      <div
+        className={`menu-item ${selected === 'leaveBalance' ? 'active' : ''}`}
+        onClick={() => onSelect('leaveBalance')}
+      >
+        <FaChartPie className="menu-icon" /> Leave Balance
+      </div>
+
+      <div
+        className={`menu-item ${selected === 'payslip' ? 'active' : ''}`}
+        onClick={() => onSelect('payslip')}
+      >
+        <FaFileInvoiceDollar className="menu-icon" /> PaySlip
+      </div>
+
     </div>
   );
 };

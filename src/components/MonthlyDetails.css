@@ -1,0 +1,92 @@
+.monthly-details-container {
+  padding: 2rem; /* Using rem for better scaling */
+}
+
+/* NEW: Rule to center the content with a max-width */
+.page-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.admin-title {
+  margin-bottom: 20px;
+}
+
+.toolbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.month-picker-container {
+  display: flex;
+  align-items: center;
+}
+
+.month-picker-container label {
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+#month-select {
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.export-button {
+  padding: 8px 15px;
+  background-color: #217346;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.export-button:hover {
+  background-color: #1c643d;
+}
+
+.export-button:disabled {
+  background-color: #a5a5a5;
+  cursor: not-allowed;
+}
+
+/* NEW: Styles for the card wrapper around the table */
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 8px; /* Give some space inside the card */
+}
+
+/* UPDATED: The table container no longer needs its own border */
+.table-responsive {
+  max-height: 500px;
+  overflow-y: auto;
+  /* border: 1px solid #ccc;  <-- REMOVED this line */
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.admin-table th {
+  position: sticky;
+  top: 0;
+  background-color: #f2f2f2;
+  z-index: 1;
+}

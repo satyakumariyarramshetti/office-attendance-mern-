@@ -9,6 +9,31 @@
   color: #212529;
 }
 
+/* Fix unwanted scroll arrows in Attendance Management heading */
+header,
+.page-header,
+.admin-title-wrapper {
+  overflow: hidden !important;
+}
+
+/* Ensure the heading text is centered properly */
+.admin-title-wrapper,
+.admin-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  white-space: nowrap;  /* Prevents breaking into multiple lines */
+}
+
+/* Hide horizontal arrows */
+.admin-header::-webkit-scrollbar,
+.admin-title-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+
+
+
 /* Title with subtle gradient text shadow */
 .admin-title {
   text-align: center;
@@ -52,13 +77,11 @@ input.form-control:focus {
   border-collapse: separate;
   border-spacing: 0;
   border-radius: 14px;
-  overflow: auto;
-  overflow-y: auto;
+  /* overflow properties have been removed */
   box-shadow: 0 6px 18px rgba(0, 123, 255, 0.1);
   font-size: 1rem;
   font-weight: 500;
 }
-
 
 /* Sticky header styles */
 .admin-table thead th {
@@ -310,4 +333,17 @@ input.form-control:focus {
     padding: 8px 10px;
     font-size: 0.9rem;
   }
+}
+
+
+/* --- NEW: Style for Leave Without Pay (LOP) rows --- */
+.lop-leave-row td {
+  background-color: #fff0f0 !important; /* A very light red */
+  color: #c51b1b; /* A darker red for the text */
+  font-weight: 500; /* Make the text slightly bolder */
+}
+
+/* Optional: Add a subtle border to make it stand out more */
+.lop-leave-row td:first-child {
+  border-left: 3px solid #c51b1b;
 }
