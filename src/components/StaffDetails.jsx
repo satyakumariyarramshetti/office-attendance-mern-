@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./StaffDetails.css";
 import AddStaffModal from "./AddStaffModal";
+import EditStaffModal from "./EditStaffModal";
 
 const departments = [
   "All",
@@ -19,6 +20,8 @@ const StaffDetails = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false); // 🆕 Track delete loading
+  const [editModal, setEditModal] = useState(false);
+const [selectedStaff, setSelectedStaff] = useState(null);
   // ✅ Fetch all staff from backend
   const fetchStaff = async () => {
     try {
@@ -78,6 +81,27 @@ console.log("Sending to backend:", JSON.stringify(newStaff, null, 2));
     alert("Error while adding staff.");
   }
 };
+const handleUpdateStaff = async (updatedStaff) => {
+  try {
+    const response = await fetch(`${API_BASE}/api/staffs/${updatedStaff._id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedStaff),
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Update failed");
+
+    alert(data.message);
+    await fetchStaff();
+    setEditModal(false);
+  } catch (err) {
+    console.error("Error updating staff:", err);
+    alert("Failed to update staff.");
+  }
+};
+
+
 
   // 🗑️ Remove handler with loading state
  const handleRemove = async (id) => {
@@ -155,14 +179,25 @@ console.log("Sending to backend:", JSON.stringify(newStaff, null, 2));
       <td data-label="Gender">{member.gender || "N/A"}</td>
       <td data-label="Phone">{member.phone || "—"}</td> {/* ✅ */}
       <td data-label="Actions">
-        <button
-          onClick={() => handleRemove(member._id)}
-          disabled={!!isDeleting[member._id]}
-          className="remove-btn"
-        >
-          {isDeleting ? "Removing..." : "Remove"}
-        </button>
-      </td>
+  <button
+    onClick={() => {
+      setSelectedStaff(member);
+      setEditModal(true);
+    }}
+    className="edit-btn"
+  >
+    Edit
+  </button>
+
+  <button
+    onClick={() => handleRemove(member._id)}
+    disabled={!!isDeleting[member._id]}
+    className="remove-btn"
+  >
+    {isDeleting ? "Removing..." : "Remove"}
+  </button>
+</td>
+
     </tr>
   ))}
 </tbody>
@@ -171,10 +206,18 @@ console.log("Sending to backend:", JSON.stringify(newStaff, null, 2));
 </div>
 
 
-      {showModal && (
+       {showModal && (
         <AddStaffModal
           onClose={() => setShowModal(false)}
           onAdd={handleAddStaff}
+        />
+      )}
+
+      {editModal && (
+        <EditStaffModal
+          staffData={selectedStaff}
+          onClose={() => setEditModal(false)}
+          onUpdate={handleUpdateStaff}
         />
       )}
     </div>

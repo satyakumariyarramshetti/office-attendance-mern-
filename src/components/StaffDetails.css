@@ -1,302 +1,207 @@
-/* Container */
-.staff-details-container {
-margin-left: 220px;
-  padding: 2.5rem;
-  background-color: #ffffff; /* white background */
+/* ===== Staff Details Container ===== */
+.staff-table-container {
+  max-height: 600px;
+  overflow-y: auto;
+  overflow-x: hidden;
   border-radius: 12px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #212529;
-  max-width: 1100px;
-  margin: 1.5rem auto;
-  user-select: none;
+  border: 1.5px solid #ccc;
+  background-color: #f9fbff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* Heading */
+/* ===== Title ===== */
 .staff-details-container h2 {
-  margin-bottom: 2rem;
-  color: #172a38; /* Darker blue */
+  margin-bottom: 1.8rem;
+  color: #12263a;
   font-weight: 700;
-  font-size: 2.2rem;
+  font-size: 2rem;
   text-align: center;
+  letter-spacing: 0.5px;
 }
 
-/* Department buttons container */
+/* ===== Department Buttons ===== */
 .dept-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 2rem;
   justify-content: center;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
 }
 
-/* Department buttons */
 .dept-buttons button {
   padding: 0.55rem 1.4rem;
-  background-color: #5a6876; /* lighter blue */
   border: none;
-  border-radius: 30px;
+  border-radius: 25px;
   cursor: pointer;
   font-weight: 600;
-  color: rgb(241, 239, 239); /* Darker blue text */
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  user-select: none;
+  background: #e4eaf3;
+  color: #1f3b5d;
+  transition: all 0.25s ease;
 }
 
 .dept-buttons button:hover:not(.active) {
-  background-color: #172a38; /* medium blue on hover */
+  background-color: #1f3b5d;
+  color: #fff;
   transform: translateY(-2px);
 }
 
-/* Active department button */
 .dept-buttons button.active {
-  background: linear-gradient(135deg, #4a90e2, #154eac); /* blue gradient */
-  color: #e0f0ff;
+  background: linear-gradient(135deg, #4070f4, #2c3e91);
+  color: #fff;
 }
 
-/* Add staff button */
 .add-staff-btn {
+  background: linear-gradient(135deg, #162d50, #000000);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 25px;
+  padding: 0.55rem 1.4rem;
   margin-left: auto;
-  background: linear-gradient(135deg, #172a38, #050708); /* bright blue */
-  color: white !important;
-  border-radius: 30px;
-  font-weight: 700;
   transition: background 0.3s ease, transform 0.2s ease;
 }
 .add-staff-btn:hover {
-  background: linear-gradient(135deg, #104d9e, #063270);
+  background: linear-gradient(135deg, #154eac, #0d326f);
   transform: translateY(-2px);
 }
 
-/* Search Input */
+/* ===== Search Box ===== */
 .search-input {
-  margin: 0 auto 2rem;
-  padding: 10px 16px;
-  font-size: 1rem;
-  width: 320px;
-  max-width: 90%;
-  border: 2px solid #172a38;
-  border-radius: 30px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
   display: block;
-  outline-offset: 2px;
+  margin: 1rem auto 2rem;
+  padding: 10px 16px;
+  width: 350px;
+  max-width: 90%;
+  border-radius: 30px;
+  border: 2px solid #1f3b5d;
+  outline: none;
+  font-size: 1rem;
+  transition: 0.3s;
 }
 
 .search-input:focus {
-  border-color: #172a38;
-  box-shadow: 0 0 12px rgba(11, 43, 102, 0.7);
-  outline: none;
+  box-shadow: 0 0 10px rgba(36, 91, 180, 0.4);
+  border-color: #4070f4;
 }
 
-/* Staff table container with shadow and rounded corners */
+/* ===== Table Container ===== */
 .staff-table-container {
-  max-height: 450px;
-  overflow-y: auto;
+  overflow-x: auto;
   border-radius: 12px;
-  border: 1.8px solid #050505;
-  background-color: #f0f6ff;
-  transition: box-shadow 0.3s ease;
+  border: 1.5px solid #ccc;
+  background-color: #f9fbff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  max-height: 600px;
 }
 
-/* Staff Table */
+/* Ensure header and body widths stay aligned */
 .staff-table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 8px;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #212529;
+  border-collapse: collapse;
+  table-layout: auto; /* 🩵 allow flexible column width */
+  font-size: 0.95rem;
+  word-wrap: break-word;
 }
 
-/* Table Head - sticky on larger screens */
-.staff-table thead tr {
-  background-color: #154eac;
-  color: #e0f0ff;
-}
 
-/* Table Head - sticky (fixed) when scrolling */
-.staff-table thead th {
-  position: sticky;
+.staff-table thead {
+  background-color: #1f3b5d;
+  color: #0b0a0a;
+  position: sticky; /* ✅ Keep header fixed while scrolling */
   top: 0;
-  background-color: #172a38;  /* keep blue background */
-  color: #e0f0ff;
-  z-index: 10; /* ensure it is above table body content */
-  padding: 1rem 1.5rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-align: left;
-  user-select: none;
+  z-index: 2;
+  
 }
 
-.staff-table-container.scrolling tbody tr:hover {
-  background: inherit !important;
-  color: inherit !important;
-  box-shadow: none !important;
-  cursor: default;
-}
-
-/* Table cells */
 .staff-table th,
 .staff-table td {
-  padding: 0.85rem 1.5rem;
-  text-align: left;
+  text-align: center; /* ✅ Center header and data */
+  padding: 1rem 1.2rem;
+  white-space: nowrap;
   vertical-align: middle;
+  border-bottom: 1px solid #d4ddee;
+  word-break: break-word;
+  max-width: 200px;
 }
 
-/* Row styling with card-like effect */
+
 .staff-table tbody tr {
-  background: linear-gradient(135deg, #cbd0d9, #c2c9d5);
-  border-radius: 12px;
-  box-shadow: 0 3px 8px rgba(21, 78, 172, 0.15);
-  transition: background-color 0.25s ease, box-shadow 0.25s ease;
-  cursor: default;
+  background-color: #f3f6fc;
+  border-bottom: 1px solid #d4ddee;
+  transition: background 0.25s ease, transform 0.2s ease;
 }
 
-/* Hover effect */
 .staff-table tbody tr:hover {
-  color: #0a3864;
-}
-.staff-table tbody tr:hover td {
-  color: #1e85ec;
+  background-color: #eaf0ff;
+  transform: scale(1.005);
 }
 
-/* Rounded corners for first and last cells */
-.staff-table tbody tr td:first-child {
-  border-top-left-radius: 12px;
-  border-bottom-left-radius: 12px;
+.staff-table td {
+  padding: 1rem 1.2rem;
+  color: #1a1a1a;
+  vertical-align: middle;
+  text-align: center; /* ✅ Center cell data */
+  white-space: nowrap;
 }
-.staff-table tbody tr td:last-child {
-  border-top-right-radius: 12px;
-  border-bottom-right-radius: 12px;
-}
-/* Remove button styling */
-.remove-btn {
-  background: linear-gradient(135deg, #d95252, #a93636);
+
+
+/* ===== Buttons ===== */
+.edit-btn {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: #fff;
   border: none;
-  border-radius: 30px;
-  padding: 0.45rem 1.25rem;
-  color: white;
-  font-weight: 600;
-  transition: background 0.3s ease, transform 0.2s ease;
+  border-radius: 20px;
+  padding: 0.4rem 1rem;
+  font-size: 0.9rem;
   cursor: pointer;
-  user-select: none;
+  transition: all 0.25s ease;
+  margin-right: 8px;
 }
-
-.remove-btn:hover:enabled {
-  background: linear-gradient(135deg, #a93636, #731c1c);
+.edit-btn:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
   transform: translateY(-2px);
 }
 
-.remove-btn:disabled {
-  background: #e0a4a4;
-  cursor: not-allowed;
-  box-shadow: none;
-  color: #7a3737;
+.remove-btn {
+  background: linear-gradient(135deg, #e63946, #b71c1c);
+  border: none;
+  border-radius: 20px;
+  padding: 0.4rem 1rem;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.remove-btn:hover:enabled {
+  background: linear-gradient(135deg, #c92a2a, #8c1616);
+  transform: translateY(-2px);
 }
 
-/* Responsive Breakpoints */
-
-/* Phone view / very small devices */
-@media (max-width: 575px) {
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 768px) {
   .staff-details-container {
-    padding: 1rem 0.75rem;
+    margin-left: 0;
+    padding: 1.2rem;
+    max-width: 95%;
   }
-  .staff-details-container h2 {
-    font-size: 1.6rem;
-    margin-bottom: 1.5rem;
-  }
+
   .dept-buttons {
-    gap: 0.5rem;
     justify-content: flex-start;
     overflow-x: auto;
   }
-  .dept-buttons button,
-  .add-staff-btn {
-    flex-shrink: 0;
-    padding: 0.4rem 1rem;
-    font-size: 0.85rem;
-  }
-  .search-input {
-    width: 95%;
+
+  .staff-table {
     font-size: 0.9rem;
-    padding: 8px 12px;
-    margin-bottom: 1.5rem;
   }
-  .staff-table-container {
-    max-height: 320px;
+
+  .staff-table thead th,
+  .staff-table td {
+    padding: 0.8rem;
   }
-  /* Stack rows vertically with labels */
-  .staff-table thead {
-    display: none;
-  }
-  .staff-table tbody tr {
-    display: block;
-    margin-bottom: 1rem;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(21, 78, 172, 0.2);
-    background: #d4e2ff;
-  }
-  .staff-table tbody tr td {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.6rem 1.2rem;
-    border: none;
-    border-bottom: 1px solid #9bbfff;
-  }
-  .staff-table tbody tr td:last-child {
-    border-bottom: 0;
-  }
-  /* Show label before content */
-  .staff-table tbody tr td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #154eac;
-    flex-basis: 40%;
-  }
+
+  .edit-btn,
   .remove-btn {
-    width: 100%;
-    padding: 0.6rem;
-    font-size: 0.95rem;
-    border-radius: 10px;
-  }
-}
-
-/* Tablet view */
-@media (min-width: 576px) and (max-width: 991px) {
-  .staff-details-container {
-    padding: 2rem 2rem;
-    max-width: 900px;
-  }
-  .dept-buttons {
-    justify-content: flex-start;
-  }
-  .search-input {
-    width: 80%;
-    max-width: 450px;
-  }
-  .staff-table-container {
-    max-height: 400px;
-  }
-}
-
-/* Laptop view */
-@media (min-width: 992px) and (max-width: 1199px) {
-  .staff-details-container {
-    max-width: 1000px;
-  }
-  .search-input {
-    width: 320px;
-  }
-  .staff-table-container {
-    max-height: 480px;
-  }
-}
-
-/* Large desktop and beyond */
-@media (min-width: 1200px) {
-  .staff-details-container {
-    max-width: 1100px;
-  }
-  .staff-table-container {
-    max-height: 520px;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
   }
 }
