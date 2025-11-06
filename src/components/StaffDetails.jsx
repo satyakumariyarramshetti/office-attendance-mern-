@@ -54,21 +54,30 @@ const StaffDetails = () => {
 
   const handleFilter = dept => setSelectedDept(dept);
 
-  const handleAddStaff = async newStaff => {
-    try {
-      const response = await fetch(`${API_BASE}/api/staffs`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newStaff)
-      });
+ const handleAddStaff = async (newStaff) => {
+  try {
+    console.log("Sending to backend:", newStaff); // ✅ Debug log
 
-      const message = await response.text();
-      alert(message);
-      fetchStaff();
-    } catch (err) {
-      console.error("Failed to add staff:", err);
+    const response = await fetch(`${API_BASE}/api/staffs`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newStaff),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      alert(`Failed to add staff: ${errorText}`);
+      return;
     }
-  };
+
+    const data = await response.json(); // ✅ parse JSON
+    alert(data.message || "Staff added successfully!");
+    await fetchStaff(); // ✅ Wait for updated data
+  } catch (err) {
+    console.error("Failed to add staff:", err);
+    alert("Error while adding staff.");
+  }
+};
 
   // 🗑️ Remove handler with loading state
  const handleRemove = async (id) => {

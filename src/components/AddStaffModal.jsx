@@ -28,11 +28,13 @@ const AddStaffModal = ({ onClose, onAdd }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = e => {
-    e.preventDefault();
-    onAdd(formData);
-    onClose();
-  };
+ const handleSubmit = (e) => {
+  e.preventDefault();
+  console.log("Submitting staff data:", formData); // ✅
+  onAdd(formData);
+  onClose();
+};
+
 
   return (
     <div className="modal-backdrop">
