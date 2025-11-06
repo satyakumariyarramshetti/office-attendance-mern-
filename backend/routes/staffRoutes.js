@@ -52,7 +52,7 @@ router.get('/seed', async (req, res) => {
 // 🔹 POST: Add new staff entry
 router.post('/', async (req, res) => {
   try {
-    console.log("📥 Received data from frontend:", req.body); // 👈 ADD THIS
+console.log("📥 Received data from frontend:", req.body);
 
     const newStaff = new Staff(req.body);
     await newStaff.save();

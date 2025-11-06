@@ -30,7 +30,8 @@ const AddStaffModal = ({ onClose, onAdd }) => {
 
  const handleSubmit = (e) => {
   e.preventDefault();
-  console.log("Submitting staff data:", formData); // ✅
+  console.log("Submitting staff data:", JSON.stringify(formData, null, 2));
+
   onAdd(formData);
   onClose();
 };

@@ -56,7 +56,7 @@ const StaffDetails = () => {
 
  const handleAddStaff = async (newStaff) => {
   try {
-    console.log("Sending to backend:", newStaff); // ✅ Debug log
+console.log("Sending to backend:", JSON.stringify(newStaff, null, 2));
 
     const response = await fetch(`${API_BASE}/api/staffs`, {
       method: "POST",
