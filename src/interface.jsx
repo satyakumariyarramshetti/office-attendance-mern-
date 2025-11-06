@@ -415,15 +415,26 @@ const getNetAndGrossMins = attendance => {
 }
 
 
-  if (formType === 'outTime') {
-    if (formData.outTime <= '18:00' && !formData.dailyLeaveType) {
-      alert('Please select a permission type for out-time before 18:00.'); return;
-    }
-    payload.outTime = formData.outTime;
-    payload.dailyLeaveType = formData.dailyLeaveType;
-    submitData(payload, 'outTime');        // ✅
+ if (formType === 'outTime') {
+  const [h, m] = formData.outTime.split(':').map(Number);
+  const totalMinutes = h * 60 + m;
+  const sixPm = 18 * 60;
+
+  // Auto-assign Casual Type if time >= 18:00
+  if (totalMinutes >= sixPm) {
+    formData.dailyLeaveType = 'Casual Type';
+  }
+
+  if (totalMinutes < sixPm && !formData.dailyLeaveType) {
+    alert('Please select a permission type for out-time before 18:00.');
     return;
   }
+
+  payload.outTime = formData.outTime;
+  payload.dailyLeaveType = formData.dailyLeaveType;
+  submitData(payload, 'outTime');
+  return;
+}
 
 if (formType === 'permission') {
   payload.permissionType = formData.permissionType;
@@ -502,7 +513,11 @@ const handleLeaveSubmit = async (e) => {
         {/* --- THIS IS THE SECTION TO ADD/MODIFY --- */}
         <div className="header-links">
           <Link to="/your-attendance" className="btn btn-outline-light me-2">Your Attendance</Link>
+           <Link to="/leave-plan" className="btn btn-outline-light me-2">-</Link>
+           <Link to="/lp-dashboard" className="btn btn-outline-light me-2">-</Link>
           <Link to="/admin-login" className="admin-login-link">Admin login</Link>
+         
+
         </div>
         {/* --- END OF MODIFIED SECTION --- */}
 

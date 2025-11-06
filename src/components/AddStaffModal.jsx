@@ -15,12 +15,14 @@ const genders = ["Male", "Female", "Other"];
 
 const AddStaffModal = ({ onClose, onAdd }) => {
   const [formData, setFormData] = useState({
-    id: "",
-    name: "",
-    designation: "",
-    department: "",
-    gender: "",      // changed to gender
-  });
+  id: "",
+  name: "",
+  designation: "",
+  department: "",
+  gender: "",
+  phone: ""   // ✅ Added
+});
+
 
   const handleChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -40,6 +42,14 @@ const AddStaffModal = ({ onClose, onAdd }) => {
           <input name="id" placeholder="ID" onChange={handleChange} required />
           <input name="name" placeholder="Name" onChange={handleChange} required />
           <input name="designation" placeholder="Designation" onChange={handleChange} required />
+          <input
+  name="phone"
+  placeholder="Phone Number"
+  onChange={handleChange}
+  value={formData.phone}
+  required
+/>
+
 
           {/* Dropdown for Department */}
           <select

@@ -132,29 +132,32 @@ const StaffDetails = () => {
         <th>Designation</th>
         <th>Department</th>
         <th>Gender</th>
+        <th>Phone</th>
         <th>Actions</th>
       </tr>
     </thead>
-    <tbody>
-      {filteredStaff.map(member => (
-        <tr key={member._id || member.id}>
-         <td data-label="ID">{member.id}</td>
+   <tbody>
+  {filteredStaff.map(member => (
+    <tr key={member._id || member.id}>
+      <td data-label="ID">{member.id}</td>
       <td data-label="Name">{member.name}</td>
       <td data-label="Designation">{member.designation}</td>
       <td data-label="Department">{member.department}</td>
       <td data-label="Gender">{member.gender || "N/A"}</td>
+      <td data-label="Phone">{member.phone || "—"}</td> {/* ✅ */}
       <td data-label="Actions">
-            <button
+        <button
           onClick={() => handleRemove(member._id)}
           disabled={!!isDeleting[member._id]}
           className="remove-btn"
         >
-              {isDeleting ? "Removing..." : "Remove"}
-            </button>
-          </td>
-        </tr>
-      ))}
-    </tbody>
+          {isDeleting ? "Removing..." : "Remove"}
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
   </table>
 </div>
 

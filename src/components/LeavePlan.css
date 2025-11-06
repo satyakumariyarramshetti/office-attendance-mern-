@@ -1,0 +1,184 @@
+/* Center container on all devices */
+body, #root {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* Form outer container centers vertically and horizontally */
+.leave-plan-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Actual card styling for the form */
+.leave-form {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 32px rgba(50, 90, 240, 0.13), 0 1.5px 6px rgba(80, 200, 255, 0.08);
+  padding: 36px 32px;
+  max-width: 390px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+}
+
+.leave-form h2 {
+  font-size: 2rem;
+  margin-bottom: 22px;
+  text-align: left;
+  color: #2448ba;
+  font-weight: 600;
+}
+
+.leave-form label {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+/* Input fields design */
+.leave-form input[type="text"], 
+.leave-form input[type="tel"], 
+.date-picker {
+  width: 100%;
+  font-size: 1rem;
+  padding: 11px 9px;
+  border: 1px solid #c7d2fd;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-top: 6px;
+  background: #f6f9ff;
+  color: #212121;
+}
+
+.leave-form input[type="text"]:focus,
+.leave-form input[type="tel"]:focus,
+.date-picker:focus {
+  border-color: #4175e6;
+}
+
+/* Button container */
+.form-buttons {
+  display: flex;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+/* Button styling */
+.submit-btn, .cancel-btn {
+  flex: 1 1 0px;
+  padding: 11px 0;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.submit-btn {
+  background: linear-gradient(90deg, #4a90ff 0%, #47c6fd 100%);
+  color: #fff;
+  box-shadow: 0 1px 8px rgba(80,170,255,0.18);
+}
+
+.submit-btn:hover {
+  background: linear-gradient(90deg,#2a72d6 0%, #32bde3 100%);
+}
+
+.cancel-btn {
+  background: #f3f5f9;
+  color: #2c3a52;
+  border: 1px solid #c7d2fd;
+}
+
+.cancel-btn:hover {
+  background: #eaeaf0;
+  color: #183463;
+}
+
+/* Responsive design for tablets and mobiles */
+@media (max-width: 767px) {
+  .leave-form {
+    padding: 24px 14px;
+    max-width: 98vw;
+    font-size: 95%;
+  }
+  .leave-form h2 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .leave-form {
+    padding: 12px 3vw;
+    border-radius: 10px;
+    font-size: 90%;
+  }
+  .form-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .submit-btn, .cancel-btn {
+    padding: 9px 0;
+    min-width: 110px;
+    font-size: 0.98rem;
+  }
+}
+
+
+.selected-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 0 0;
+}
+
+.date-chip {
+  background: linear-gradient(90deg, #e7f3ff 0%, #caf0fa 100%);
+  color: #2448ba;
+  font-weight: 500;
+  border-radius: 24px;
+  padding: 6px 16px 6px 12px;
+  font-size: 0.96rem;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 4px;
+  box-shadow: 0 1px 4px rgba(80,170,255,0.12);
+}
+
+.remove-date {
+  background: none;
+  border: none;
+  color: #4175e6;
+  font-size: 1.18rem;
+  margin-left: 8px;
+  cursor: pointer;
+  transition: color 0.18s;
+  font-weight: bold;
+}
+
+.remove-date:hover {
+  color: #f25555;
+}
+
+@media (max-width: 480px) {
+  .selected-dates {
+    flex-direction: column;
+    gap: 5px;
+  }
+  .date-chip {
+    width: fit-content;
+    padding: 6px 14px 6px 10px;
+    font-size: 0.94rem;
+  }
+}
+
+

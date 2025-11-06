@@ -6,6 +6,9 @@ import Dashboard from './pages/Dashboard'; // admin dashboard
 import Interface from './interface'; // home or public landing page (optional)
 import ProtectedRoute from './components/ProtectedRoute';
 import UserAttendance from './components/UserAttendance'; // <-- Import the new component
+import LeavePlan from './components/LeavePlan';
+import LPDashboard from './components/LPDashboard';
+
 
 function App() {
   const [isAdmin, setIsAdmin] = useState(
@@ -22,6 +25,10 @@ function App() {
        
         {/* --- ADD THIS LINE FOR THE USER ATTENDANCE PAGE --- */}
         <Route path="/your-attendance" element={<UserAttendance />} /> 
+        <Route path="/leave-plan" element={<LeavePlan />} />
+<Route path="/lp-dashboard" element={<LPDashboard />} />
+
+
 
         {/* Protected route */}
         <Route

@@ -1,0 +1,86 @@
+.lp-dashboard-bg {
+  background: #fff;
+  min-height: 100vh;
+  width: 100vw;
+}
+
+.lp-dashboard-container {
+  padding: 40px 20px;
+  background-color: white;
+  min-height: 300px;
+  border-radius: 12px;
+  text-align: center;
+  margin: 0 auto;
+  max-width: 740px;
+}
+
+.lp-dashboard-heading {
+  color: #067cf1;
+  font-size: 2.2rem;
+  margin-bottom: 24px;
+  font-weight: 700;
+}
+
+/* Buttons Section */
+.lp-dashboard-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 20px;
+}
+
+.lp-btn {
+  padding: 16px 32px;
+  font-size: 1.15rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.25s, color 0.25s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.lp-btn.pending {
+  background: #fffbe6;
+  color: #5e4902;
+}
+
+.lp-btn.approved {
+  background: #e6ffed;
+  color: #038103;
+}
+
+.lp-btn.rejected {
+  background: #ffe6e6;
+  color: #c62828;
+}
+
+.lp-btn:hover {
+  opacity: 0.87;
+}
+
+/* Password Form Section */
+.lp-password-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 36px;
+  gap: 18px;
+}
+
+.lp-password-input {
+  padding: 12px 18px;
+  font-size: 1.1rem;
+  border-radius: 6px;
+  border: 1px solid #bdbdbd;
+  outline: none;
+  width: 70%;
+  max-width: 280px;
+  margin-bottom: 8px;
+}
+
+.lp-error {
+  color: #c62828;
+  margin-top: 12px;
+  font-size: 1rem;
+}
