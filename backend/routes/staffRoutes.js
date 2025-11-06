@@ -52,6 +52,8 @@ router.get('/seed', async (req, res) => {
 // 🔹 POST: Add new staff entry
 router.post('/', async (req, res) => {
   try {
+    console.log("📥 Received data from frontend:", req.body); // 👈 ADD THIS
+
     const newStaff = new Staff(req.body);
     await newStaff.save();
     res.json({ message: "✅ Staff added successfully!" });
@@ -61,7 +63,6 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: error.message });
     }
     if (error.code === 11000) {
-      // Duplicate key error for unique fields like id
       return res.status(400).json({ error: "Staff ID already exists" });
     }
     res.status(500).json({ error: "Error adding staff" });
