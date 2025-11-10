@@ -92,10 +92,11 @@ router.post('/getById', async (req, res) => {
   try {
     const staff = await Staff.findOne({ id });
     if (staff) {
-      res.json({ name: staff.name, id: staff.id });
-    } else {
-      res.status(404).json({ error: 'Staff not found' });
-    }
+  res.json({ name: staff.name, id: staff.id, phone: staff.phone });
+} else {
+  res.status(404).json({ error: 'Staff not found' });
+}
+
   } catch (error) {
     console.error('Error fetching staff:', error);
     res.status(500).json({ error: 'Server error' });
