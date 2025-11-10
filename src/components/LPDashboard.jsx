@@ -21,18 +21,18 @@ const LPDashboard = () => {
     // Add logic for approved/rejected data here if needed
   }, [activeTab]);
 
-  const handleAction = async (row, action) => {
+const handleAction = async (row, action) => {
   try {
     const status = action === 'Approved' ? 'approved' : 'rejected';
     const res = await fetch(`${API_BASE}/api/leave-requests/update-status`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: row.id, status })
+      body: JSON.stringify({ id: row.id, date: row.date, status })
     });
 
     const result = await res.json();
     if (result.success) {
-      alert(`${action} successfully for ${row.name}`);
+      alert(`${action} successfully for ${row.name} on ${row.date}`);
       setPendingRows(prev => prev.filter(r => !(r.id === row.id && r.date === row.date)));
     } else {
       alert('Failed to update leave status');
@@ -42,6 +42,7 @@ const LPDashboard = () => {
     alert('Error updating leave status');
   }
 };
+
 
 
   return (
