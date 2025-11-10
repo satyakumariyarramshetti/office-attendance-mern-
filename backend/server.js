@@ -58,7 +58,7 @@ const attendanceRoutes = require('./routes/attendanceRoutes');
 const staffRoutes = require('./routes/staffRoutes');
 const payslipRoutes = require('./routes/payslipRoutes'); 
 const leaveBalanceRoutes = require('./routes/leaveBalanceRoutes');
-
+const leaveRequestsRoutes = require('./routes/leaveRequestsRoutes');
 const app = express();
 const PORT = 5000;
 
@@ -73,6 +73,7 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/staffs', staffRoutes);
 app.use('/api/payslip', payslipRoutes);
 app.use('/api/leave-balance', leaveBalanceRoutes);
+app.use('/api/leave-requests',leaveRequestsRoutes);
 
 const uri = process.env.ATLAS_URI;
 

@@ -63,16 +63,35 @@ const LeavePlan = () => {
   };
 
   // Submit event
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert('Leave request submitted!');
-    setForm({
-      id: '',
-      name: '',
-      phone: '',
-      dates: []
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const response = await fetch(`${API_BASE}/api/leave-requests/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: `PS-${form.id}`,
+        name: form.name,
+        phone: form.phone,
+        dates: form.dates.map(d => d.format ? d.format("DD-MM-YYYY") : d.toString())
+      })
     });
-  };
+    if (response.ok) {
+      alert('Leave request submitted!');
+      setForm({
+        id: '',
+        name: '',
+        phone: '',
+        dates: []
+      });
+    } else {
+      alert('Error submitting leave request');
+    }
+  } catch (error) {
+    alert('Network or server error');
+  }
+};
+
 
   // Cancel event
   const handleCancel = () => {
@@ -89,7 +108,7 @@ const LeavePlan = () => {
       <form className="leave-form" onSubmit={handleSubmit}>
         <h2>Leave Plan</h2>
         <label>
-          Enter your EmployeeID:
+          Enter your ID:
           <input
             type="text"
             name="id"
@@ -107,7 +126,7 @@ const LeavePlan = () => {
           />
         </label>
         <label>
-          Name Of The Person:
+          Name:
           <input
             type="text"
             name="name"
