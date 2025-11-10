@@ -2,9 +2,10 @@
 const express = require('express');
 const router = express.Router();
 const LeaveRequest = require('../models/LeaveRequest');
+const sendWhatsAppMessage = require('../utils/sendWhatsAppMessage'); // ✅ ensure this file exists
 
-// Create new leave request
-// Create new leave request
+
+// ✅ Create new leave request
 router.post('/create', async (req, res) => {
   try {
     const { id, name, phone, dates } = req.body;
@@ -13,7 +14,6 @@ router.post('/create', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid input' });
     }
 
-    // Convert array of dates (strings) to array of objects
     const formattedDates = dates.map(date => ({ date, status: 'pending' }));
 
     const leaveReq = new LeaveRequest({
@@ -32,7 +32,7 @@ router.post('/create', async (req, res) => {
 });
 
 
-// Get leaves by status (pending, approved, rejected)
+// ✅ Get leaves by status (pending, approved, rejected)
 router.get('/:status', async (req, res) => {
   try {
     const { status } = req.params;
@@ -57,8 +57,7 @@ router.get('/:status', async (req, res) => {
 });
 
 
-// Approve or reject leave
-// ✅ Update leave status (for Admin and HR)
+// ✅ Update leave status (for Admin and HR) + Send WhatsApp message
 router.put('/update-status', async (req, res) => {
   try {
     const { id, date, status, updatedBy } = req.body;
@@ -67,14 +66,13 @@ router.put('/update-status', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
 
-    // Update the status (works for pending, approved, or rejected)
     const leaveReq = await LeaveRequest.findOneAndUpdate(
       { id, 'dates.date': date },
-      { 
-        $set: { 
+      {
+        $set: {
           'dates.$.status': status,
-          'dates.$.updatedBy': updatedBy || 'Admin' // optional, defaults to Admin
-        } 
+          'dates.$.updatedBy': updatedBy || 'Admin'
+        }
       },
       { new: true }
     );
@@ -83,13 +81,26 @@ router.put('/update-status', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Leave request not found' });
     }
 
+    // ✅ After updating status, send WhatsApp notification
+    const phone = leaveReq.phone;
+    const employeeName = leaveReq.name;
+    const message =
+      status === 'approved'
+        ? `✅ Hello ${employeeName}, your leave for ${date} has been *approved*.`
+        : `❌ Hello ${employeeName}, your leave for ${date} has been *rejected*.`;
+
+    try {
+      await sendWhatsAppMessage(phone, message);
+      console.log(`WhatsApp message sent to ${phone}`);
+    } catch (err) {
+      console.error('Failed to send WhatsApp message:', err.message);
+    }
+
     res.json({ success: true, data: leaveReq });
   } catch (error) {
     console.error('Error updating leave status:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
-
-
 
 module.exports = router;
