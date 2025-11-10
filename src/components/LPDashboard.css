@@ -171,3 +171,50 @@
   .lp-dashboard-buttons { flex-direction: column; gap: 10px; margin-bottom: 10px; }
   .lp-table { font-size: 0.96rem; }
 }
+
+
+.text-green {
+  color: green;
+  font-weight: 600;
+}
+
+.text-red {
+  color: red;
+  font-weight: 600;
+}
+
+
+
+
+
+
+
+
+
+.lp-role-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.lp-role-label {
+  font-weight: 600;
+  color: #444;
+}
+
+.lp-role-btn {
+  background: #eee;
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.lp-role-btn.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+

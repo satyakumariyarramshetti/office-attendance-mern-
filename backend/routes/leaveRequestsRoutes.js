@@ -58,29 +58,38 @@ router.get('/:status', async (req, res) => {
 
 
 // Approve or reject leave
+// ✅ Update leave status (for Admin and HR)
 router.put('/update-status', async (req, res) => {
   try {
-    const { id, date, status } = req.body;
+    const { id, date, status, updatedBy } = req.body;
 
-    const leaveRequest = await LeaveRequest.findOne({ id });
-    if (!leaveRequest) {
-      return res.status(404).json({ success: false, message: 'Leave not found' });
+    if (!id || !date || !status) {
+      return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
 
-    // Find the specific date entry and update its status
-    const targetDate = leaveRequest.dates.find(d => d.date === date);
-    if (!targetDate) {
-      return res.status(404).json({ success: false, message: 'Date not found' });
+    // Update the status (works for pending, approved, or rejected)
+    const leaveReq = await LeaveRequest.findOneAndUpdate(
+      { id, 'dates.date': date },
+      { 
+        $set: { 
+          'dates.$.status': status,
+          'dates.$.updatedBy': updatedBy || 'Admin' // optional, defaults to Admin
+        } 
+      },
+      { new: true }
+    );
+
+    if (!leaveReq) {
+      return res.status(404).json({ success: false, message: 'Leave request not found' });
     }
 
-    targetDate.status = status;
-    await leaveRequest.save();
-
-    res.json({ success: true, data: leaveRequest });
+    res.json({ success: true, data: leaveReq });
   } catch (error) {
+    console.error('Error updating leave status:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
+
 
 
 module.exports = router;
