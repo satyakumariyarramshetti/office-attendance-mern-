@@ -323,12 +323,14 @@ const getNetAndGrossMins = attendance => {
     setCOffEarnedDate('');
   }
 
-    if (id === 'outTime') {
-      if (value > '18:00') setFormData(prev => ({...prev, outTime: value, dailyLeaveType: 'Casual Type'}));
-      else setFormData(prev => ({...prev, outTime: value, dailyLeaveType: '' }));
-    } else {
-      setFormData((prev) => ({ ...prev, [id]: value }));
-    }
+   if (id === 'outTime') {
+  if (value >= '18:00') {
+    setFormData(prev => ({ ...prev, outTime: value, dailyLeaveType: 'Casual Type' }));
+  } else {
+    setFormData(prev => ({ ...prev, outTime: value, dailyLeaveType: '' }));
+  }
+}
+
   };
 
   // --- SUBMISSION LOGIC ---

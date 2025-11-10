@@ -52,7 +52,7 @@ router.get('/seed', async (req, res) => {
 // 🔹 POST: Add new staff entry
 router.post('/', async (req, res) => {
   try {
-console.log("📥 Received data from frontend:", req.body);
+    console.log("📥 Received data from frontend:", req.body);
 
     const newStaff = new Staff(req.body);
     await newStaff.save();
@@ -129,6 +129,23 @@ router.get('/search/:partialId', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+// 🔹 PUT: Update staff details
+router.put('/:id', async (req, res) => {
+  try {
+    const updatedStaff = await Staff.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    if (!updatedStaff) return res.status(404).json({ error: "Staff not found" });
+    res.json({ message: "✅ Staff updated successfully!", updatedStaff });
+  } catch (error) {
+    console.error("❌ Error updating staff:", error);
+    res.status(500).json({ error: "Error updating staff" });
+  }
+});
+
+
 
 
 
