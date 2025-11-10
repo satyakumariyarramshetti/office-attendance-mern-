@@ -1,86 +1,173 @@
+/* Main background is white */
 .lp-dashboard-bg {
   background: #fff;
   min-height: 100vh;
   width: 100vw;
 }
 
+/* Container has mild shadow and rounded edges */
 .lp-dashboard-container {
-  padding: 40px 20px;
-  background-color: white;
-  min-height: 300px;
-  border-radius: 12px;
+  padding: 40px 30px;
+  background: #fff;
+  min-height: 340px;
+  border-radius: 14px;
   text-align: center;
-  margin: 0 auto;
-  max-width: 740px;
+  margin: 38px auto;
+  max-width: 75%;
 }
 
+/* Heading styles */
 .lp-dashboard-heading {
-  color: #067cf1;
-  font-size: 2.2rem;
-  margin-bottom: 24px;
+  color: #2448ba;
+  font-size: 2rem;
+  margin-bottom: 26px;
   font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
-/* Buttons Section */
+/* Buttons row */
 .lp-dashboard-buttons {
   display: flex;
   justify-content: center;
-  gap: 32px;
-  margin-top: 20px;
+  gap: 24px;
+  margin-bottom: 24px;
 }
 
+/* Button styles */
 .lp-btn {
-  padding: 16px 32px;
-  font-size: 1.15rem;
+  padding: 14px 32px;
+  font-size: 1.11rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  transition: background 0.25s, color 0.25s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-.lp-btn.pending {
-  background: #fffbe6;
-  color: #5e4902;
-}
-
-.lp-btn.approved {
-  background: #e6ffed;
-  color: #038103;
-}
-
-.lp-btn.rejected {
-  background: #ffe6e6;
-  color: #c62828;
-}
-
-.lp-btn:hover {
-  opacity: 0.87;
-}
-
-/* Password Form Section */
-.lp-password-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 36px;
-  gap: 18px;
-}
-
-.lp-password-input {
-  padding: 12px 18px;
-  font-size: 1.1rem;
-  border-radius: 6px;
-  border: 1px solid #bdbdbd;
+  transition: background 0.18s, color 0.18s, box-shadow 0.13s;
+  box-shadow: 0 2px 8px rgba(94,133,255,0.12);
   outline: none;
-  width: 70%;
-  max-width: 280px;
-  margin-bottom: 8px;
+  letter-spacing: 0.2px;
 }
 
-.lp-error {
-  color: #c62828;
-  margin-top: 12px;
+.lp-btn.pending { background: #fffbe6; color: #735e0b; }
+.lp-btn.approved { background: #e6ffed; color: #088341; }
+.lp-btn.rejected { background: #ffeaea; color: #bc2c2c; }
+
+.lp-btn.active {
+  border: 2px solid #2448ba;
+  box-shadow: 0 2px 12px rgba(52,138,255,0.19);
+}
+
+/* Table container + headings */
+.lp-dashboard-table { margin-top: 16px; }
+.lp-table-heading {
+  color: #2448ba;
+  font-size: 1.15rem;
+  text-align: left;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+/* Table styles */
+.lp-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #f7faff;
+  border-radius: 8px;
+  font-size: 1.03rem;
+  margin-top: 8px;
+  box-shadow: 0 1px 4px rgba(162,196,255,0.05);
+  overflow: hidden;
+}
+
+/* Table cell styles */
+.lp-table th, .lp-table td {
+  padding: 13px 11px;
+  text-align: center;
+}
+
+.lp-table th {
+  background: #e4eeff;
+  color: #2448ba;
+  font-weight: 650;
+  letter-spacing: 0.1px;
+  border-bottom: 1px solid #c7d2fd;
+  text-align: center;  /* Add this line for header */
+}
+
+
+/* Table rows */
+.lp-table tr {
+  border-bottom: 1px solid #eaeaea;
+  background: #fff;
+}
+.lp-table tr:last-child {
+  border-bottom: none;
+}
+
+/* Action buttons */
+.lp-table .lp-action-btn {
+  padding: 8px 18px;
   font-size: 1rem;
+  border-radius: 7px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  margin-right: 6px;
+  transition: background 0.13s, color 0.13s;
+}
+
+.lp-table .approve {
+  background: #e7fbe6;
+  color: #18803c;
+  border: 1px solid #cff2cb;
+}
+.lp-table .approve:hover {
+  background: #cbf5c8;
+  color: #106825;
+}
+
+.lp-table .reject {
+  background: #ffeaea;
+  color: #bc363e;
+  border: 1px solid #ffd2d2;
+}
+.lp-table .reject:hover {
+  background: #ffd4d4;
+  color: #972022;
+}
+
+/* Feedback/info text */
+.lp-loading {
+  color: #2448ba;
+  font-size: 1.12rem;
+  margin-top: 28px;
+  font-weight: 500;
+}
+.lp-info-text {
+  color: #2a3e86;
+  font-size: 1.03rem;
+  margin-top: 16px;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .lp-dashboard-container {
+    padding: 18px 2vw;
+    max-width: 97vw;
+  }
+  .lp-dashboard-heading {
+    font-size: 1.27rem;
+  }
+  .lp-btn {
+    padding: 10px 13px;
+    font-size: 0.95rem;
+  }
+  .lp-table-heading { font-size: 1.03rem; }
+  .lp-table th, .lp-table td { padding: 8px 4px; font-size: 0.97rem; }
+}
+
+@media (max-width: 480px) {
+  .lp-dashboard-container { margin: 0 auto; padding: 5px 0px; border-radius: 8px; }
+  .lp-dashboard-buttons { flex-direction: column; gap: 10px; margin-bottom: 10px; }
+  .lp-table { font-size: 0.96rem; }
 }
