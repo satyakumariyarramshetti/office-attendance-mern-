@@ -89,7 +89,7 @@ const LeavePlan = () => {
       <form className="leave-form" onSubmit={handleSubmit}>
         <h2>Leave Plan</h2>
         <label>
-          Enter your ID:
+          Enter your EmployeeID:
           <input
             type="text"
             name="id"
@@ -107,7 +107,7 @@ const LeavePlan = () => {
           />
         </label>
         <label>
-          Name:
+          Name Of The Person:
           <input
             type="text"
             name="name"
