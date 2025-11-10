@@ -4,15 +4,33 @@ const router = express.Router();
 const LeaveRequest = require('../models/LeaveRequest');
 
 // Create new leave request
+// Create new leave request
 router.post('/create', async (req, res) => {
   try {
-    const leaveReq = new LeaveRequest(req.body);
+    const { id, name, phone, dates } = req.body;
+
+    if (!id || !name || !phone || !dates || !Array.isArray(dates)) {
+      return res.status(400).json({ success: false, message: 'Invalid input' });
+    }
+
+    // Convert array of dates (strings) to array of objects
+    const formattedDates = dates.map(date => ({ date, status: 'pending' }));
+
+    const leaveReq = new LeaveRequest({
+      id,
+      name,
+      phone,
+      dates: formattedDates,
+    });
+
     await leaveReq.save();
     res.status(201).json({ success: true, data: leaveReq });
   } catch (error) {
+    console.error('Error saving leave request:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
+
 
 // Get leaves by status (pending, approved, rejected)
 router.get('/:status', async (req, res) => {
