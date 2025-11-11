@@ -2,8 +2,6 @@
 const express = require('express');
 const router = express.Router();
 const LeaveRequest = require('../models/LeaveRequest');
-const sendWhatsAppMessage = require('../utils/sendWhatsAppMessage'); // ✅ ensure this file exists
-
 
 // ✅ Create new leave request
 router.post('/create', async (req, res) => {
@@ -31,7 +29,6 @@ router.post('/create', async (req, res) => {
   }
 });
 
-
 // ✅ Get leaves by status (pending, approved, rejected)
 router.get('/:status', async (req, res) => {
   try {
@@ -56,8 +53,7 @@ router.get('/:status', async (req, res) => {
   }
 });
 
-
-// ✅ Update leave status (for Admin and HR) + Send WhatsApp message
+// ✅ Update leave status (for Admin and HR)
 router.put('/update-status', async (req, res) => {
   try {
     const { id, date, status, updatedBy } = req.body;
@@ -81,20 +77,7 @@ router.put('/update-status', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Leave request not found' });
     }
 
-    // ✅ After updating status, send WhatsApp notification
-    const phone = leaveReq.phone;
-    const employeeName = leaveReq.name;
-    const message =
-      status === 'approved'
-        ? `✅ Hello ${employeeName}, your leave for ${date} has been *approved*.`
-        : `❌ Hello ${employeeName}, your leave for ${date} has been *rejected*.`;
-
-    try {
-      await sendWhatsAppMessage(phone, message);
-      console.log(`WhatsApp message sent to ${phone}`);
-    } catch (err) {
-      console.error('Failed to send WhatsApp message:', err.message);
-    }
+    // ✅ Notification sending removed
 
     res.json({ success: true, data: leaveReq });
   } catch (error) {
