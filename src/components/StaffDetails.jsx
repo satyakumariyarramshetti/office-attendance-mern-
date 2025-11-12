@@ -25,22 +25,23 @@ const [selectedStaff, setSelectedStaff] = useState(null);
   // ✅ Fetch all staff from backend
  
 
-   useEffect(() => {
     const fetchStaff = async () => {
-      try {
-        const response = await fetch(`${API_BASE}/api/staffs`);
-        const data = await response.json();
-        setStaff(data);
-      } catch (err) {
-        console.error("Error fetching staff:", err);
-      }
-    };
+    try {
+      const response = await fetch(`${API_BASE}/api/staffs`);
+      const data = await response.json();
+      setStaff(data);
+    } catch (err) {
+      console.error("Error fetching staff:", err);
+    }
+  };
 
-    fetchStaff(); // ✅ run once on mount (or when API_BASE changes)
-  }, [API_BASE]); // ✅ re-run only if API_BASE changes
+  // ✅ initial load
+  useEffect(() => {
+    fetchStaff();
+  }, [API_BASE]);
+
 
   
-
   // ✅ Reactive filtering
   useEffect(() => {
     let filtered = selectedDept === "All"
