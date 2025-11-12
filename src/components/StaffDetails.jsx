@@ -159,16 +159,17 @@ const handleUpdateStaff = async (updatedStaff) => {
 <div className="staff-table-container">
   <table className="staff-table">
     <thead>
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Designation</th>
-        <th>Department</th>
-        <th>Gender</th>
-        <th>Phone</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
+  <tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Designation</th>
+    <th>Department</th>
+    <th>Email</th>    
+    <th>Phone</th>
+    <th>Actions</th>
+  </tr>
+</thead>
+
    <tbody>
   {filteredStaff.map(member => (
     <tr key={member._id || member.id}>
@@ -176,7 +177,7 @@ const handleUpdateStaff = async (updatedStaff) => {
       <td data-label="Name">{member.name}</td>
       <td data-label="Designation">{member.designation}</td>
       <td data-label="Department">{member.department}</td>
-      <td data-label="Gender">{member.gender || "N/A"}</td>
+      <td data-label="Email">{member.email || "—"}</td>
       <td data-label="Phone">{member.phone || "—"}</td> {/* ✅ */}
       <td data-label="Actions">
   <button

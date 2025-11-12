@@ -10,18 +10,18 @@ const departments = [
   "C&S",
 ];
 
-// Add gender options
-const genders = ["Male", "Female", "Other"];
+
 
 const AddStaffModal = ({ onClose, onAdd }) => {
-  const [formData, setFormData] = useState({
+ const [formData, setFormData] = useState({
   id: "",
   name: "",
   designation: "",
   department: "",
-  gender: "",
-  phone: ""   // ✅ Added
+  email: "",     
+  phone: ""      
 });
+
 
 
   const handleChange = e => {
@@ -71,22 +71,15 @@ const AddStaffModal = ({ onClose, onAdd }) => {
             ))}
           </select>
 
-          {/* Dropdown for Gender */}
-          <select
-            name="gender"
-            onChange={handleChange}
-            value={formData.gender}
-            required
-          >
-            <option value="" disabled>
-              Select Gender
-            </option>
-            {genders.map(g => (
-              <option key={g} value={g}>
-                {g}
-              </option>
-            ))}
-          </select>
+          
+          <input
+  name="email"
+  placeholder="Email"
+  onChange={handleChange}
+  value={formData.email}
+  required
+/>
+
 
           <div className="modal-buttons">
             <button type="submit">Add</button>

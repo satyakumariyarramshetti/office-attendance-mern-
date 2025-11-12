@@ -18,17 +18,11 @@ router.get('/', async (req, res) => {
 // 🔹 GET: Seed dummy staff entries (insert only missing entries)
 router.get('/seed', async (req, res) => {
   const dummyStaff = [
-    { id: "101", name: "Arjun", department: "Piping", designation: "Engineer", gender: "Male" },
-    { id: "102", name: "Priya", department: "Common", designation: "HR", gender: "Female" },
-    { id: "103", name: "Kiran", department: "C&S", designation: "Technician", gender: "Male" },
-    { id: "104", name: "Meena", department: "Plant Engineering", designation: "Supervisor", gender: "Female" },
-    { id: "105", name: "Ravi", department: "Reverse Engineering", designation: "Analyst", gender: "Male" },
-    { id: "106", name: "Sneha", department: "Piping", designation: "Engineer", gender: "Female" },
-    { id: "107", name: "Abhay", department: "Common", designation: "Coordinator", gender: "Male" },
-    { id: "108", name: "Lakshmi", department: "C&S", designation: "Technician", gender: "Female" },
-    { id: "109", name: "Tarun", department: "Reverse Engineering", designation: "Junior Analyst", gender: "Male" },
-    { id: "110", name: "Nisha", department: "Plant Engineering", designation: "Lead Engineer", gender: "Female" },
-  ];
+  { id: "101", name: "Arjun", department: "Piping", designation: "Engineer", email: "arjun@example.com" },
+  { id: "102", name: "Priya", department: "Common", designation: "HR", email: "priya@example.com" },
+  
+];
+
 
   try {
     const existingStaff = await Staff.find({ id: { $in: dummyStaff.map(s => s.id) } }).select('id');

@@ -38,12 +38,13 @@ const EditStaffModal = ({ staffData, onClose, onUpdate }) => {
             onChange={handleChange}
           />
 
-          <label>Gender</label>
-          <select name="gender" value={form.gender} onChange={handleChange}>
-            <option>Male</option>
-            <option>Female</option>
-            <option>Other</option>
-          </select>
+          <label>Email</label>
+<input
+  name="email"
+  value={form.email || ""}
+  onChange={handleChange}
+/>
+
 
           <label>Phone</label>
           <input

@@ -5,12 +5,9 @@ const staffSchema = new mongoose.Schema({
   name: { type: String, required: true },
   department: { type: String },
   designation: { type: String, required: true },
-  gender: {
-    type: String,
-    required: true,
-    enum: ['Male', 'Female', 'Other']
-  },
-  phone: { type: String } // ✅ Added this line
+  email: { type: String, required: true },
+  phone: { type: String }
+
 });
 
 const Staff = mongoose.model('Staff', staffSchema);
