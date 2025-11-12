@@ -19,23 +19,26 @@ const AttendanceSheet = () => {
       navigate('/admin-login');
     }
   }, [navigate]);
+useEffect(() => {
+  setLoading(true);
+  setError(null);
 
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
+  fetch(`${API_BASE}/api/attendance/all`)
+    .then(res => res.json())
+    .then(data => {
+      setRecords(data);
+      setLoading(false);
+    })
+    .catch(err => {
+      console.error('Failed to fetch', err);
+      setError('Failed to load attendance data');
+      setLoading(false);
+    });
 
-    fetch(`${API_BASE}/api/attendance/all`)
-      .then(res => res.json())
-      .then(data => {
-        setRecords(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Failed to fetch', err);
-        setError('Failed to load attendance data');
-        setLoading(false);
-      });
-  }, []);
+  // ✅ Disable ESLint warning — API_BASE never changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
