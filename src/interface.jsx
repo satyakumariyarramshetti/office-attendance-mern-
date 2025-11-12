@@ -9,6 +9,7 @@ const PS_PREFIX = 'PS-';
 
 
 
+
 // --- Reusable StaffIdInput Component (No changes) ---
 const StaffIdInput = ({ inputId, value, onChange, staffNotFound }) => (
   <div className="form-group mb-2">
@@ -35,6 +36,34 @@ const StaffIdInput = ({ inputId, value, onChange, staffNotFound }) => (
     {staffNotFound && <small className="text-danger">Staff ID not found. Please check your ID.</small>}
   </div>
 );
+
+
+// ✅ Helper function: convert "HH:MM" → total minutes
+const timeToMinutes = (time) => {
+  if (!time) return 0;
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+};
+
+// ✅ Function to calculate net & gross minutes
+const getNetAndGrossMins = (attendance) => {
+  const inMins = timeToMinutes(attendance.inTime);
+  const outMins = timeToMinutes(attendance.outTime);
+
+  if (!attendance.inTime || !attendance.outTime) return { net: 0, gross: 0 };
+
+  let lunchMins = 0;
+  if (attendance.lunchOut && attendance.lunchIn) {
+    const lOutM = timeToMinutes(attendance.lunchOut);
+    const lInM = timeToMinutes(attendance.lunchIn);
+    if (lInM > lOutM) lunchMins = lInM - lOutM;
+  }
+
+  const net = outMins - inMins - lunchMins;
+  const gross = outMins - inMins;
+  return { net, gross };
+};
+
 
 const Interface = () => {
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
@@ -94,20 +123,6 @@ const timeToMinutes = (timeStr) => {
   return hours * 60 + minutes;
 };
 
-const getNetAndGrossMins = attendance => {
-  const inMins = timeToMinutes(attendance.inTime);
-  const outMins = timeToMinutes(attendance.outTime);
-  if (!attendance.inTime || !attendance.outTime) return { net: 0, gross: 0 };
-  let lunchMins = 0;
-  if (attendance.lunchOut && attendance.lunchIn) {
-    const lOutM = timeToMinutes(attendance.lunchOut);
-    const lInM = timeToMinutes(attendance.lunchIn);
-    if (lInM > lOutM) lunchMins = lInM - lOutM;
-  }
-  const net = outMins - inMins - lunchMins;
-  const gross = outMins - inMins;
-  return { net, gross };
-};
 
 
   const minutesToHoursMinutes = (totalMinutes) => {

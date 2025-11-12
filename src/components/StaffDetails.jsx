@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useCallback } from "react";
 import "./StaffDetails.css";
 import AddStaffModal from "./AddStaffModal";
 import EditStaffModal from "./EditStaffModal";
@@ -25,23 +25,23 @@ const [selectedStaff, setSelectedStaff] = useState(null);
   // ✅ Fetch all staff from backend
  
 
-    const fetchStaff = async () => {
-    try {
-      const response = await fetch(`${API_BASE}/api/staffs`);
-      const data = await response.json();
-      setStaff(data);
-    } catch (err) {
-      console.error("Error fetching staff:", err);
-    }
-  };
+  const fetchStaff = useCallback(async () => {
+  try {
+    const res = await fetch(`${API_BASE}/api/staffs`);
+    const data = await res.json();
+    setStaff(data);
+  } catch (err) {
+    console.error("Error fetching staff:", err);
+  }
+}, [API_BASE]);
 
   // ✅ initial load
   useEffect(() => {
     fetchStaff();
-  }, [API_BASE]);
+  }, [API_BASE,fetchStaff]);
 
 
-  
+
   // ✅ Reactive filtering
   useEffect(() => {
     let filtered = selectedDept === "All"
