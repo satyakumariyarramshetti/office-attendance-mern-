@@ -42,7 +42,7 @@ const LeavePlan = () => {
       }
     };
     fetchStaffDetails();
-  }, [form.id]);
+  }, [form.id,API_BASE]);
 
   // Remove an individual selected date
   const removeDate = (dateObj) => {

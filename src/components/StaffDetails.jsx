@@ -23,21 +23,23 @@ const StaffDetails = () => {
   const [editModal, setEditModal] = useState(false);
 const [selectedStaff, setSelectedStaff] = useState(null);
   // ✅ Fetch all staff from backend
-  const fetchStaff = async () => {
-    try {
-      const response = await fetch(`${API_BASE}/api/staffs`);
-      const data = await response.json();
-      setStaff(data);
-     
-    } catch (err) {
-      console.error("Error fetching staff:", err);
-    }
-  };
+ 
 
-  // ✅ Initial fetch
-  useEffect(() => {
-    fetchStaff();
-  }, [fetchStaff]);
+   useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/staffs`);
+        const data = await response.json();
+        setStaff(data);
+      } catch (err) {
+        console.error("Error fetching staff:", err);
+      }
+    };
+
+    fetchStaff(); // ✅ run once on mount (or when API_BASE changes)
+  }, [API_BASE]); // ✅ re-run only if API_BASE changes
+
+  
 
   // ✅ Reactive filtering
   useEffect(() => {
