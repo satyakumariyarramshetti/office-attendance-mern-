@@ -271,7 +271,7 @@ const timeToMinutes = (timeStr) => {
     }
   })
   .catch(() => setIsOTElligible(false));
-}, [formData.inTime, formData.date, formData.id,API_BASE, getNetAndGrossMins]);
+}, [formData.inTime, formData.date, formData.id,API_BASE, ]);
 
 
 
