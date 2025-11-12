@@ -37,7 +37,7 @@ const [selectedStaff, setSelectedStaff] = useState(null);
   // ✅ Initial fetch
   useEffect(() => {
     fetchStaff();
-  }, []);
+  }, [fetchStaff]);
 
   // ✅ Reactive filtering
   useEffect(() => {

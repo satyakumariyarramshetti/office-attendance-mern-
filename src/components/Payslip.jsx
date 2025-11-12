@@ -180,7 +180,7 @@ function Payslip() {
       }
     };
     fetchAllEmployees();
-  }, []);
+  }, [API_BASE]);
 
   useEffect(() => {
     const savedPdfCount = localStorage.getItem('pdfExportCount') || 0;

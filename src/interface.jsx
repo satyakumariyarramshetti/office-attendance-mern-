@@ -189,7 +189,7 @@ const getNetAndGrossMins = attendance => {
       console.error('Error fetching attendance:', err);
       setFormData(prev => ({...prev, id: fullId, name: staffName}));
     }
-  }, []);
+  }, [API_BASE]);
 
   // --- useEffects (no changes needed here) ---
   useEffect(() => {

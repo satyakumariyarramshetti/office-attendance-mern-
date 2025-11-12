@@ -33,7 +33,7 @@ const TodayAttendance = () => {
     };
 
     fetchTodayAttendance();
-  }, []);
+  }, [API_BASE]);
 
  const renderTable = (data) => (
   <table className="attendance-table">
