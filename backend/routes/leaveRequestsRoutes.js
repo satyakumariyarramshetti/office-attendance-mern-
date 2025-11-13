@@ -6,18 +6,23 @@ const LeaveRequest = require('../models/LeaveRequest');
 // ✅ Create new leave request
 router.post('/create', async (req, res) => {
   try {
-    const { id, name, phone, dates } = req.body;
+    const { id, name, email, dates } = req.body;
 
-    if (!id || !name || !phone || !dates || !Array.isArray(dates)) {
+    if (!id || !name || !email || !dates || !Array.isArray(dates)) {
       return res.status(400).json({ success: false, message: 'Invalid input' });
     }
 
-    const formattedDates = dates.map(date => ({ date, status: 'pending' }));
+    // ✅ Format dates into proper structure
+    const formattedDates = dates.map(date => ({
+      date,
+      status: 'pending',
+      updatedBy: 'Admin'
+    }));
 
     const leaveReq = new LeaveRequest({
       id,
       name,
-      phone,
+      email,
       dates: formattedDates,
     });
 
@@ -29,6 +34,8 @@ router.post('/create', async (req, res) => {
   }
 });
 
+
+
 // ✅ Get leaves by status (pending, approved, rejected)
 router.get('/:status', async (req, res) => {
   try {
@@ -38,13 +45,14 @@ router.get('/:status', async (req, res) => {
     const rows = leaveRequests.flatMap(req =>
       req.dates
         .filter(d => d.status === status)
-        .map(d => ({
-          id: req.id,
-          name: req.name,
-          phone: req.phone,
-          date: d.date,
-          status: d.status
-        }))
+       .map(d => ({
+  id: req.id,
+  name: req.name,
+  email: req.email,
+  date: d.date,
+  status: d.status
+}))
+
     );
 
     res.json({ success: true, data: rows });

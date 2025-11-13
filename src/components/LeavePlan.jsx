@@ -5,12 +5,13 @@ import "./LeavePlan.css";
 const LeavePlan = () => {
     const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-  const [form, setForm] = useState({
-    id: '',       // Only numeric part
-    name: '',
-    phone: '',
-    dates: []
-  });
+ const [form, setForm] = useState({
+  id: '',
+  name: '',
+  email: '',
+  dates: []
+});
+
 
   // Fetch staff details when 4 digits are entered
   useEffect(() => {
@@ -26,19 +27,20 @@ const LeavePlan = () => {
           if (response.ok) {
             const data = await response.json();
             setForm(prev => ({
-              ...prev,
-              name: data.name || '',
-              phone: data.phone || ''
-            }));
+  ...prev,
+  name: data.name || '',
+  email: data.email || ''
+}));
+
           } else {
-            setForm(prev => ({ ...prev, name: '', phone: '' }));
+            setForm(prev => ({ ...prev, name: '', email: '' }));
           }
         } catch (error) {
-          setForm(prev => ({ ...prev, name: '', phone: '' }));
+          setForm(prev => ({ ...prev, name: '', email: '' }));
         }
       } else {
         // If less than 4 digits, clear name/phone
-        setForm(prev => ({ ...prev, name: '', phone: '' }));
+        setForm(prev => ({ ...prev, name: '', email: '' }));
       }
     };
     fetchStaffDetails();
@@ -72,7 +74,7 @@ const LeavePlan = () => {
       body: JSON.stringify({
         id: `PS-${form.id}`,
         name: form.name,
-        phone: form.phone,
+        email: form.email,
         dates: form.dates.map(d => d.format ? d.format("DD-MM-YYYY") : d.toString())
       })
     });
@@ -81,7 +83,7 @@ const LeavePlan = () => {
       setForm({
         id: '',
         name: '',
-        phone: '',
+        email: '',
         dates: []
       });
     } else {
@@ -98,7 +100,7 @@ const LeavePlan = () => {
     setForm({
       id: '',
       name: '',
-      phone: '',
+      email: '',
       dates: []
     });
   };
@@ -136,15 +138,16 @@ const LeavePlan = () => {
           />
         </label>
         <label>
-          Phone Number:
-          <input
-            type="tel"
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-            required
-          />
-        </label>
+  Email:
+  <input
+    type="email"
+    name="email"
+    value={form.email}
+    onChange={handleChange}
+    required
+  />
+</label>
+
         <label>
           Leave Calendar (Select Dates):
           <DatePicker

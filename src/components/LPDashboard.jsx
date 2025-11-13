@@ -122,7 +122,7 @@ const LPDashboard = () => {
                 <tr>
                   <th>ID</th>
                   <th>Name</th>
-                  <th>Phone</th>
+                  <th>Email</th>
                   <th>Date</th>
                   <th>Status</th>
                   <th>Action</th>
@@ -133,7 +133,7 @@ const LPDashboard = () => {
                   <tr key={`${row.id}-${row.date}`}>
                     <td>{row.id}</td>
                     <td>{row.name}</td>
-                    <td>{row.phone}</td>
+                    <td>{row.email}</td>
                     <td>{row.date}</td>
                     <td>{row.status}</td>
                     <td>

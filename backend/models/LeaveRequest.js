@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const leaveRequestSchema = new mongoose.Schema({
   id: String,
   name: String,
-  phone: String,
+  email: String,
   dates: [
   {
     date: String,
