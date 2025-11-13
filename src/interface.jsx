@@ -323,6 +323,10 @@ const timeToMinutes = (timeStr) => {
 
    const handleChange = (e) => {
     const { id, value } = e.target;
+    if (id === 'dailyLeaveType') {
+    setFormData(prev => ({ ...prev, dailyLeaveType: value }));
+    return;
+  }
 
      // Add this block right here:
   if (id === 'delayReason') {

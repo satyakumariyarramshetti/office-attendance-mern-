@@ -77,7 +77,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 
-// POST: fetch staff name by exact full staff ID
+// POST: fetch staff name and email by exact full staff ID
 router.post('/getById', async (req, res) => {
   const id = String(req.body.id || '').trim();
   if (!id) {
@@ -86,16 +86,21 @@ router.post('/getById', async (req, res) => {
   try {
     const staff = await Staff.findOne({ id });
     if (staff) {
-  res.json({ name: staff.name, id: staff.id, phone: staff.phone });
-} else {
-  res.status(404).json({ error: 'Staff not found' });
-}
-
+      // ✅ Send both name and email
+      res.json({
+        id: staff.id,
+        name: staff.name,
+        email: staff.email
+      });
+    } else {
+      res.status(404).json({ error: 'Staff not found' });
+    }
   } catch (error) {
     console.error('Error fetching staff:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
+
 
 
 // 🔍 GET: Search staff by last 3 digits of employee ID
