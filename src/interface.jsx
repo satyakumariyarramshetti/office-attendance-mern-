@@ -348,7 +348,10 @@ const timeToMinutes = (timeStr) => {
   } else {
     setFormData(prev => ({ ...prev, outTime: value, dailyLeaveType: '' }));
   }
+  return;
 }
+  // <-- ADD THIS DEFAULT CASE -->
+  setFormData((prev) => ({ ...prev, [id]: value }));
 
   };
 
