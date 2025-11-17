@@ -53,6 +53,14 @@ const EditStaffModal = ({ staffData, onClose, onUpdate }) => {
             onChange={handleChange}
           />
 
+          <label>Reports To</label>
+<input
+  name="reportsTo"
+  value={form.reportsTo || ""}
+  onChange={handleChange}
+/>
+
+
           <div className="modal-actions">
             <button type="submit" className="save-btn">Save</button>
             <button type="button" onClick={onClose} className="cancel-btn">

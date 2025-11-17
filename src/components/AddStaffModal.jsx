@@ -80,6 +80,14 @@ const AddStaffModal = ({ onClose, onAdd }) => {
   required
 />
 
+<input
+  name="reportsTo"
+  placeholder="Reports To (Name or ID)"
+  onChange={handleChange}
+  value={formData.reportsTo}
+/>
+
+
 
           <div className="modal-buttons">
             <button type="submit">Add</button>

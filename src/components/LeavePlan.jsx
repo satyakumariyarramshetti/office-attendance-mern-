@@ -5,12 +5,14 @@ import "./LeavePlan.css";
 const LeavePlan = () => {
     const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
- const [form, setForm] = useState({
+const [form, setForm] = useState({
   id: '',
   name: '',
   email: '',
-  dates: []
+  dates: [],
+  reportsTo: ''   // <-- Add this
 });
+
 
 
   // Fetch staff details when 4 digits are entered
@@ -65,7 +67,7 @@ const LeavePlan = () => {
   };
 
   // Submit event
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
   try {
     const response = await fetch(`${API_BASE}/api/leave-requests/create`, {
@@ -75,6 +77,7 @@ const LeavePlan = () => {
         id: `PS-${form.id}`,
         name: form.name,
         email: form.email,
+        reportsTo: form.reportsTo, // <-- Add this line!
         dates: form.dates.map(d => d.format ? d.format("DD-MM-YYYY") : d.toString())
       })
     });
@@ -84,7 +87,8 @@ const LeavePlan = () => {
         id: '',
         name: '',
         email: '',
-        dates: []
+        dates: [],
+        reportsTo: ''
       });
     } else {
       alert('Error submitting leave request');
@@ -95,14 +99,17 @@ const LeavePlan = () => {
 };
 
 
+
   // Cancel event
   const handleCancel = () => {
     setForm({
-      id: '',
-      name: '',
-      email: '',
-      dates: []
-    });
+  id: '',
+  name: '',
+  email: '',
+  dates: [],
+  reportsTo: '' // <-- Add this
+});
+
   };
 
   return (
@@ -147,6 +154,17 @@ const LeavePlan = () => {
     required
   />
 </label>
+<label>
+  Reports To:
+  <input
+    type="text"
+    name="reportsTo"
+    value={form.reportsTo}
+    onChange={handleChange}
+    required
+  />
+</label>
+
 
         <label>
           Leave Calendar (Select Dates):

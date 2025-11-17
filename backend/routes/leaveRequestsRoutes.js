@@ -4,9 +4,10 @@ const router = express.Router();
 const LeaveRequest = require('../models/LeaveRequest');
 
 // ✅ Create new leave request
+// ✅ Create new leave request
 router.post('/create', async (req, res) => {
   try {
-    const { id, name, email, dates } = req.body;
+    const { id, name, email, dates, reportsTo } = req.body; // <-- include reportsTo
 
     if (!id || !name || !email || !dates || !Array.isArray(dates)) {
       return res.status(400).json({ success: false, message: 'Invalid input' });
@@ -23,6 +24,7 @@ router.post('/create', async (req, res) => {
       id,
       name,
       email,
+      reportsTo, // <-- add this here
       dates: formattedDates,
     });
 

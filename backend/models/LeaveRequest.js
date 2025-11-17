@@ -4,14 +4,14 @@ const leaveRequestSchema = new mongoose.Schema({
   id: String,
   name: String,
   email: String,
+  reportsTo: String, 
   dates: [
-  {
-    date: String,
-    status: { type: String, default: 'pending' },
-    updatedBy: { type: String, default: 'Admin' } // 👈 add this line
-  }
-]
-
+    {
+      date: String,
+      status: { type: String, default: 'pending' },
+      updatedBy: { type: String, default: 'Admin' }
+    }
+  ]
 });
 
 module.exports = mongoose.model('LeaveRequest', leaveRequestSchema);

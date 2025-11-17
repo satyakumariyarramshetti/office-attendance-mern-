@@ -169,6 +169,8 @@ const handleUpdateStaff = async (updatedStaff) => {
     <th>Department</th>
     <th>Email</th>    
     <th>Phone</th>
+    <th>Reports To</th>
+
     <th>Actions</th>
   </tr>
 </thead>
@@ -182,6 +184,8 @@ const handleUpdateStaff = async (updatedStaff) => {
       <td data-label="Department">{member.department}</td>
       <td data-label="Email">{member.email || "—"}</td>
       <td data-label="Phone">{member.phone || "—"}</td> {/* ✅ */}
+      <td data-label="Reports To">{member.reportsTo || "—"}</td>
+
       <td data-label="Actions">
   <button
     onClick={() => {
