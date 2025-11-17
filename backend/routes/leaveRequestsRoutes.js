@@ -2,18 +2,17 @@
 const express = require('express');
 const router = express.Router();
 const LeaveRequest = require('../models/LeaveRequest');
+const { sendLeaveStatusEmail } = require('../utils/mailer'); // Mail utility import
 
-// ✅ Create new leave request
-// ✅ Create new leave request
+// Create new leave request
 router.post('/create', async (req, res) => {
   try {
-    const { id, name, email, dates, reportsTo } = req.body; // <-- include reportsTo
+    const { id, name, email, dates, reportsTo } = req.body; 
 
     if (!id || !name || !email || !dates || !Array.isArray(dates)) {
       return res.status(400).json({ success: false, message: 'Invalid input' });
     }
 
-    // ✅ Format dates into proper structure
     const formattedDates = dates.map(date => ({
       date,
       status: 'pending',
@@ -24,7 +23,7 @@ router.post('/create', async (req, res) => {
       id,
       name,
       email,
-      reportsTo, // <-- add this here
+      reportsTo,
       dates: formattedDates,
     });
 
@@ -36,26 +35,24 @@ router.post('/create', async (req, res) => {
   }
 });
 
-
-
-// ✅ Get leaves by status (pending, approved, rejected)
+// Get leaves by status (pending, approved, rejected)
 router.get('/:status', async (req, res) => {
   try {
     const { status } = req.params;
     const leaveRequests = await LeaveRequest.find();
-const rows = leaveRequests.flatMap(req =>
-  req.dates
-    .filter(d => d.status === status)
-    .map(d => ({
-      id: req.id,
-      name: req.name,
-      email: req.email,
-      reportsTo: req.reportsTo,
-      date: d.date,
-      status: d.status
-    }))
-);
 
+    const rows = leaveRequests.flatMap(req =>
+      req.dates
+        .filter(d => d.status === status)
+        .map(d => ({
+          id: req.id,
+          name: req.name,
+          email: req.email,
+          reportsTo: req.reportsTo,
+          date: d.date,
+          status: d.status
+        }))
+    );
 
     res.json({ success: true, data: rows });
   } catch (error) {
@@ -63,7 +60,7 @@ const rows = leaveRequests.flatMap(req =>
   }
 });
 
-// ✅ Update leave status (for Admin and HR)
+// Update leave status (for Admin and HR) and send notification email
 router.put('/update-status', async (req, res) => {
   try {
     const { id, date, status, updatedBy } = req.body;
@@ -87,7 +84,49 @@ router.put('/update-status', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Leave request not found' });
     }
 
-    // ✅ Notification sending removed
+    // Compose mail based on status
+    const empName = leaveReq.name;
+    const empEmail = leaveReq.email;
+    const formattedDate = date;
+    let subject, body;
+
+    if (status === 'approved') {
+      subject = `Leave Approved – ${empName}`;
+      body = `Dear ${empName},
+
+Your leave request dated for ${formattedDate} has been reviewed and approved.
+
+Please ensure that all pending tasks are handed over appropriately and your responsibilities are managed during your absence.
+
+If there are any changes to your leave plan, kindly inform us in advance.
+
+Wishing you a smooth break.
+
+Regards,
+Praxsol Engineering Private Limited`;
+    } else if (status === 'rejected') {
+      subject = `Leave Request – Not Approved`;
+      body = `Dear ${empName},
+
+We have reviewed your leave request for ${formattedDate}.
+
+Unfortunately, we are unable to approve your leave at this time due to [Reason: ongoing project workload / urgent deliverables / insufficient leave balance / staffing constraints].
+
+You may apply again once the situation allows.
+
+If you need further clarification, feel free to reach out.
+
+Regards,
+Praxsol Engineering Private Limited`;
+    }
+
+    // Send mail notification
+    try {
+      await sendLeaveStatusEmail(empEmail, subject, body);
+      console.log("Leave status email sent");
+    } catch (err) {
+      console.error("Failed to send leave status email", err);
+    }
 
     res.json({ success: true, data: leaveReq });
   } catch (error) {

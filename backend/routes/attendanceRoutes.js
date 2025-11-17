@@ -147,17 +147,26 @@ if (
    - If dailyLeaveType is sent directly, store it as-is (no balance change)
 ------------------------------------------------------------------ */
 router.post('/save', async (req, res) => {
- let {
-  id, date, inTime, lunchOut, lunchIn, outTime, day,
-  permissionType, hours, dailyLeaveType, leaveType, location,
-  inTimeMethod,
- 
-  delayReason              // <-- ADD THIS
-} = req.body;
-
+  let {
+    id, date, inTime, lunchOut, lunchIn, outTime, day,
+    permissionType, hours, dailyLeaveType, leaveType, location,
+    inTimeMethod,
+    delayReason // <-- Added this as per latest requirements
+  } = req.body;
 
   if (!id || !date) {
     return res.status(400).json({ error: 'ID and Date are required' });
+  }
+
+  // --- LATE MARK VALIDATION BLOCK ---
+  if (inTime && inTime > '09:15') {
+    if (!delayReason) {
+      return res.status(400).json({ error: 'Delay reason must be provided for late in-time.' });
+    }
+    const allowedReasons = ['Late Mark', 'Permission', 'Project Requirement', 'TOM', 'Late Flexi', 'First 50% Leave', 'Deputation'];
+    if (!allowedReasons.includes(delayReason)) {
+      return res.status(400).json({ error: 'Invalid delay reason for late mark.' });
+    }
   }
 
   const submittedDate = new Date(date).setHours(0, 0, 0, 0);

@@ -199,6 +199,8 @@ const timeToMinutes = (timeStr) => {
   hours: attendanceData.hours || '',
   dailyLeaveType: attendanceData.dailyLeaveType || '',
   leaveType: attendanceData.leaveType || '',
+  delayReason: attendanceData.delayReason || prev.delayReason || '',
+
       }));
     } catch (err) {
       console.error('Error fetching attendance:', err);
@@ -396,7 +398,22 @@ const timeToMinutes = (timeStr) => {
 
       // reset everything as before
       setIdInputs({ inTime: '', lunch: '', outTime: '', permission: '', leave: '' });
-      setFormData({ id: '', name: '', date: '', day: '', inTime: '', lunchIn: '', lunchOut: '', outTime: '', permissionType: '', hours: '', dailyLeaveType: '', leaveType: '', location: '' });
+setFormData({
+  id: '',
+  name: '',
+  date: '',
+  day: '',
+  inTime: '',
+  lunchIn: '',
+  lunchOut: '',
+  outTime: '',
+  permissionType: '',
+  hours: '',
+  dailyLeaveType: '',
+  leaveType: '',
+  location: '',
+  delayReason: ''   // <--- VERY IMPORTANT FIX
+});
       setInTimeMethod('');
       setStaffNotFound(false); setMessage(''); setLunchSubmitEnabled(false); setActiveSideCard(null);
     } else {
