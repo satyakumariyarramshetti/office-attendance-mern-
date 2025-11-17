@@ -60,7 +60,7 @@ router.get('/:status', async (req, res) => {
   }
 });
 
-// Update leave status (for Admin and HR) and send notification email
+// Update leave status (for Admin and HR) and send notification email asynchronously
 router.put('/update-status', async (req, res) => {
   try {
     const { id, date, status, updatedBy } = req.body;
@@ -100,8 +100,6 @@ Please ensure that all pending tasks are handed over appropriately and your resp
 
 If there are any changes to your leave plan, kindly inform us in advance.
 
-Wishing you a smooth break.
-
 Regards,
 Praxsol Engineering Private Limited`;
     } else if (status === 'rejected') {
@@ -120,15 +118,14 @@ Regards,
 Praxsol Engineering Private Limited`;
     }
 
-    // Send mail notification
-    try {
-      await sendLeaveStatusEmail(empEmail, subject, body);
-      console.log("Leave status email sent");
-    } catch (err) {
-      console.error("Failed to send leave status email", err);
-    }
-
+    // Respond to client immediately after DB update
     res.json({ success: true, data: leaveReq });
+
+    // Then send mail asynchronously, no await here
+    sendLeaveStatusEmail(empEmail, subject, body)
+      .then(() => console.log('Leave status email sent'))
+      .catch(err => console.error('Failed to send leave status email', err));
+
   } catch (error) {
     console.error('Error updating leave status:', error);
     res.status(500).json({ success: false, error: error.message });
