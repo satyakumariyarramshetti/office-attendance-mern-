@@ -151,8 +151,7 @@ router.post('/save', async (req, res) => {
   id, date, inTime, lunchOut, lunchIn, outTime, day,
   permissionType, hours, dailyLeaveType, leaveType, location,
   inTimeMethod,
-  permissionStartTime,
-  permissionEndTime,
+ 
   delayReason              // <-- ADD THIS
 } = req.body;
 
@@ -226,13 +225,7 @@ router.post('/save', async (req, res) => {
         }
       }
 
-      // --- NEW: Handle Permission Start/End Time ---
-      if (typeof permissionStartTime !== 'undefined' && permissionStartTime) {
-        attendance.permissionStartTime = permissionStartTime;
-      }
-      if (typeof permissionEndTime !== 'undefined' && permissionEndTime) {
-        attendance.permissionEndTime = permissionEndTime;
-      }
+      
 
       await attendance.save();
 
@@ -290,8 +283,6 @@ router.post('/save', async (req, res) => {
         outTime,
         permissionType: isPermissionCard ? (permissionType || null) : null,
         hours: isPermissionCard ? hours : undefined,
-        permissionStartTime: permissionStartTime || null,   // <-- new
-        permissionEndTime: permissionEndTime || null,       // <-- new
         dailyLeaveType: isOutTimeCard
           ? (permissionType || null)
           : (typeof finalDailyLeaveType !== 'undefined' ? finalDailyLeaveType : null),

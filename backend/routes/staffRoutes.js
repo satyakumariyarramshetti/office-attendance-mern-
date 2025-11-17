@@ -78,6 +78,7 @@ router.delete('/:id', async (req, res) => {
 
 
 // POST: fetch staff name and email by exact full staff ID
+// POST: fetch staff name and email by exact full staff ID
 router.post('/getById', async (req, res) => {
   const id = String(req.body.id || '').trim();
   if (!id) {
@@ -85,14 +86,16 @@ router.post('/getById', async (req, res) => {
   }
   try {
     const staff = await Staff.findOne({ id });
-    if (staff) {
-      // ✅ Send both name and email
-      res.json({
-        id: staff.id,
-        name: staff.name,
-        email: staff.email
-      });
-    } else {
+   if (staff) {
+  res.json({
+    id: staff.id,
+    name: staff.name,
+    email: staff.email,
+    reportsTo: staff.reportsTo // <-- Add this line!
+  });
+}
+
+    else {
       res.status(404).json({ error: 'Staff not found' });
     }
   } catch (error) {
@@ -100,6 +103,7 @@ router.post('/getById', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
 
 
 

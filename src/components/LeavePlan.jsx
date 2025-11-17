@@ -3,17 +3,15 @@ import DatePicker from "react-multi-date-picker";
 import "./LeavePlan.css";
 
 const LeavePlan = () => {
-    const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-const [form, setForm] = useState({
-  id: '',
-  name: '',
-  email: '',
-  dates: [],
-  reportsTo: ''   // <-- Add this
-});
-
-
+  const [form, setForm] = useState({
+    id: '',
+    name: '',
+    email: '',
+    dates: [],
+    reportsTo: ''
+  });
 
   // Fetch staff details when 4 digits are entered
   useEffect(() => {
@@ -29,24 +27,24 @@ const [form, setForm] = useState({
           if (response.ok) {
             const data = await response.json();
             setForm(prev => ({
-  ...prev,
-  name: data.name || '',
-  email: data.email || ''
-}));
-
+              ...prev,
+              name: data.name || '',
+              email: data.email || '',
+              reportsTo: data.reportsTo || ''
+            }));
           } else {
-            setForm(prev => ({ ...prev, name: '', email: '' }));
+            setForm(prev => ({ ...prev, name: '', email: '', reportsTo: '' }));
           }
         } catch (error) {
-          setForm(prev => ({ ...prev, name: '', email: '' }));
+          setForm(prev => ({ ...prev, name: '', email: '', reportsTo: '' }));
         }
       } else {
-        // If less than 4 digits, clear name/phone
-        setForm(prev => ({ ...prev, name: '', email: '' }));
+        // If less than 4 digits, clear auto fields
+        setForm(prev => ({ ...prev, name: '', email: '', reportsTo: '' }));
       }
     };
     fetchStaffDetails();
-  }, [form.id,API_BASE]);
+  }, [form.id, API_BASE]);
 
   // Remove an individual selected date
   const removeDate = (dateObj) => {
@@ -67,49 +65,46 @@ const [form, setForm] = useState({
   };
 
   // Submit event
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const response = await fetch(`${API_BASE}/api/leave-requests/create`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: `PS-${form.id}`,
-        name: form.name,
-        email: form.email,
-        reportsTo: form.reportsTo, // <-- Add this line!
-        dates: form.dates.map(d => d.format ? d.format("DD-MM-YYYY") : d.toString())
-      })
-    });
-    if (response.ok) {
-      alert('Leave request submitted!');
-      setForm({
-        id: '',
-        name: '',
-        email: '',
-        dates: [],
-        reportsTo: ''
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${API_BASE}/api/leave-requests/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: `PS-${form.id}`,
+          name: form.name,
+          email: form.email,
+          reportsTo: form.reportsTo,
+          dates: form.dates.map(d => d.format ? d.format("DD-MM-YYYY") : d.toString())
+        })
       });
-    } else {
-      alert('Error submitting leave request');
+      if (response.ok) {
+        alert('Leave request submitted!');
+        setForm({
+          id: '',
+          name: '',
+          email: '',
+          dates: [],
+          reportsTo: ''
+        });
+      } else {
+        alert('Error submitting leave request');
+      }
+    } catch (error) {
+      alert('Network or server error');
     }
-  } catch (error) {
-    alert('Network or server error');
-  }
-};
-
-
+  };
 
   // Cancel event
   const handleCancel = () => {
     setForm({
-  id: '',
-  name: '',
-  email: '',
-  dates: [],
-  reportsTo: '' // <-- Add this
-});
-
+      id: '',
+      name: '',
+      email: '',
+      dates: [],
+      reportsTo: ''
+    });
   };
 
   return (
@@ -127,7 +122,6 @@ const handleSubmit = async (e) => {
               if (val.startsWith("PS-")) {
                 val = val.slice(3);
               }
-              // Allow only numbers
               val = val.replace(/[^0-9]/g, "");
               setForm({ ...form, id: val });
             }}
@@ -145,27 +139,25 @@ const handleSubmit = async (e) => {
           />
         </label>
         <label>
-  Email:
-  <input
-    type="email"
-    name="email"
-    value={form.email}
-    onChange={handleChange}
-    required
-  />
-</label>
-<label>
-  Reports To:
-  <input
-    type="text"
-    name="reportsTo"
-    value={form.reportsTo}
-    onChange={handleChange}
-    required
-  />
-</label>
-
-
+          Email:
+          <input
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            required
+          />
+        </label>
+        <label>
+          Reports To:
+          <input
+            type="text"
+            name="reportsTo"
+            value={form.reportsTo}
+            onChange={handleChange}
+            required
+          />
+        </label>
         <label>
           Leave Calendar (Select Dates):
           <DatePicker
@@ -177,7 +169,6 @@ const handleSubmit = async (e) => {
             placeholder="Select leave dates"
           />
         </label>
-        {/* Custom chip display for selected dates */}
         {form.dates.length > 0 && (
           <div className="selected-dates">
             {form.dates.map((dateObj, i) => (

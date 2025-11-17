@@ -1,11 +1,11 @@
-/* Main background is white */
+/* Dashboard Main Background */
 .lp-dashboard-bg {
   background: #fff;
   min-height: 100vh;
   width: 100vw;
 }
 
-/* Container has mild shadow and rounded edges */
+/* Container: Centered, Rounded, Mild Shadow */
 .lp-dashboard-container {
   padding: 40px 30px;
   background: #fff;
@@ -16,7 +16,6 @@
   max-width: 75%;
 }
 
-/* Heading styles */
 .lp-dashboard-heading {
   color: #2448ba;
   font-size: 2rem;
@@ -25,7 +24,6 @@
   letter-spacing: 0.5px;
 }
 
-/* Buttons row */
 .lp-dashboard-buttons {
   display: flex;
   justify-content: center;
@@ -33,7 +31,7 @@
   margin-bottom: 24px;
 }
 
-/* Button styles */
+/* Status Button Styles */
 .lp-btn {
   padding: 14px 32px;
   font-size: 1.11rem;
@@ -46,17 +44,15 @@
   outline: none;
   letter-spacing: 0.2px;
 }
-
 .lp-btn.pending { background: #fffbe6; color: #735e0b; }
 .lp-btn.approved { background: #e6ffed; color: #088341; }
 .lp-btn.rejected { background: #ffeaea; color: #bc2c2c; }
-
 .lp-btn.active {
   border: 2px solid #2448ba;
   box-shadow: 0 2px 12px rgba(52,138,255,0.19);
 }
 
-/* Table container + headings */
+/* Table Section */
 .lp-dashboard-table { margin-top: 16px; }
 .lp-table-heading {
   color: #2448ba;
@@ -66,7 +62,7 @@
   font-weight: bold;
 }
 
-/* Table styles */
+/* Table Styles */
 .lp-table {
   width: 100%;
   border-collapse: collapse;
@@ -77,33 +73,25 @@
   box-shadow: 0 1px 4px rgba(162,196,255,0.05);
   overflow: hidden;
 }
-
-/* Table cell styles */
 .lp-table th, .lp-table td {
   padding: 13px 11px;
   text-align: center;
 }
-
 .lp-table th {
   background: #e4eeff;
   color: #2448ba;
   font-weight: 650;
   letter-spacing: 0.1px;
   border-bottom: 1px solid #c7d2fd;
-  text-align: center;  /* Add this line for header */
+  text-align: center;
 }
-
-
-/* Table rows */
 .lp-table tr {
   border-bottom: 1px solid #eaeaea;
   background: #fff;
 }
-.lp-table tr:last-child {
-  border-bottom: none;
-}
+.lp-table tr:last-child { border-bottom: none; }
 
-/* Action buttons */
+/* Action Buttons */
 .lp-table .lp-action-btn {
   padding: 8px 18px;
   font-size: 1rem;
@@ -114,7 +102,6 @@
   margin-right: 6px;
   transition: background 0.13s, color 0.13s;
 }
-
 .lp-table .approve {
   background: #e7fbe6;
   color: #18803c;
@@ -124,7 +111,6 @@
   background: #cbf5c8;
   color: #106825;
 }
-
 .lp-table .reject {
   background: #ffeaea;
   color: #bc363e;
@@ -135,7 +121,7 @@
   color: #972022;
 }
 
-/* Feedback/info text */
+/* Feedback/info */
 .lp-loading {
   color: #2448ba;
   font-size: 1.12rem;
@@ -149,60 +135,44 @@
   font-weight: 500;
 }
 
-/* Responsive */
+/* Responsive styles */
 @media (max-width: 767px) {
   .lp-dashboard-container {
     padding: 18px 2vw;
     max-width: 97vw;
   }
-  .lp-dashboard-heading {
-    font-size: 1.27rem;
-  }
-  .lp-btn {
-    padding: 10px 13px;
-    font-size: 0.95rem;
-  }
+  .lp-dashboard-heading { font-size: 1.27rem; }
+  .lp-btn { padding: 10px 13px; font-size: 0.95rem; }
   .lp-table-heading { font-size: 1.03rem; }
   .lp-table th, .lp-table td { padding: 8px 4px; font-size: 0.97rem; }
 }
-
 @media (max-width: 480px) {
   .lp-dashboard-container { margin: 0 auto; padding: 5px 0px; border-radius: 8px; }
   .lp-dashboard-buttons { flex-direction: column; gap: 10px; margin-bottom: 10px; }
   .lp-table { font-size: 0.96rem; }
 }
 
-
+/* Color helpers for status messages/text */
 .text-green {
   color: green;
   font-weight: 600;
 }
-
 .text-red {
   color: red;
   font-weight: 600;
 }
 
-
-
-
-
-
-
-
-
+/* Role Switch Styles */
 .lp-role-switch {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 15px;
 }
-
 .lp-role-label {
   font-weight: 600;
   color: #444;
 }
-
 .lp-role-btn {
   background: #eee;
   border: 1px solid #ccc;
@@ -211,10 +181,276 @@
   cursor: pointer;
   transition: 0.2s;
 }
-
 .lp-role-btn.active {
   background: #007bff;
   color: white;
   border-color: #007bff;
 }
 
+/* Dropdown for roles */
+.lp-role-dropdown {
+  background: #f7faff;
+  border: 1px solid #c7d2fd;
+  border-radius: 8px;
+  font-size: 1rem;
+  padding: 5px 15px;
+  font-weight: 600;
+  margin-left: 12px;
+  outline: none;
+  cursor: pointer;
+}
+.lp-role-dropdown:focus {
+  border-color: #2448ba;
+}
+
+
+/* Password Modal Backdrop */
+.lp-modal-backdrop {
+  position: fixed;
+  left: 0; top: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* Modal Dialog Container */
+.lp-modal-content {
+  background: #fff;
+  padding: 28px 22px;
+  border-radius: 15px;
+  min-width: 270px;
+  box-shadow: 0 7px 32px rgba(52,97,167,0.19);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Modal Title */
+.lp-modal-content h4 {
+  color: #2448ba;
+  font-size: 1.13rem;
+  font-weight: bold;
+  margin-bottom: 11px;
+}
+
+/* Input box styling */
+.lp-modal-content input[type="password"] {
+  padding: 8px;
+  border: 1px solid #c7d2fd;
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-bottom: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  transition: border 0.15s;
+}
+.lp-modal-content input[type="password"]:focus {
+  border-color: #2448ba;
+}
+
+/* Modal Buttons */
+.lp-modal-content button {
+  background: #2448ba;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 20px;
+  margin: 0 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.16s;
+  outline: none;
+}
+.lp-modal-content button:hover {
+  background: #183689;
+}
+
+/* Cancel Button override */
+.lp-modal-content button:last-child {
+  background: #eee;
+  color: #333;
+}
+.lp-modal-content button:last-child:hover {
+  background: #dadada;
+}
+
+/* Error Message */
+.lp-modal-content .auth-error {
+  color: #d32e32;
+  font-size: 1.08rem;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+/* Responsive modal for mobile */
+@media (max-width: 480px) {
+  .lp-modal-content {
+    min-width: 95vw;
+    padding: 12px 7px;
+  }
+  .lp-modal-content h4 {
+    font-size: 1rem;
+  }
+  .lp-modal-content button {
+    font-size: 0.96rem;
+    padding: 6px 13px;
+  }
+}
+
+
+/* Password Modal Backdrop - covers screen */
+.lp-modal-backdrop {
+  position: fixed;
+  left: 0; top: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(18,31,61,0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* Modal Dialog Container */
+.lp-modal-content {
+  background: #fff;
+  padding: 36px 32px;
+  border-radius: 17px;
+  min-width: 340px;
+  max-width: 96vw;
+  box-shadow: 0 10px 34px rgba(52,97,167,0.18);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-size: 1.09rem;
+  align-items: center;
+}
+
+/* Modal Title */
+.lp-modal-content h4 {
+  color: #2448ba;
+  font-size: 1.24rem;
+  font-weight: 700;
+  margin-bottom: 11px;
+  letter-spacing: 0.4px;
+}
+
+.lp-modal-content label {
+  font-weight: 550;
+  font-size: 1.07rem;
+  margin-bottom: 7px;
+  color: #183689;
+}
+
+/* Input box styling */
+.lp-modal-content input[type="password"], 
+.lp-modal-content select.lp-role-dropdown {
+  padding: 12px 14px;
+  border: 1.5px solid #c7d2fd;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  margin-bottom: 11px;
+  width: 87%;
+  max-width: 330px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border 0.15s;
+  background: #f8faff;
+}
+.lp-modal-content input[type="password"]:focus,
+.lp-modal-content select.lp-role-dropdown:focus {
+  border-color: #2448ba;
+  background: #f4f8ff;
+}
+
+/* Modal Buttons */
+.lp-modal-content button {
+  background: #2448ba;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 28px;
+  margin: 0 7px;
+  font-size: 1.12rem;
+  font-weight: 700;
+  letter-spacing: 0.12px;
+  cursor: pointer;
+  transition: background 0.16s, box-shadow 0.16s;
+  outline: none;
+  box-shadow: 0 2px 12px rgba(52,138,255,0.12);
+}
+.lp-modal-content button:hover,
+.lp-modal-content button:focus {
+  background: #183689;
+}
+
+/* Cancel/Back Button */
+.lp-modal-content button:last-child {
+  background: #e7e7e7;
+  color: #333;
+  font-weight: 600;
+  border: 1px solid #bbb;
+}
+.lp-modal-content button:last-child:hover,
+.lp-modal-content button:last-child:focus {
+  background: #dadada;
+  color: #183689;
+}
+
+/* Error Message */
+.lp-modal-content .auth-error,
+.lp-modal-content .auth-error-msg {
+  color: #d32e32;
+  font-size: 1.13rem;
+  margin-top: 7px;
+  font-weight: 600;
+  letter-spacing: 0.07px;
+}
+
+/* Responsive modal for mobile and small screens */
+@media (max-width: 576px) {
+  .lp-modal-content {
+    min-width: 99vw;
+    max-width: 99vw;
+    padding: 13px 4vw;
+    border-radius: 12px;
+    font-size: 1rem;
+  }
+  .lp-modal-content h4 {
+    font-size: 1.09rem;
+    margin-bottom: 9px;
+  }
+  .lp-modal-content input[type="password"], 
+  .lp-modal-content select.lp-role-dropdown {
+    font-size: 1.05rem;
+    padding: 10px 12px;
+    width: 95%;
+    max-width: 97vw;
+  }
+  .lp-modal-content button {
+    font-size: 0.99rem;
+    padding: 9px 16px;
+  }
+}
+
+/* Extra for ultra-small devices */
+@media (max-width: 390px) {
+  .lp-modal-content {
+    padding: 8px 0px;
+    font-size: 0.97rem;
+  }
+  .lp-modal-content input[type="password"], 
+  .lp-modal-content select.lp-role-dropdown {
+    font-size: 0.95rem;
+    padding: 8px 7px;
+  }
+  .lp-modal-content button {
+    font-size: 0.92rem;
+    padding: 7px 7px;
+  }
+}

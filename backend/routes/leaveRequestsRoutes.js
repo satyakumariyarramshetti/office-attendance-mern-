@@ -43,19 +43,19 @@ router.get('/:status', async (req, res) => {
   try {
     const { status } = req.params;
     const leaveRequests = await LeaveRequest.find();
+const rows = leaveRequests.flatMap(req =>
+  req.dates
+    .filter(d => d.status === status)
+    .map(d => ({
+      id: req.id,
+      name: req.name,
+      email: req.email,
+      reportsTo: req.reportsTo,
+      date: d.date,
+      status: d.status
+    }))
+);
 
-    const rows = leaveRequests.flatMap(req =>
-      req.dates
-        .filter(d => d.status === status)
-       .map(d => ({
-  id: req.id,
-  name: req.name,
-  email: req.email,
-  date: d.date,
-  status: d.status
-}))
-
-    );
 
     res.json({ success: true, data: rows });
   } catch (error) {
