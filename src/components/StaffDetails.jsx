@@ -170,7 +170,6 @@ const handleUpdateStaff = async (updatedStaff) => {
     <th>Email</th>    
     <th>Phone</th>
     <th>Reports To</th>
-
     <th>Actions</th>
   </tr>
 </thead>

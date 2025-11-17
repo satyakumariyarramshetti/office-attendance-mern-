@@ -716,7 +716,6 @@ const handleLeaveSubmit = async (e) => {
   <option value="Casual Leave">Casual Leave</option>
   <option value="Privilege Leave">Privilege Leave</option>
   <option value="C-Off Leave">C-Off Leave</option>
-  <option value="Compensation Leave">Compensation Leave</option>
   <option value="First Half Leave">First Half Leave</option>
   <option value="Second Half Leave">Second Half Leave</option>
   <option value="Travel Leave">Travel Leave</option>

@@ -42,7 +42,6 @@ async function updateLeaveBalance(employeeId, leaveType) {
 
     // No deduction for Compensation or C-Off Leave for ANY employee.
 if (
-  leaveType === 'Compensation Leave' ||
   leaveType.startsWith('C-Off Leave') ||
   leaveType === 'Travel Leave' ||
   leaveType === 'Client/Site Visit' ||

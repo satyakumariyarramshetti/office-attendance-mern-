@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './LeaveBalance.css';
 
-const API_URL = process.env.REACT_APP_API_URLL || "http://localhost:5000/api/leave-balance";
+// Use only one environment variable as base URL for easier maintenance
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 const LeaveBalance = () => {
   const [balances, setBalances] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -15,9 +17,10 @@ const LeaveBalance = () => {
   });
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Fetch leave balances from deployed backend API
   const fetchBalances = async () => {
     try {
-      const res = await axios.get(API_URL);
+      const res = await axios.get(`${API_BASE_URL}/api/leave-balance`);
       setBalances(res.data);
     } catch (error) {
       console.error("Error fetching leave balances:", error);
@@ -41,7 +44,7 @@ const LeaveBalance = () => {
   const handleAddMember = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API_URL}/add`, formData);
+      await axios.post(`${API_BASE_URL}/api/leave-balance/add`, formData);
       fetchBalances();
       setShowAddModal(false);
       setFormData({ employeeId: '', name: '', role: 'junior' });
@@ -63,7 +66,7 @@ const LeaveBalance = () => {
     e.preventDefault();
     if (!editingMember) return;
     try {
-      await axios.put(`${API_URL}/edit/${editingMember._id}`, editingMember);
+      await axios.put(`${API_BASE_URL}/api/leave-balance/edit/${editingMember._id}`, editingMember);
       fetchBalances();
       setShowEditModal(false);
       setEditingMember(null);
@@ -76,7 +79,7 @@ const LeaveBalance = () => {
   const handleRemoveMember = async (id) => {
     if (window.confirm('Are you sure you want to remove this member?')) {
       try {
-        await axios.delete(`${API_URL}/remove/${id}`);
+        await axios.delete(`${API_BASE_URL}/api/leave-balance/remove/${id}`);
         fetchBalances();
       } catch (error) {
         console.error("Error removing member:", error);
@@ -84,11 +87,10 @@ const LeaveBalance = () => {
     }
   };
 
-  
   const handleResetMonthlyLeaves = async () => {
     if (window.confirm('Are you sure you want to add 1 leave to all junior employees? This should only be done once at the start of the month.')) {
       try {
-        const res = await axios.post(`${API_URL}/reset-monthly`);
+        const res = await axios.post(`${API_BASE_URL}/api/leave-balance/reset-monthly`);
         alert(res.data.message);
         fetchBalances();
       } catch (error) {
@@ -233,6 +235,3 @@ const LeaveBalance = () => {
 };
 
 export default LeaveBalance;
-
-
-
