@@ -1,19 +1,22 @@
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
-    user: 'tech.praxsol@gmail.com',
-    pass: 'eeqohmopiahtvkao' // use app password for better security if 2FA enabled
-  }
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
 });
+
 
 function sendLeaveStatusEmail(to, subject, body) {
   const mailOptions = {
-    from: 'tech.praxsol@gmail.com',
+    from: process.env.BREVO_USER,
     to,
     subject,
-    text: body
+    text: body,
   };
 
   return transporter.sendMail(mailOptions);
