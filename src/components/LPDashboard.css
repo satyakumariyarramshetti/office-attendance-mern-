@@ -412,45 +412,326 @@
   letter-spacing: 0.07px;
 }
 
-/* Responsive modal for mobile and small screens */
-@media (max-width: 576px) {
+@media (max-width: 600px) {
+  .lp-dashboard-container {
+    padding: 8px 0.5vw;
+    max-width: 99vw;
+    min-height: unset;
+    border-radius: 5px;
+  }
+  .lp-dashboard-heading {
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+  .lp-btn {
+    padding: 7px 8px;
+    font-size: 0.85rem;
+    border-radius: 5px;
+  }
+  .lp-table-heading {
+    font-size: 0.92rem;
+    margin-bottom: 6px;
+  }
+  .lp-dashboard-buttons {
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  .lp-table th,
+  .lp-table td {
+    padding: 4px 2px;
+    font-size: 0.84rem;
+  }
+  .lp-table {
+    font-size: 0.85rem;
+    border-radius: 5px;
+    overflow-x: scroll;
+    display: block;
+  }
+  .lp-table th, .lp-table td {
+    min-width: 80px;
+    word-break: break-all;
+  }
+  .lp-loading,
+  .lp-info-text {
+    font-size: 0.89rem;
+    margin-top: 7px;
+  }
+  /* Modal fine-tuning */
   .lp-modal-content {
     min-width: 99vw;
-    max-width: 99vw;
-    padding: 13px 4vw;
-    border-radius: 12px;
-    font-size: 1rem;
+    padding: 8px 2vw;
+    border-radius: 7px;
+    font-size: 0.93rem;
   }
   .lp-modal-content h4 {
-    font-size: 1.09rem;
-    margin-bottom: 9px;
+    font-size: 0.98rem;
+    margin-bottom: 4px;
   }
-  .lp-modal-content input[type="password"], 
+  .lp-modal-content input[type="password"],
   .lp-modal-content select.lp-role-dropdown {
-    font-size: 1.05rem;
-    padding: 10px 12px;
-    width: 95%;
-    max-width: 97vw;
+    font-size: 0.85rem;
+    padding: 7px 4px;
+    width: 96vw;
+    max-width: 100vw;
   }
   .lp-modal-content button {
-    font-size: 0.99rem;
-    padding: 9px 16px;
+    font-size: 0.87rem;
+    padding: 5px 7px;
+    margin: 0 2px;
+    border-radius: 6px;
   }
 }
 
-/* Extra for ultra-small devices */
-@media (max-width: 390px) {
-  .lp-modal-content {
-    padding: 8px 0px;
-    font-size: 0.97rem;
+
+/* ---------------------- */
+/* UNIVERSAL MOBILE FIXES */
+/* ---------------------- */
+
+@media (max-width: 1024px) {
+  .lp-dashboard-container {
+    max-width: 90%;
+    padding: 20px;
   }
-  .lp-modal-content input[type="password"], 
-  .lp-modal-content select.lp-role-dropdown {
+  .lp-dashboard-heading {
+    font-size: 1.6rem;
+  }
+}
+
+/* ========================= */
+/* TABLET & SMALL DEVICES    */
+/* ========================= */
+@media (max-width: 768px) {
+  .lp-dashboard-container {
+    max-width: 95%;
+    padding: 16px;
+  }
+
+  .lp-dashboard-heading {
+    font-size: 1.35rem;
+    margin-bottom: 14px;
+  }
+
+  .lp-role-dropdown {
+    width: 100%;
+    margin-left: 0;
     font-size: 0.95rem;
-    padding: 8px 7px;
+    padding: 8px 10px;
   }
+
+  /* Tabs */
+  .lp-dashboard-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .lp-btn {
+    font-size: 0.9rem;
+    padding: 10px;
+    width: 100%;
+  }
+
+  /* Table adjustments */
+  .lp-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    font-size: 0.9rem;
+  }
+
+  .lp-table th,
+  .lp-table td {
+    padding: 6px 5px;
+  }
+
+  /* Action buttons inside table */
+  .lp-table .lp-action-btn {
+    padding: 5px 10px;
+    font-size: 0.82rem;
+  }
+
+  /* Modal */
+  .lp-modal-content {
+    min-width: 90vw !important;
+    max-width: 95vw;
+    padding: 16px 12px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+  }
+
+  .lp-modal-content h4 {
+    font-size: 1rem;
+    margin-bottom: 6px;
+  }
+
+  .lp-modal-content input,
+  .lp-modal-content select {
+    width: 100%;
+    font-size: 0.9rem;
+    padding: 8px;
+  }
+
   .lp-modal-content button {
-    font-size: 0.92rem;
-    padding: 7px 7px;
+    font-size: 0.9rem;
+    padding: 8px 14px;
+  }
+}
+
+/* ========================= */
+/* VERY SMALL PHONES (<=480) */
+/* ========================= */
+@media (max-width: 480px) {
+
+  .lp-dashboard-container {
+    margin: 10px auto;
+    padding: 10px;
+    max-width: 97%;
+    border-radius: 6px;
+  }
+
+  .lp-dashboard-heading {
+    font-size: 1.15rem;
+    margin-bottom: 10px;
+  }
+
+  .lp-role-dropdown {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+  }
+
+  /* Tabs */
+  .lp-btn {
+    font-size: 0.8rem;
+    padding: 8px;
+  }
+
+  /* Table */
+  .lp-table {
+    font-size: 0.8rem;
+  }
+
+  .lp-table th,
+  .lp-table td {
+    padding: 4px 3px;
+  }
+
+  .lp-table .lp-action-btn {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+
+  /* Modal */
+  .lp-modal-content {
+    padding: 12px 10px;
+    min-width: 95vw !important;
+    max-width: 98vw;
+  }
+
+  .lp-modal-content h4 {
+    font-size: 0.9rem;
+  }
+
+  .lp-modal-content input,
+  .lp-modal-content select {
+    font-size: 0.85rem;
+    padding: 6px 8px;
+  }
+
+  .lp-modal-content button {
+    font-size: 0.82rem;
+    padding: 6px 12px;
+  }
+}
+
+/* ========================= */
+/* ULTRA SMALL DEVICES (<=360) */
+/* ========================= */
+@media (max-width: 360px) {
+
+  .lp-dashboard-heading {
+    font-size: 1rem;
+  }
+
+  .lp-btn {
+    font-size: 0.75rem;
+    padding: 6px;
+  }
+
+  .lp-table {
+    font-size: 0.75rem;
+  }
+
+  .lp-modal-content {
+    padding: 10px 8px;
+  }
+
+  .lp-modal-content button {
+    font-size: 0.75rem;
+    padding: 5px 10px;
+  }
+}
+
+
+/* -------------------- MOBILE RESPONSIVE FIX -------------------- */
+@media (max-width: 480px) {
+
+  /* Reduce overall font size */
+  body {
+    font-size: 14px;
+  }
+
+  /* Dropdown responsiveness */
+  select,
+  .lp-role-dropdown {
+    width: 50% !important;
+    font-size: 10px !important;
+    padding: 4px 6px !important;
+    min-width: auto !important;
+    max-width: 100% !important;
+  }
+
+  /* Input boxes */
+  input {
+    width: 100% !important;
+    font-size: 14px !important;
+    padding: 6px 8px !important;
+  }
+
+  /* Buttons */
+  button {
+    font-size: 14px !important;
+    padding: 8px 12px !important;
+  }
+
+  /* Table responsiveness */
+  .users-table {
+    font-size: 12px !important;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 6px !important;
+    white-space: nowrap;
+  }
+
+  /* Make table scrollable horizontally */
+  .users-table-container {
+    overflow-x: auto;
+  }
+
+  /* Cards spacing */
+  .container {
+    padding: 10px !important;
+  }
+
+  /* Header size */
+  .head h2 {
+    font-size: 18px !important;
+  }
+
+  /* Fix popup for mobile */
+  .password-reset-modal {
+    width: 90% !important;
+    padding: 15px !important;
   }
 }
