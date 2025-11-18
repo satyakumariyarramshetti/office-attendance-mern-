@@ -8,15 +8,15 @@ const admins = [
   "Ankita", "Pradeep", "Santosh", "Ashmita"
 ];
 const rolePasswords = {
-  "Satya": "satya123",
-  "Mohan": "mohan123",
-  "Rajesh": "rajesh123",
-  "Babu": "babu123",
-  "Ankita": "ankita123",
-  "Pradeep": "pradeep123",
-  "Santosh": "santosh123",
-  "Ashmita": "ashmita123",
-  "hr": "hr123"
+  "Satya": "Approve123",
+  "Mohan": "Piping123",
+  "Rajesh": "Piping987",
+  "Babu": "Product123",
+  "Ankita": "HR123",
+  "Pradeep": "Business123",
+  "Santosh": "Subcontract123",
+  "Ashmita": "Project123",
+  "hr": "Ankita123"
 };
 
 const LPDashboard = () => {
