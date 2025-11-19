@@ -121,10 +121,11 @@ Praxsol Engineering Private Limited`;
     // Respond to client immediately after DB update
     res.json({ success: true, data: leaveReq });
 
-    // Then send mail asynchronously, no await here
-    sendLeaveStatusEmail(empEmail, subject, body)
-      .then(() => console.log('Leave status email sent'))
-      .catch(err => console.error('Failed to send leave status email', err));
+   // send asynchronously but log contextual info
+sendLeaveStatusEmail(empEmail, subject, body)
+  .then(() => console.log(`Leave status email sent to ${empEmail} for ${id} on ${formattedDate}`))
+  .catch(err => console.error(`Failed to send leave status email to ${empEmail} for ${id} on ${formattedDate}:`, err));
+
 
   } catch (error) {
     console.error('Error updating leave status:', error);

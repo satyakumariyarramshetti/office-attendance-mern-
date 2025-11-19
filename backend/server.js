@@ -4,11 +4,17 @@ require('dotenv').config();
 console.log('SMTP_USER:', process.env.SMTP_USER ? 'Set' : 'Not Set');
 console.log('SMTP_PASS:', process.env.SMTP_PASS ? 'Set' : 'Not Set');
 console.log('ATLAS_URI:', process.env.ATLAS_URI ? 'Set' : 'Not Set');
+console.log('BREVO_API_KEY:', process.env.BREVO_API_KEY ? 'Set' : 'Not Set');
+console.log("BREVO KEY RAW:", process.env.BREVO_API_KEY);
+
+
 
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const { sendLeaveStatusEmail } = require("./utils/mailer");
+
 
 // Routes
 const attendanceRoutes = require('./routes/attendanceRoutes');
@@ -34,6 +40,22 @@ app.use('/api/staffs', staffRoutes);
 app.use('/api/payslip', payslipRoutes);
 app.use('/api/leave-balance', leaveBalanceRoutes);
 app.use('/api/leave-requests', leaveRequestsRoutes);
+
+// Put this after your API routes (before DB connect)
+app.get("/test-mail", async (req, res) => {
+  const to = req.query.to || process.env.EMAIL_USER; // default to your verified sender
+  const subject = "Test Email from Attendance System";
+  const body = `This is a test email sent at ${new Date().toISOString()}`;
+
+  try {
+    await sendLeaveStatusEmail(to, subject, body);
+    res.status(200).send(`Mail Sent to ${to}`);
+  } catch (err) {
+    console.error("Test-mail failed:", err);
+    res.status(500).send("Failed: " + (err && err.message ? err.message : String(err)));
+  }
+});
+
 
 // MongoDB connection
 const uri = process.env.ATLAS_URI;

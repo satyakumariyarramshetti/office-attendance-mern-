@@ -1,45 +1,43 @@
-const nodemailer = require("nodemailer");
+// mailer.js - Using Brevo Transactional Email API
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,                // IMPORTANT: works better on Render
-  secure: false,            // must be false for port 587
-  auth: {
-    user: process.env.EMAIL_USER,  // your Gmail
-    pass: process.env.EMAIL_PASS,  // your App Password
-  },
-  tls: {
-    rejectUnauthorized: false,   // prevent SSL errors
-  },
-});
+const Brevo = require("@getbrevo/brevo");
 
-// Test SMTP connection (optional)
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("SMTP Connection Error:", error);
-  } else {
-    console.log("SMTP Server is ready to send emails");
+// Create Brevo API Instance
+const apiInstance = new Brevo.TransactionalEmailsApi();
+
+// Set API Key from .env
+apiInstance.setApiKey(
+  Brevo.TransactionalEmailsApiApiKeys.apiKey,
+  process.env.BREVO_API_KEY
+);
+
+/**
+ * Send Leave Status Email
+ * @param {string} to - Recipient's email
+ * @param {string} subject - Email subject
+ * @param {string} text - Email body
+ */
+async function sendLeaveStatusEmail(to, subject, text) {
+  try {
+    const emailData = {
+      sender: {
+        name: "tech.praxsol",
+        email: process.env.EMAIL_USER, // must be a verified sender in Brevo
+      },
+      to: [{ email: to }],
+      subject: subject,
+      textContent: text,
+    };
+
+    // Send email
+    await apiInstance.sendTransacEmail(emailData);
+
+    console.log("📩 Email sent successfully to:", to);
+    return true;
+  } catch (error) {
+    console.error("❌ Brevo Email Send Error:", error.message);
+    throw error;
   }
-});
-
-function sendLeaveStatusEmail(to, subject, body) {
-  const mailOptions = {
-    from: `"Praxsol Engineering" <${process.env.EMAIL_USER}>`,  
-    to,
-    subject,
-    text: body,
-  };
-
-  return transporter
-    .sendMail(mailOptions)
-    .then(info => {
-      console.log("Email sent:", info.response);
-      return info;
-    })
-    .catch(err => {
-      console.error("Email sending failed:", err);
-      throw err;
-    });
 }
 
 module.exports = { sendLeaveStatusEmail };
