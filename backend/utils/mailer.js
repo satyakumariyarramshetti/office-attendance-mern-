@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
 
 function sendLeaveStatusEmail(to, subject, body) {
   const mailOptions = {
-    from: process.env.BREVO_USER,
+    from: process.env.EMAIL_USER,
     to,
     subject,
     text: body,
