@@ -153,13 +153,12 @@
 }
 
 .attendanceTable thead th {
-  background-color: #f8f9fa; /* Lighter header */
+  background-color: #f8f9fa;
   color: #495057;
   padding: 1rem;
   font-weight: 600;
-  text-align: left;
+  text-align: center;        /* Change from left to center */
   border-bottom: 2px solid #dee2e6;
-  /* Professional header typography */
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -182,13 +181,12 @@
 .attendanceTable tbody tr:hover {
   background-color: #e9ecef; /* Slightly darker hover */
 }
-
 .attendanceTable tbody td {
   padding: 1rem;
   vertical-align: middle;
   color: #212529;
   font-size: 0.95rem;
-  text-align: left;
+  text-align: center;        /* Change from left to center */
 }
 
 /* ==========================================================================
@@ -231,7 +229,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    text-align: right;
+    text-align:center;
     padding: 0.75rem 0.25rem;
     border-bottom: 1px solid #f1f3f5;
   }
