@@ -6,10 +6,10 @@ const { sendLeaveStatusEmail } = require('../utils/mailer'); // Mail utility imp
 
 // Admin email mapping
 const adminEmails = {
-  Satya: "ankita.praxsol@gmail.com",
+  Satya: "praxsolengineering@gmail.com",
   Mohan: "mohan.praxsol@gmail.com	",
   Rajesh: "rajesh.praxsol@gmail.com",
-  Babu: "ankita.praxsol@gmail.com",
+  Babu: "ynvn.praxsol@gmail.com",
   Ankita: "ankita.praxsol@gmail.com",
   Pradeep: "pradeep.praxsol@gmail.com	",
   Santosh: "santosh.praxsol@gmail.com	",
