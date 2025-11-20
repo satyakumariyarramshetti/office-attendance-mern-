@@ -9,8 +9,9 @@ const LeavePlan = () => {
     id: '',
     name: '',
     email: '',
-    dates: [],
-    reportsTo: ''
+    reportsTo: '',
+    leaveReason: '',
+    dates: []
   });
 
   // Fetch staff details when 4 digits are entered
@@ -33,14 +34,28 @@ const LeavePlan = () => {
               reportsTo: data.reportsTo || ''
             }));
           } else {
-            setForm(prev => ({ ...prev, name: '', email: '', reportsTo: '' }));
+            setForm(prev => ({
+              ...prev,
+              name: '',
+              email: '',
+              reportsTo: ''
+            }));
           }
         } catch (error) {
-          setForm(prev => ({ ...prev, name: '', email: '', reportsTo: '' }));
+          setForm(prev => ({
+            ...prev,
+            name: '',
+            email: '',
+            reportsTo: ''
+          }));
         }
       } else {
-        // If less than 4 digits, clear auto fields
-        setForm(prev => ({ ...prev, name: '', email: '', reportsTo: '' }));
+        setForm(prev => ({
+          ...prev,
+          name: '',
+          email: '',
+          reportsTo: ''
+        }));
       }
     };
     fetchStaffDetails();
@@ -76,6 +91,7 @@ const LeavePlan = () => {
           name: form.name,
           email: form.email,
           reportsTo: form.reportsTo,
+          leaveReason: form.leaveReason,
           dates: form.dates.map(d => d.format ? d.format("DD-MM-YYYY") : d.toString())
         })
       });
@@ -85,8 +101,9 @@ const LeavePlan = () => {
           id: '',
           name: '',
           email: '',
-          dates: [],
-          reportsTo: ''
+          reportsTo: '',
+          leaveReason: '',
+          dates: []
         });
       } else {
         alert('Error submitting leave request');
@@ -102,8 +119,9 @@ const LeavePlan = () => {
       id: '',
       name: '',
       email: '',
-      dates: [],
-      reportsTo: ''
+      reportsTo: '',
+      leaveReason: '',
+      dates: []
     });
   };
 
@@ -136,6 +154,8 @@ const LeavePlan = () => {
             value={form.name}
             onChange={handleChange}
             required
+            readOnly
+            style={{ background: "#f4f7fa" }}
           />
         </label>
         <label>
@@ -146,6 +166,8 @@ const LeavePlan = () => {
             value={form.email}
             onChange={handleChange}
             required
+            readOnly
+            style={{ background: "#f4f7fa" }}
           />
         </label>
         <label>
@@ -156,6 +178,19 @@ const LeavePlan = () => {
             value={form.reportsTo}
             onChange={handleChange}
             required
+            readOnly
+            style={{ background: "#f4f7fa" }}
+          />
+        </label>
+        <label>
+          Leave Reason:
+          <textarea
+            name="leaveReason"
+            value={form.leaveReason}
+            onChange={handleChange}
+            required
+            placeholder="Enter your reason for leave"
+            style={{ minHeight: "50px" }}
           />
         </label>
         <label>

@@ -5,6 +5,8 @@ const leaveRequestSchema = new mongoose.Schema({
   name: String,
   email: String,
   reportsTo: String, 
+  leaveReason: String, // <-- Add this
+
   dates: [
     {
       date: String,

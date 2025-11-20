@@ -4,10 +4,23 @@ const router = express.Router();
 const LeaveRequest = require('../models/LeaveRequest');
 const { sendLeaveStatusEmail } = require('../utils/mailer'); // Mail utility import
 
-// Create new leave request
+// Admin email mapping
+const adminEmails = {
+  Satya: "satya@example.com",
+  Mohan: "mohan.praxsol@gmail.com	",
+  Rajesh: "rajesh.praxsol@gmail.com",
+  Babu: "babu@example.com",
+  Ankita: "govindalakshmirayudu26@gmail.com",
+  Pradeep: "pradeep.praxsol@gmail.com	",
+  Santosh: "santosh.praxsol@gmail.com	",
+  Ashmita: "ashmita.praxsol@gmail.com"
+  // Add real emails as needed
+};
+
+// Create new leave request AND send notification to the relevant admin
 router.post('/create', async (req, res) => {
   try {
-    const { id, name, email, dates, reportsTo } = req.body; 
+    const { id, name, email, dates, reportsTo, leaveReason } = req.body;
 
     if (!id || !name || !email || !dates || !Array.isArray(dates)) {
       return res.status(400).json({ success: false, message: 'Invalid input' });
@@ -24,10 +37,22 @@ router.post('/create', async (req, res) => {
       name,
       email,
       reportsTo,
+      leaveReason,
       dates: formattedDates,
     });
 
     await leaveReq.save();
+
+    // Admin notification logic
+    const adminEmail = adminEmails[reportsTo];
+    if (adminEmail) {
+      const subject = `Leave Application Notification`;
+      const body = `${name} (ID: ${id}) has applied for leaves. Reason: ${leaveReason}`;
+      sendLeaveStatusEmail(adminEmail, subject, body)
+        .then(() => console.log(`Admin notification sent to ${adminEmail}`))
+        .catch(err => console.error(`Failed to notify admin ${adminEmail}:`, err));
+    }
+
     res.status(201).json({ success: true, data: leaveReq });
   } catch (error) {
     console.error('Error saving leave request:', error);
@@ -49,6 +74,7 @@ router.get('/:status', async (req, res) => {
           name: req.name,
           email: req.email,
           reportsTo: req.reportsTo,
+          leaveReason: req.leaveReason,
           date: d.date,
           status: d.status
         }))
@@ -121,11 +147,10 @@ Praxsol Engineering Private Limited`;
     // Respond to client immediately after DB update
     res.json({ success: true, data: leaveReq });
 
-   // send asynchronously but log contextual info
-sendLeaveStatusEmail(empEmail, subject, body)
-  .then(() => console.log(`Leave status email sent to ${empEmail} for ${id} on ${formattedDate}`))
-  .catch(err => console.error(`Failed to send leave status email to ${empEmail} for ${id} on ${formattedDate}:`, err));
-
+    // Send email to employee about status
+    sendLeaveStatusEmail(empEmail, subject, body)
+      .then(() => console.log(`Leave status email sent to ${empEmail} for ${id} on ${formattedDate}`))
+      .catch(err => console.error(`Failed to send leave status email to ${empEmail} for ${id} on ${formattedDate}:`, err));
 
   } catch (error) {
     console.error('Error updating leave status:', error);

@@ -156,25 +156,27 @@ const LPDashboard = () => {
               ) : (
                 <table className="lp-table">
                   <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Name</th>
-                      <th>Email</th>
-                      <th>Reports To</th>
-                      <th>Date</th>
-                      <th>Status</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
+  <tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Reports To</th>
+    <th>Leave Reason</th> {/* <-- Add this */}
+    <th>Date</th>
+    <th>Status</th>
+    <th>Action</th>
+  </tr>
+</thead>
                   <tbody>
-                    {displayedRows.map((row, idx) => (
-                      <tr key={`${row.id}-${row.date}`}>
-                        <td>{row.id}</td>
-                        <td>{row.name}</td>
-                        <td>{row.email}</td>
-                        <td>{row.reportsTo}</td>
-                        <td>{row.date}</td>
-                        <td>{row.status}</td>
+  {displayedRows.map((row, idx) => (
+    <tr key={`${row.id}-${row.date}`}>
+      <td>{row.id}</td>
+      <td>{row.name}</td>
+      <td>{row.email}</td>
+      <td>{row.reportsTo}</td>
+      <td>{row.leaveReason}</td> {/* <-- Show here */}
+      <td>{row.date}</td>
+      <td>{row.status}</td>
                         <td>
                           {/* Admin action */}
                           {authRole !== 'hr' && activeTab === 'pending' && (

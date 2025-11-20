@@ -15,9 +15,11 @@ apiInstance.setApiKey(
  * Send Leave Status Email
  * @param {string} to - Recipient's email
  * @param {string} subject - Email subject
- * @param {string} text - Email body
+ * @param {string} text - Email body (plain text)
+ * @param {string|null} html - Optional HTML body
+ * @returns {Promise<boolean>} Resolves on success, rejects on error
  */
-async function sendLeaveStatusEmail(to, subject, text) {
+async function sendLeaveStatusEmail(to, subject, text, html = null) {
   try {
     const emailData = {
       sender: {
@@ -29,7 +31,10 @@ async function sendLeaveStatusEmail(to, subject, text) {
       textContent: text,
     };
 
-    // Send email
+    if (html) {
+      emailData.htmlContent = html;
+    }
+
     await apiInstance.sendTransacEmail(emailData);
 
     console.log("📩 Email sent successfully to:", to);
