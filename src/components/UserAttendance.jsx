@@ -88,31 +88,35 @@ const UserAttendance = () => {
             <div className={styles.tableResponsive}>
               <table className={styles.attendanceTable}>
                 <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Day</th>
-                    <th>In Time</th>
-                    <th>Lunch Out</th>
-                    <th>Lunch In</th>
-                    <th>Out Time</th>
-                    <th>Leave Type</th>
-                    <th>Permission Type</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {records.map(record => (
-                    <tr key={record._id}>
-                      <td data-label="Date">{formatDate(record.date)}</td>
-                      <td data-label="Day">{record.day || 'N/A'}</td>
-                      <td data-label="In Time">{record.inTime || 'N/A'}</td>
-                      <td data-label="Lunch Out">{record.lunchOut || 'N/A'}</td>
-                      <td data-label="Lunch In">{record.lunchIn || 'N/A'}</td>
-                      <td data-label="Out Time">{record.outTime || 'N/A'}</td>
-                      <td data-label="Leave Type">{record.leaveType || 'N/A'}</td>
-                      <td data-label="Permission Type">{record.permissionType || 'N/A'}</td>
-                    </tr>
-                  ))}
-                </tbody>
+  <tr>
+    <th>Date</th>
+    <th>Day</th>
+    <th>In Time</th>
+    <th>Delay Reason</th> {/* New */}
+    <th>Lunch Out</th>
+    <th>Lunch In</th>
+    <th>Out Time</th>
+    <th>Hours</th>        {/* New */}
+    <th>Leave Type</th>
+    <th>Permission Type</th>
+  </tr>
+</thead>
+               <tbody>
+  {records.map(record => (
+    <tr key={record._id}>
+      <td data-label="Date">{formatDate(record.date)}</td>
+      <td data-label="Day">{record.day || 'N/A'}</td>
+      <td data-label="In Time">{record.inTime || 'N/A'}</td>
+      <td data-label="Delay Reason">{record.delayReason || 'N/A'}</td> {/* New */}
+      <td data-label="Lunch Out">{record.lunchOut || 'N/A'}</td>
+      <td data-label="Lunch In">{record.lunchIn || 'N/A'}</td>
+      <td data-label="Out Time">{record.outTime || 'N/A'}</td>
+      <td data-label="Hours">{record.hours || 'N/A'}</td> {/* New */}
+      <td data-label="Leave Type">{record.leaveType || 'N/A'}</td>
+      <td data-label="Permission Type">{record.permissionType || 'N/A'}</td>
+    </tr>
+  ))}
+</tbody>
               </table>
             </div>
           </>
