@@ -5,6 +5,19 @@ const axios = require('axios');
 const Attendance = require('../models/Attendance');
 const Staff = require('../models/Staff');
 const LeaveBalance = require('../models/LeaveBalance');
+// ---- COMPANY HOLIDAYS ----
+const holidays = [
+  "-01-26",  // Republic Day
+  "-08-15",  // Independence Day
+  "-10-02",  // Gandhi Jayanti
+
+  // Festival Holidays
+  "-01-14",  // Sankranti/Pongal
+  "-03-08",  // Maha Shivratri
+  "-04-14",  // Ugadi / New Year
+  "-10-12",  // Dussehra
+  "-11-01",  // Diwali
+];
 
 /* ------------------------------------------------------------------
    Reverse geocoding helper (unchanged)
@@ -317,7 +330,34 @@ router.post('/save', async (req, res) => {
 router.get('/all', async (req, res) => {
   try {
     const records = await Attendance.find().sort({ date: -1 });
-    res.json(records);
+
+    const updatedRecords = records.map((rec) => {
+      const dateObj = new Date(rec.date);
+
+      const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const dd = String(dateObj.getDate()).padStart(2, "0");
+
+      const monthDay = `-${mm}-${dd}`;  // example: -10-02
+
+      // If leaveType already there, don't touch
+      if (rec.leaveType && rec.leaveType.trim() !== "") {
+        return rec;
+      }
+
+      // Check if current date matches holiday
+      const isHoliday = holidays.includes(monthDay);
+
+      if (isHoliday) {
+        return {
+          ...rec._doc,
+          leaveType: "Public Holiday",
+        };
+      }
+
+      return rec;
+    });
+
+    res.json(updatedRecords);
   } catch (error) {
     console.error('Error fetching attendance records:', error);
     res.status(500).json({ error: 'Failed to fetch attendance records' });
