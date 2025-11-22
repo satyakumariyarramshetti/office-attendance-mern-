@@ -329,54 +329,89 @@ router.post('/save', async (req, res) => {
 ------------------------------------------------------------------ */
 router.get('/all', async (req, res) => {
   try {
-    const records = await Attendance.find().sort({ date: -1 });
+    const allStaff = await Staff.find();
 
-    const updatedRecords = records.map((rec) => {
-      const dateObj = new Date(rec.date);
+    let records = await Attendance.find().sort({ date: -1 });
 
+    let recordMap = new Map();
+    records.forEach(r => {
+      recordMap.set(r.id + "_" + r.date, r);
+    });
+
+    let finalList = [];
+
+    for (let staff of allStaff) {
+      for (let h of holidays) {
+        const year = new Date().getFullYear();
+        const holidayDate = `${year}${h}`;
+
+        const key = staff.id + "_" + holidayDate;
+
+        if (!recordMap.has(key)) {
+
+          const day = new Date(holidayDate).toLocaleDateString("en-US", { weekday: "long" });
+
+          const newRec = {
+            id: staff.id,
+            name: staff.name,
+            date: holidayDate,
+            day,
+            leaveType: "Public Holiday",
+            inTime: null,
+            outTime: null,
+            lunchIn: null,
+            lunchOut: null,
+            dailyLeaveType: null,
+            permissionType: null,
+            hours: null,
+            isLOP: false
+          };
+
+          finalList.push(newRec);
+        }
+      }
+    }
+
+    records.forEach(r => {
+      const dateObj = new Date(r.date);
       const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
       const dd = String(dateObj.getDate()).padStart(2, "0");
 
-      const monthDay = `-${mm}-${dd}`;  // example: -10-02
+      const monthDay = `-${mm}-${dd}`;
 
-      // If leaveType already there, don't touch
-      if (rec.leaveType && rec.leaveType.trim() !== "") {
-        return rec;
+      if (!r.leaveType && holidays.includes(monthDay)) {
+        r.leaveType = "Public Holiday";
       }
 
-      // Check if current date matches holiday
-      const isHoliday = holidays.includes(monthDay);
-
-      if (isHoliday) {
-        return {
-          ...rec._doc,
-          leaveType: "Public Holiday",
-        };
-      }
-
-      return rec;
+      finalList.push(r);
     });
 
-    res.json(updatedRecords);
+    finalList.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    res.json(finalList);
+
   } catch (error) {
     console.error('Error fetching attendance records:', error);
     res.status(500).json({ error: 'Failed to fetch attendance records' });
   }
 });
 
+
 /* ------------------------------------------------------------------
    Today's summary (unchanged except formatting)
 ------------------------------------------------------------------ */
 router.get('/today', async (req, res) => {
   try {
-    const todayDate = new Date().toISOString().split('T')[0];
+    const todayDate = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
+    const mmdd = todayDate.substring(4); // "-MM-DD"
     const cutoffTime = "09:15";
+
     const allStaff = await Staff.find();
     const todaysAttendance = await Attendance.find({ date: todayDate });
 
     const presentIds = new Set(todaysAttendance.map(a => a.id));
 
-    const presents = todaysAttendance.map(att => ({
+    let presents = todaysAttendance.map(att => ({
       id: att.id,
       name: att.name,
       inTime: att.inTime,
@@ -389,26 +424,49 @@ router.get('/today', async (req, res) => {
       leaveType: att.leaveType,
     }));
 
+    // ---- AUTO HOLIDAY LOGIC FOR TODAY ----
+    let absents = [];
+
+    if (holidays.includes(mmdd)) {
+      // Today is a public holiday → everyone gets holiday if not submitted
+      absents = allStaff
+        .filter(staff => !presentIds.has(staff.id))
+        .map(st => ({
+          id: st.id,
+          name: st.name,
+          department: st.department,
+          designation: st.designation,
+          leaveType: "Public Holiday"
+        }));
+    } else {
+      // Today is a normal working day → normal absents
+      absents = allStaff
+        .filter(staff => !presentIds.has(staff.id))
+        .map(st => ({
+          id: st.id,
+          name: st.name,
+          department: st.department,
+          designation: st.designation,
+        }));
+    }
+
     const lateComers = presents.filter(att => att.inTime && att.inTime > cutoffTime);
 
-    const absents = allStaff
-      .filter(staff => !presentIds.has(staff.id))
-      .map(st => ({
-        id: st.id,
-        name: st.name,
-        department: st.department,
-        designation: st.designation,
-      }));
-
     res.json({
-      count: { presents: presents.length, absents: absents.length, lateComers: lateComers.length },
+      count: {
+        presents: presents.length,
+        absents: absents.length,
+        lateComers: lateComers.length,
+      },
       presents, absents, lateComers,
     });
+
   } catch (err) {
     console.error("Error fetching today's attendance:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
+
 
 /* ------------------------------------------------------------------
    Get attendance by ID + Date (unchanged)
