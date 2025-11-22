@@ -355,7 +355,7 @@ router.get('/all', async (req, res) => {
             name: staff.name,
             date: holidayDate,
             day,
-            leaveType: "Public Holiday",
+            leaveType: "Public/Festival Holiday",
             inTime: null,
             outTime: null,
             lunchIn: null,
@@ -379,7 +379,7 @@ router.get('/all', async (req, res) => {
       const monthDay = `-${mm}-${dd}`;
 
       if (!r.leaveType && holidays.includes(monthDay)) {
-        r.leaveType = "Public Holiday";
+        r.leaveType = "Public/Festival Holiday";
       }
 
       finalList.push(r);
@@ -516,7 +516,7 @@ router.get('/:id', async (req, res) => {
           name: staff.name,
           date: holidayDate,
           day: new Date(holidayDate).toLocaleDateString('en-US', { weekday: 'long' }),
-          leaveType: "Public Holiday",
+          leaveType: "Public/Festival Holiday",
           inTime: null,
           outTime: null,
           lunchIn: null,
