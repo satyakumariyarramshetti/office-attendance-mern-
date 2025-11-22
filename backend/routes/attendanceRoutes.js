@@ -13,10 +13,9 @@ const holidays = [
 
   // Festival Holidays
   "-01-14",  // Sankranti/Pongal
-  "-03-08",  // Maha Shivratri
-  "-04-14",  // Ugadi / New Year
-  "-10-12",  // Dussehra
-  "-11-01",  // Diwali
+  "-06-07",  // Bakrid
+  "-12-25",  // Christmas
+  "-10-20",  // Dussehra
 ];
 
 /* ------------------------------------------------------------------
@@ -436,7 +435,7 @@ router.get('/today', async (req, res) => {
           name: st.name,
           department: st.department,
           designation: st.designation,
-          leaveType: "Public Holiday"
+          leaveType: "Public/Festival Holiday"
         }));
     } else {
       // Today is a normal working day → normal absents
