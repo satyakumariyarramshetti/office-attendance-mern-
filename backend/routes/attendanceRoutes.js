@@ -530,9 +530,9 @@ router.get('/:id', async (req, res) => {
       }
     });
 
-    // Merge DB + holiday entries
-    const finalRecords = [...attendance, ...generatedRecords]
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
+   const finalRecords = [...attendance, ...generatedRecords]
+  .sort((a, b) => new Date(b.date) - new Date(a.date)); // ← DESCENDING
+
 
     res.json(finalRecords);
 
