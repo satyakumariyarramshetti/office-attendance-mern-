@@ -492,22 +492,61 @@ router.post('/getByIdDate', async (req, res) => {
    Get all attendance for a specific ID (unchanged)
 ------------------------------------------------------------------ */
 router.get('/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    if (!id) {
-      return res.status(400).json({ error: 'Staff ID is required.' });
-    }
-    const records = await Attendance.find({ id: id.trim() }).sort({ date: -1 });
+  const employeeId = req.params.id;
 
-    if (!records.length) {
-      return res.status(404).json({ message: 'No attendance records found for this ID.' });
+  try {
+    const staff = await Staff.findOne({ id: employeeId });
+    if (!staff) {
+      return res.status(404).json({ message: 'Employee ID not found.' });
     }
-    res.status(200).json(records);
-  } catch (error)  {
-    console.error("Error in /:id route:", error);
-    res.status(500).json({ error: 'Internal server error' });
+
+    const attendance = await Attendance.find({ id: employeeId }).sort({ date: 1 });
+
+    // ---- AUTO INSERT HOLIDAYS INTO RESPONSE (NOT DATABASE) ----
+    const generatedRecords = [];
+    const recordedDates = new Set(attendance.map(a => a.date));
+
+    // Loop through all holidays in your settings
+    holidays.forEach(holiday => {
+      const year = new Date().getFullYear();
+      const holidayDate = `${year}${holiday}`; // "-10-02" → "2025-10-02"
+
+      if (!recordedDates.has(holidayDate)) {
+        generatedRecords.push({
+          id: employeeId,
+          name: staff.name,
+          date: holidayDate,
+          day: new Date(holidayDate).toLocaleDateString('en-US', { weekday: 'long' }),
+          leaveType: "Public Holiday",
+          inTime: null,
+          outTime: null,
+          lunchIn: null,
+          lunchOut: null,
+          hours: null,
+          permissionType: null,
+          dailyLeaveType: null,
+          isLOP: false
+        });
+      }
+    });
+
+    // Merge DB + holiday entries
+    const finalRecords = [...attendance, ...generatedRecords]
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    res.json(finalRecords);
+
+  } catch (err) {
+    console.error("Error fetching attendance by ID:", err);
+    res.status(500).json({ message: 'Server error' });
   }
 });
+
+
+
+
+
+
 
 module.exports = router;
 
