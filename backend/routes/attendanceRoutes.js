@@ -5,18 +5,19 @@ const axios = require('axios');
 const Attendance = require('../models/Attendance');
 const Staff = require('../models/Staff');
 const LeaveBalance = require('../models/LeaveBalance');
-// ---- COMPANY HOLIDAYS ----
+// ---- COMPANY HOLIDAYS  month+day----
 const holidays = [
-  "-01-26",  // Republic Day
-  "-08-15",  // Independence Day
-  "-10-02",  // Gandhi Jayanti
+  { date: "-01-26", name: "Republic Day" },
+  { date: "-08-15", name: "Independence Day" },
+  { date: "-10-02", name: "Gandhi Jayanti" },
 
   // Festival Holidays
-  "-01-14",  // Sankranti/Pongal
-  "-06-07",  // Bakrid
-  "-12-25",  // Christmas
-  "-10-20",  // Dussehra
+  { date: "-01-14", name: "Sankranti / Pongal" },
+  { date: "-06-07", name: "Bakrid" },
+  { date: "-12-25", name: "Christmas" },
+  { date: "-10-20", name: "Dussehra" }
 ];
+
 
 /* ------------------------------------------------------------------
    Reverse geocoding helper (unchanged)
@@ -340,9 +341,10 @@ router.get('/all', async (req, res) => {
     let finalList = [];
 
     for (let staff of allStaff) {
-      for (let h of holidays) {
-        const year = new Date().getFullYear();
-        const holidayDate = `${year}${h}`;
+     for (let h of holidays) {
+  const year = new Date().getFullYear();
+  const holidayDate = `${year}${h.date}`;
+
 
         const key = staff.id + "_" + holidayDate;
 
@@ -355,7 +357,7 @@ router.get('/all', async (req, res) => {
             name: staff.name,
             date: holidayDate,
             day,
-            leaveType: "Public/Festival Holiday",
+            leaveType:h.name,
             inTime: null,
             outTime: null,
             lunchIn: null,
@@ -378,9 +380,11 @@ router.get('/all', async (req, res) => {
 
       const monthDay = `-${mm}-${dd}`;
 
-      if (!r.leaveType && holidays.includes(monthDay)) {
-        r.leaveType = "Public/Festival Holiday";
-      }
+     const match = holidays.find(h => h.date === monthDay);
+if (!r.leaveType && match) {
+  r.leaveType = match.name;
+}
+
 
       finalList.push(r);
     });
@@ -426,7 +430,8 @@ router.get('/today', async (req, res) => {
     // ---- AUTO HOLIDAY LOGIC FOR TODAY ----
     let absents = [];
 
-    if (holidays.includes(mmdd)) {
+const match = holidays.find(h => h.date === mmdd);
+if (match) {
       // Today is a public holiday → everyone gets holiday if not submitted
       absents = allStaff
         .filter(staff => !presentIds.has(staff.id))
@@ -435,7 +440,7 @@ router.get('/today', async (req, res) => {
           name: st.name,
           department: st.department,
           designation: st.designation,
-          leaveType: "Public/Festival Holiday"
+          leaveType:match.name
         }));
     } else {
       // Today is a normal working day → normal absents
@@ -505,10 +510,10 @@ router.get('/:id', async (req, res) => {
     const generatedRecords = [];
     const recordedDates = new Set(attendance.map(a => a.date));
 
-    // Loop through all holidays in your settings
-    holidays.forEach(holiday => {
-      const year = new Date().getFullYear();
-      const holidayDate = `${year}${holiday}`; // "-10-02" → "2025-10-02"
+  holidays.forEach(h => {
+  const year = new Date().getFullYear();
+  const holidayDate = `${year}${h.date}`;
+
 
       if (!recordedDates.has(holidayDate)) {
         generatedRecords.push({
@@ -516,7 +521,7 @@ router.get('/:id', async (req, res) => {
           name: staff.name,
           date: holidayDate,
           day: new Date(holidayDate).toLocaleDateString('en-US', { weekday: 'long' }),
-          leaveType: "Public/Festival Holiday",
+          leaveType:h.name,
           inTime: null,
           outTime: null,
           lunchIn: null,
