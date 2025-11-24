@@ -239,18 +239,17 @@ const timeToMinutes = (timeStr) => {
     return () => clearTimeout(timer);
   }, [idInputs.leave, formData.date, fetchStaffAndAttendance]);
 
-  useEffect(() => {
+ useEffect(() => {
   if (!formData.inTime || !formData.date || !formData.id) {
     setIsOTElligible(false);
     if (formData.inTime <= '09:15') setFormData(prev => ({ ...prev, delayReason: "" }));
     return;
   }
-
   const prevDate = getPrevDate(formData.date);
   fetch(`${API_BASE}/api/attendance/getByIdDate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: formData.id, date: prevDate }), // make sure this id is like PS-0018
+    body: JSON.stringify({ id: formData.id, date: prevDate }),
   })
   .then(res => res.ok ? res.json() : null)
   .then(prevAtt => {
@@ -266,6 +265,7 @@ const timeToMinutes = (timeStr) => {
     } else {
       setIsOTElligible(false);
       if (formData.inTime > '09:15') {
+        // Set delayReason to "Late Mark" ONLY if not already set or user didn't interact
         setFormData(prev => ({ ...prev, delayReason: prev.delayReason || "Late Mark" }));
       } else {
         setFormData(prev => ({ ...prev, delayReason: "" }));
@@ -273,7 +273,8 @@ const timeToMinutes = (timeStr) => {
     }
   })
   .catch(() => setIsOTElligible(false));
-}, [formData.inTime, formData.date, formData.id,API_BASE, ]);
+}, [formData.inTime, formData.date, formData.id, API_BASE]);
+
 
 
 
@@ -437,10 +438,10 @@ setFormData({
     
     const payload = { id: formData.id, name: formData.name, date: formData.date, day: formData.day };
 
- if (formType === 'inTime') {
+if (formType === 'inTime') {
   payload.inTime = formData.inTime;
   payload.inTimeMethod = inTimeMethod;
-  payload.delayReason = formData.delayReason;
+  payload.delayReason = formData.delayReason || (formData.inTime > '09:15' ? "Late Mark" : "");
 
   // The rest is unchanged
   if (navigator.geolocation) {
