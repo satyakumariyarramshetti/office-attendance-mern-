@@ -175,7 +175,7 @@ router.post('/save', async (req, res) => {
     if (!delayReason) {
       return res.status(400).json({ error: 'Delay reason must be provided for late in-time.' });
     }
-    const allowedReasons = ['Late Mark', 'Permission', 'Project Requirement', 'TOM', 'Late Flexi', 'First 50% Leave', 'Deputation'];
+    const allowedReasons = ['Late Mark', 'Permission', 'Project Requirement', 'TOM', 'Late Flexi', 'First 50% Leave', 'Deputation','OT Reason'];
     if (!allowedReasons.includes(delayReason)) {
       return res.status(400).json({ error: 'Invalid delay reason for late mark.' });
     }

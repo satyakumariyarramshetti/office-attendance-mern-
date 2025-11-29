@@ -441,8 +441,22 @@ setFormData({
 if (formType === 'inTime') {
   payload.inTime = formData.inTime;
   payload.inTimeMethod = inTimeMethod;
-  payload.delayReason = formData.delayReason || (formData.inTime > '09:15' ? "Late Mark" : "");
 
+  const inLate = formData.inTime > '09:15';
+  let delayReasonToSend = formData.delayReason;
+
+  if (isOTElligible && inLate) {
+    // Force OT Reason when eligible
+    delayReasonToSend = "OT Reason";
+  } else if (inLate && !delayReasonToSend) {
+    // Normal late, no selection -> default to Late Mark
+    delayReasonToSend = "Late Mark";
+  } else if (!inLate) {
+    // Not late -> no delay reason
+    delayReasonToSend = "";
+  }
+
+  payload.delayReason = delayReasonToSend;
   // The rest is unchanged
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -588,10 +602,11 @@ const handleLeaveSubmit = async (e) => {
       {formData.inTime && formData.inTime > '09:15' && (
         <div className="form-group mb-2">
           <label>Delay Reason</label>
-         <select
+
+      <select
   id="delayReason"
   className="form-control"
-  value={formData.delayReason || "Late Mark"}
+  value={isOTElligible ? "OT Reason" : (formData.delayReason || "Late Mark")}
   onChange={handleChange}
   required
   disabled={isOTElligible}
@@ -602,9 +617,8 @@ const handleLeaveSubmit = async (e) => {
   <option value="Late Flexi">Late Flexi</option>
   <option value="Project Requirement">Project Requirement</option>
   <option value="First 50% Leave">First 50% Leave</option>
-    <option value="Deputation">Deputation</option>  {/* Added option */}
-
-
+  <option value="Deputation">Deputation</option>
+  <option value="OT Reason">OT Reason</option>
 </select>
 
 {isOTElligible && (
