@@ -10,6 +10,16 @@ const MonthlyDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const HOLIDAY_NAMES = [
+  "Republic Day",
+  "Independence Day",
+  "Gandhi Jayanti",
+  "Sankranti / Pongal",
+  "Bakrid",
+  "Christmas",
+  "Dussehra"
+];
+
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -63,6 +73,13 @@ const MonthlyDetails = () => {
       if (!acc[record.id]) {
         acc[record.id] = { workingDays: 0, leaves: 0 };
       }
+
+      const isHoliday = record.holidayName || (record.leaveType && HOLIDAY_NAMES.includes(record.leaveType));
+
+if (isHoliday) {
+  // skip counting this day as leave or working day
+  return acc;
+}
 
       if (record.leaveType === 'First Half Leave' || record.leaveType === 'Second Half Leave') {
         acc[record.id].workingDays += 0.5;

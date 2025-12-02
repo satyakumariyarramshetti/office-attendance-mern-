@@ -12,6 +12,17 @@ const AttendanceSheet = () => {
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
   const navigate = useNavigate();
+const getLeaveOrHoliday = (record) => {
+  if (record.holidayName) {
+    return `Holiday - ${record.holidayName}`;
+  }
+  if (record.leaveType) {
+    return record.leaveType;
+  }
+  return 'N/A';
+};
+
+
 
   useEffect(() => {
     const isAuthenticated = localStorage.getItem('adminToken');
@@ -227,7 +238,7 @@ useEffect(() => {
   record.dailyLeaveType ?? '', record.permissionType ?? '',
   
   
-  record.hours ?? '', record.leaveType ?? '', record.location ?? ''
+record.hours ?? '', getLeaveOrHoliday(record), record.location ?? ''
 ].map(field => `"${String(field)}"`).join(',');
 
       csvRows.push(row);
@@ -264,7 +275,7 @@ useEffect(() => {
   
   
   'Hours': record.hours,
-  'Leave Type': record.leaveType,
+  'Leave Type': getLeaveOrHoliday(record),
   'Location': record.location
       };
 });
@@ -359,7 +370,7 @@ useEffect(() => {
                      <td data-label="Daily Leave Type">{record.dailyLeaveType || 'N/A'}</td>
                      <td data-label="Permission Type">{record.permissionType || 'N/A'}</td>
                      <td data-label="Hours">{record.hours || 'N/A'}</td>
-                    <td data-label="Leave Type">{record.leaveType || 'N/A'}</td>
+                     <td data-label="Leave Type">{getLeaveOrHoliday(record)}</td>
                     <td data-label="Location">{record.location ? record.location : 'N/A'}</td>
 
                     </tr>

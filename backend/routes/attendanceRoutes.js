@@ -19,6 +19,7 @@ const holidays = [
 ];
 
 
+
 /* ------------------------------------------------------------------
    Reverse geocoding helper (unchanged)
 ------------------------------------------------------------------ */
@@ -354,10 +355,11 @@ router.get('/all', async (req, res) => {
 
           const newRec = {
             id: staff.id,
-            name: staff.name,
-            date: holidayDate,
-            day,
-            leaveType:h.name,
+  name: staff.name,
+  date: holidayDate,
+  day,
+  holidayName: h.name,  // new field for holiday name
+  leaveType: null,
             inTime: null,
             outTime: null,
             lunchIn: null,
@@ -380,10 +382,7 @@ router.get('/all', async (req, res) => {
 
       const monthDay = `-${mm}-${dd}`;
 
-     const match = holidays.find(h => h.date === monthDay);
-if (!r.leaveType && match) {
-  r.leaveType = match.name;
-}
+    
 
 
       finalList.push(r);
@@ -509,19 +508,22 @@ router.get('/:id', async (req, res) => {
     // ---- AUTO INSERT HOLIDAYS INTO RESPONSE (NOT DATABASE) ----
     const generatedRecords = [];
     const recordedDates = new Set(attendance.map(a => a.date));
-
-  holidays.forEach(h => {
+const today = new Date().setHours(0,0,0,0);
+holidays.forEach(h => {
   const year = new Date().getFullYear();
   const holidayDate = `${year}${h.date}`;
+  const holidayTime = new Date(holidayDate).setHours(0,0,0,0);
 
+  if (holidayTime > today) return;  // Don't include future holidays
 
-      if (!recordedDates.has(holidayDate)) {
-        generatedRecords.push({
-          id: employeeId,
-          name: staff.name,
-          date: holidayDate,
-          day: new Date(holidayDate).toLocaleDateString('en-US', { weekday: 'long' }),
-          leaveType:h.name,
+  if (!recordedDates.has(holidayDate)) {
+    generatedRecords.push({
+      id: employeeId,
+      name: staff.name,
+      date: holidayDate,
+      day: new Date(holidayDate).toLocaleDateString('en-US', { weekday: 'long' }),
+      holidayName: h.name,   // use holidayName here
+      leaveType: null,
           inTime: null,
           outTime: null,
           lunchIn: null,
