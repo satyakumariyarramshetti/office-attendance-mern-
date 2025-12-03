@@ -46,108 +46,106 @@ async function getAddressFromCoordinates(locationString) {
 ------------------------------------------------------------------ */
 async function updateLeaveBalance(employeeId, leaveType) {
   try {
-    const balanceProfile = await LeaveBalance.findOne({ employeeId });
-    if (!balanceProfile) {
+    const b = await LeaveBalance.findOne({ employeeId });
+    if (!b) {
       return { success: false, message: 'Employee not found in leave balance records.' };
     }
 
     let isLOP = false;
-    let statusMessage = 'Leave submitted successfully.';
+    let message = `${leaveType} recorded successfully.`;
 
-    // No deduction for Compensation or C-Off Leave for ANY employee.
-if (
-  leaveType.startsWith('C-Off Leave') ||
-  leaveType === 'Travel Leave' ||
-  leaveType === 'Client/Site Visit' ||
-  leaveType === 'Over-Time Leave'
-)
- {
-  return { success: true, name: balanceProfile.name, message: `${leaveType} recorded successfully.`, isLOP: false };
-}
+    // Leave types that SHOULD NOT deduct anything
+    if (
+      leaveType.startsWith('C-Off Leave') ||
+      leaveType === 'Travel Leave' ||
+      leaveType === 'Client/Site Visit' ||
+      leaveType === 'Over-Time Leave'
+    ) {
+      return {
+        success: true,
+        name: b.name,
+        message,
+        isLOP: false
+      };
+    }
 
-
-
-    // Half-day leaves
-    if (leaveType === 'First Half Leave' || leaveType === 'Second Half Leave') {
-      if (balanceProfile.role === 'junior') {
-        if (balanceProfile.monthlyLeaveStatus < 0.5) {
+    /* -------------------------------------------------------------
+       HALF DAY LEAVES
+       (Juniors use monthlyLeaveStatus, seniors use casualLeaves)
+    --------------------------------------------------------------*/
+    if (leaveType === "First Half Leave" || leaveType === "Second Half Leave") {
+      if (b.role === 'junior') {
+        if (b.monthlyLeaveStatus < 0.5) {
           isLOP = true;
-          statusMessage = 'Half-day leave recorded as LOP due to insufficient balance.';
+          message = "Half-day leave recorded as LOP due to insufficient balance.";
         }
-        balanceProfile.monthlyLeaveStatus -= 0.5;
-      } else if (balanceProfile.role === 'senior') {
-        if (balanceProfile.casualLeaves >= 0.5) {
-          balanceProfile.casualLeaves -= 0.5;
-        } else if (balanceProfile.sickLeaves >= 0.5) {
-          balanceProfile.sickLeaves -= 0.5;
-        } else if (balanceProfile.privilegeLeaves >= 0.5) {
-          balanceProfile.privilegeLeaves -= 0.5;
-        } else {
+        b.monthlyLeaveStatus -= 0.5;
+      } else {
+        if (b.casualLeaves < 0.5) {
           isLOP = true;
-          statusMessage = 'Insufficient balance for a half-day. Recorded as LOP.';
-          balanceProfile.casualLeaves -= 0.5; // allow negative to indicate LOP
+          message = "Half-day leave recorded as LOP due to insufficient balance.";
         }
+        b.casualLeaves -= 0.5;
       }
-    }
-    // Full-day leaves
-    else {
-      if (balanceProfile.role === 'junior') {
-        if (leaveType === 'Casual Leave' || leaveType === 'Sick Leave') {
-          if (balanceProfile.monthlyLeaveStatus < 1) {
-            isLOP = true;
-            statusMessage = 'Leave recorded as LOP. Your balance is now negative.';
-          }
-          balanceProfile.monthlyLeaveStatus -= 1;
-        } else {
-          return { success: false, message: `Juniors cannot take '${leaveType}'.` };
-        }
-      } else if (balanceProfile.role === 'senior') {
-        switch (leaveType) {
-         case 'Casual Leave':
-  if (balanceProfile.casualLeaves < 1) {
-    // Check if privilege leaves are available
-    if (balanceProfile.privilegeLeaves >= 1) {
-      balanceProfile.privilegeLeaves -= 1;
-      statusMessage = 'No casual leaves. Deducted from privilege leaves.';
-    } else {
-      // Deduct from casual (go negative)
-      balanceProfile.casualLeaves -= 1;
-      isLOP = true;
-      statusMessage = 'No casual or privilege leaves. Goes negative/Loss of Pay.';
-    }
-  } else {
-    balanceProfile.casualLeaves -= 1;
-  }
-  break;
 
-          case 'Sick Leave':
-            if (balanceProfile.sickLeaves < 1) {
-              isLOP = true;
-              statusMessage = 'No sick leaves available. Recorded as LOP.';
-            }
-            balanceProfile.sickLeaves -= 1;
-            break;
-          case 'Privilege Leave':
-            if (balanceProfile.privilegeLeaves < 1) {
-              isLOP = true;
-              statusMessage = 'No privilege leaves available. Recorded as LOP.';
-            }
-            balanceProfile.privilegeLeaves -= 1;
-            break;
-          default:
-            return { success: false, message: 'Invalid leave type for a senior employee.' };
-        }
+      await b.save();
+      return { success: true, name: b.name, message, isLOP };
+    }
+
+    /* -------------------------------------------------------------
+       FULL DAY LEAVES BASED ON NEW RULES
+    --------------------------------------------------------------*/
+
+    // --------- CASUAL LEAVE LOGIC --------- //
+    if (leaveType === "Casual Leave") {
+      if (b.casualLeaves > 0) {
+        b.casualLeaves -= 1;
+      } else if (b.privilegeLeaves > 0) {
+        b.privilegeLeaves -= 1;
+      } else {
+        b.casualLeaves -= 1; // go negative
+        isLOP = true;
+        message = "Casual Leave applied but insufficient leaves. Deducted as negative.";
       }
     }
 
-    await balanceProfile.save();
-    return { success: true, name: balanceProfile.name, message: statusMessage, isLOP };
+    // --------- PRIVILEGE LEAVE LOGIC --------- //
+    else if (leaveType === "Privilege Leave") {
+      if (b.privilegeLeaves > 0) {
+        b.privilegeLeaves -= 1;
+      } else if (b.casualLeaves > 0) {
+        b.casualLeaves -= 1;
+      } else {
+        b.privilegeLeaves -= 1; // negative
+        isLOP = true;
+        message = "Privilege Leave applied but insufficient leaves. Deducted as negative.";
+      }
+    }
+
+    // --------- SICK LEAVE LOGIC --------- //
+    else if (leaveType === "Sick Leave") {
+      if (b.sickLeaves > 0) {
+        b.sickLeaves -= 1;
+      } else if (b.casualLeaves > 0) {
+        b.casualLeaves -= 1;
+      } else if (b.privilegeLeaves > 0) {
+        b.privilegeLeaves -= 1;
+      } else {
+        b.sickLeaves -= 1; // negative
+        isLOP = true;
+        message = "Sick Leave applied but insufficient leaves. Deducted as negative.";
+      }
+    }
+
+    await b.save();
+    return { success: true, name: b.name, message, isLOP };
 
   } catch (error) {
     console.error("Error updating leave balance:", error);
-    return { success: false, message: 'Server error while updating leave balance.' };
+    return { success: false, message: 'Error updating leave balance.' };
   }
 }
+
 
 /* ------------------------------------------------------------------
    SAVE / UPDATE ATTENDANCE
@@ -202,8 +200,9 @@ router.post('/save', async (req, res) => {
 
     let attendance = await Attendance.findOne({ id: String(id).trim(), date });
 
-    if (attendance) {
+   if (attendance) {
       // ---- UPDATE EXISTING RECORD ----
+      let lopInfo = null;
 
       if (shouldAffectBalance && !attendance.leaveType) {
         const balanceUpdateResult = await updateLeaveBalance(id, leaveType);
@@ -213,6 +212,7 @@ router.post('/save', async (req, res) => {
         attendance.isLOP = balanceUpdateResult.isLOP;
         attendance.name = balanceUpdateResult.name || attendance.name;
         attendance.leaveType = leaveType;
+        lopInfo = balanceUpdateResult;
       }
 
       if (typeof inTime !== 'undefined') attendance.inTime = inTime;
@@ -222,19 +222,15 @@ router.post('/save', async (req, res) => {
       if (typeof outTime !== 'undefined') attendance.outTime = outTime;
       if (typeof day !== 'undefined') attendance.day = day;
       if (typeof delayReason !== 'undefined') {
-  attendance.delayReason = delayReason || null;
-}
-
+        attendance.delayReason = delayReason || null;
+      }
 
       if (isOutTimeCard) {
         attendance.dailyLeaveType = permissionType || null;
-      } else {
-        if (typeof finalDailyLeaveType !== 'undefined') {
-          attendance.dailyLeaveType = finalDailyLeaveType;
-        }
+      } else if (typeof finalDailyLeaveType !== 'undefined') {
+        attendance.dailyLeaveType = finalDailyLeaveType;
       }
 
-      // Permission Details card -> permissionType + hours
       if (isPermissionCard) {
         attendance.permissionType = permissionType || null;
         if (typeof hours !== 'undefined') attendance.hours = hours;
@@ -247,21 +243,20 @@ router.post('/save', async (req, res) => {
         }
       }
 
-      
-
       await attendance.save();
 
-      const message =
-        shouldAffectBalance
-          ? 'Leave recorded and attendance updated.'
-          : isOutTimeCard
-            ? 'Out-time recorded. Reason stored as Daily Leave Type.'
-            : isPermissionCard
-              ? 'Permission recorded successfully.'
-              : 'Attendance record updated successfully.';
+      const message = shouldAffectBalance
+        ? (lopInfo ? lopInfo.message : 'Leave submitted successfully.')
+        : isOutTimeCard
+          ? 'Out-time recorded. Reason stored as Daily Leave Type.'
+          : isPermissionCard
+            ? 'Permission recorded successfully.'
+            : 'Attendance record updated successfully.';
 
-      return res.json({ message });
-
+      return res.json({
+        message,
+        isLOP: lopInfo ? lopInfo.isLOP : attendance.isLOP || false
+      });
     } else {
       // ---- CREATE NEW RECORD ----
       let staffName;
@@ -291,6 +286,7 @@ router.post('/save', async (req, res) => {
         }
       }
 
+
       const address = await getAddressFromCoordinates(location);
 
       const newAttendance = new Attendance({
@@ -315,8 +311,9 @@ router.post('/save', async (req, res) => {
       });
 
       await newAttendance.save();
-      return res.json({ message });
-    }
+  // ⬇️ REPLACE your old `return res.json({ message });` with this:
+  return res.json({ message, isLOP });
+}
 
   } catch (error) {
     console.error('Error saving attendance:', error);

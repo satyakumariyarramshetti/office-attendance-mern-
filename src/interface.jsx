@@ -389,7 +389,11 @@ const timeToMinutes = (timeStr) => {
           msg = `${payload.name} submitted Permission request.`;
           break;
         case 'leave':
-          msg = `${payload.name} submitted Leave request.`;
+          if (result.isLOP) {
+            msg = result.message || `${payload.name}, your leave makes the balance negative and may be treated as LOP.`;
+          } else {
+            msg = result.message || 'Leave submitted successfully.';
+          }
           break;
         default:
           msg = result.message || 'Submitted successfully!';

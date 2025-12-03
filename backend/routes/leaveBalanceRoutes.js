@@ -13,37 +13,32 @@ router.get('/', async (req, res) => {
 });
 
 
-// --- THIS IS THE CORRECT ROUTE FOR YOUR LOGIC ---
+// --- THIS IS THE CORRECT ROUTE FOR YOUR LOGIC ----//
 router.post('/reset-monthly', async (req, res) => {
     try {
-        // --- Step 1: Handle positive balances (CARRY FORWARD + 1) ---
-        // Find all juniors with a balance > 0 and add 1 to it.
-        const positiveResult = await LeaveBalance.updateMany(
-            { role: 'junior', monthlyLeaveStatus: { $gt: 0 } },
-            { $inc: { monthlyLeaveStatus: 1 } }
+        // Add 1 casual leave to all juniors
+        const result = await LeaveBalance.updateMany(
+            { role: 'junior' },
+            { $inc: { casualLeaves: 1 } }
         );
 
-        // --- Step 2: Handle zero or negative balances (RESET to 1) ---
-        // Find all juniors with a balance <= 0 and set it to 1.
-        const negativeOrZeroResult = await LeaveBalance.updateMany(
-            { role: 'junior', monthlyLeaveStatus: { $lte: 0 } },
-            { $set: { monthlyLeaveStatus: 1 } }
-        );
-
-        // Calculate the total number of employees whose records were changed.
-        const totalModified = positiveResult.modifiedCount + negativeOrZeroResult.modifiedCount;
-
-        if (totalModified === 0) {
-            return res.status(200).json({ message: 'No junior employee balances needed an update.' });
+        if (result.modifiedCount === 0) {
+            return res.status(200).json({ message: 'No junior employees found.' });
         }
 
-        res.status(200).json({ message: `Successfully reset the leave balance for ${totalModified} junior employee(s).` });
+        res.status(200).json({
+            message: `1 leave added successfully to ${result.modifiedCount} junior employee(s).`
+        });
 
     } catch (error) {
         console.error('Error resetting monthly leaves:', error);
-        res.status(500).json({ message: 'Error resetting monthly leaves', error: error.message });
+        res.status(500).json({
+            message: 'Error resetting monthly leaves',
+            error: error.message
+        });
     }
 });
+
 
 // POST: Add a new member to the leave balance sheet
 router.post('/add', async (req, res) => {
@@ -88,19 +83,41 @@ router.put('/edit/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const updateData = req.body;
-        const updatedBalance = await LeaveBalance.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+
+        // Ensure monthlyLeaveStatus exists for juniors
+        if (updateData.role === 'junior' && updateData.monthlyLeaveStatus === undefined) {
+            updateData.monthlyLeaveStatus = 1; 
+        }
+
+        // Seniors must NOT have monthlyLeaveStatus
+        if (updateData.role === 'senior') {
+            updateData.monthlyLeaveStatus = 0;
+        }
+
+        const updatedBalance = await LeaveBalance.findByIdAndUpdate(
+            id,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
 
         if (!updatedBalance) {
             return res.status(404).json({ message: 'Member not found.' });
         }
 
-        res.status(200).json({ message: 'Member updated successfully', data: updatedBalance });
+        res.status(200).json({
+            message: 'Member updated successfully',
+            data: updatedBalance
+        });
 
     } catch (error) {
         console.error('Error updating member:', error);
-        res.status(500).json({ message: 'Error updating member', error: error.message });
+        res.status(500).json({
+            message: 'Error updating member',
+            error: error.message
+        });
     }
 });
+
 // DELETE: Remove a member from the leave balance sheet
 router.delete('/remove/:id', async (req, res) => {
     try {

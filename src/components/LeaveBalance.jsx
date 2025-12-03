@@ -154,9 +154,10 @@ const LeaveBalance = () => {
                     <td>{b.employeeId}</td>
                     <td>{b.name}</td>
                     <td>{b.role}</td>
-                    <td>{b.role === 'senior' ? b.casualLeaves : b.monthlyLeaveStatus}</td>
-                    <td>{b.role === 'senior' ? b.sickLeaves : 'N/A'}</td>
-                    <td>{b.role === 'senior' ? b.privilegeLeaves : 'N/A'}</td>
+                 <td>{b.casualLeaves}</td>
+<td>{b.sickLeaves}</td>
+<td>{b.privilegeLeaves}</td>
+
                     <td className="action-buttons">
                       <button className="edit-btn" onClick={() => openEditModal(b)}>Edit</button>
                       <button className="remove-btn" onClick={() => handleRemoveMember(b._id)}>Remove</button>
@@ -206,21 +207,44 @@ const LeaveBalance = () => {
                 <option value="senior">Senior</option>
               </select>
 
-              {editingMember.role === 'senior' ? (
-                <>
-                  <label>Casual Leaves</label>
-                  <input type="number" name="casualLeaves" value={editingMember.casualLeaves} onChange={handleEditFormChange} />
-                  <label>Sick Leaves</label>
-                  <input type="number" name="sickLeaves" value={editingMember.sickLeaves} onChange={handleEditFormChange} />
-                  <label>Privilege Leaves</label>
-                  <input type="number" name="privilegeLeaves" value={editingMember.privilegeLeaves} onChange={handleEditFormChange} />
-                </>
-              ) : (
-                <>
-                  <label>Monthly Leaves</label>
-                  <input type="number" name="monthlyLeaveStatus" value={editingMember.monthlyLeaveStatus} onChange={handleEditFormChange} />
-                </>
-              )}
+            {/* COMMON FIELDS FOR BOTH JUNIOR & SENIOR */}
+<label>Casual Leaves</label>
+<input
+  type="number"
+  name="casualLeaves"
+  value={editingMember.casualLeaves}
+  onChange={handleEditFormChange}
+/>
+
+<label>Sick Leaves</label>
+<input
+  type="number"
+  name="sickLeaves"
+  value={editingMember.sickLeaves}
+  onChange={handleEditFormChange}
+/>
+
+<label>Privilege Leaves</label>
+<input
+  type="number"
+  name="privilegeLeaves"
+  value={editingMember.privilegeLeaves}
+  onChange={handleEditFormChange}
+/>
+
+{/* ONLY JUNIORS HAVE MONTHLY LEAVE STATUS */}
+{editingMember.role === 'junior' && (
+  <>
+    <label>Monthly Leaves</label>
+    <input
+      type="number"
+      name="monthlyLeaveStatus"
+      value={editingMember.monthlyLeaveStatus}
+      onChange={handleEditFormChange}
+    />
+  </>
+)}
+
               
               <div className="modal-actions">
                 <button type="submit">Save Changes</button>
