@@ -84,12 +84,18 @@ router.put('/edit/:id', async (req, res) => {
         const { id } = req.params;
         const updateData = req.body;
 
-        // Ensure monthlyLeaveStatus exists for juniors
-        if (updateData.role === 'junior' && updateData.monthlyLeaveStatus === undefined) {
-            updateData.monthlyLeaveStatus = 1; 
+        // JUNIOR LOGIC
+        if (updateData.role === 'junior') {
+            if (
+                updateData.monthlyLeaveStatus === undefined ||
+                updateData.monthlyLeaveStatus === null ||
+                updateData.monthlyLeaveStatus === ""
+            ) {
+                updateData.monthlyLeaveStatus = 1;
+            }
         }
 
-        // Seniors must NOT have monthlyLeaveStatus
+        // SENIOR LOGIC
         if (updateData.role === 'senior') {
             updateData.monthlyLeaveStatus = 0;
         }
