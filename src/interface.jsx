@@ -616,6 +616,8 @@ const handleLeaveSubmit = async (e) => {
   <option value="TOM">TOM</option>
   <option value="Late Flexi">Late Flexi</option>
   <option value="Project Requirement">Project Requirement</option>
+  <option value="Office Work">Office Work</option>
+
   <option value="First 50% Leave">First 50% Leave</option>
   <option value="Deputation">Deputation</option>
   <option value="OT Reason">OT Reason</option>

@@ -2,6 +2,8 @@ import React, { useState, useEffect,useCallback } from "react";
 import "./StaffDetails.css";
 import AddStaffModal from "./AddStaffModal";
 import EditStaffModal from "./EditStaffModal";
+import * as XLSX from "xlsx";
+
 
 const departments = [
   "All",
@@ -23,6 +25,28 @@ const StaffDetails = () => {
   const [editModal, setEditModal] = useState(false);
 const [selectedStaff, setSelectedStaff] = useState(null);
   // ✅ Fetch all staff from backend
+  const handleExportStaff = () => {
+  // choose which data to export (filtered or all)
+  const dataToExport = filteredStaff.length ? filteredStaff : staff;
+
+  // map to plain objects with desired columns
+  const rows = dataToExport.map(s => ({
+    ID: s.id,
+    Name: s.name,
+    Designation: s.designation,
+    Department: s.department,
+    Email: s.email || "",
+    Phone: s.phone || "",
+    "Reports To": s.reportsTo || "",
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(rows);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Staff");
+
+  XLSX.writeFile(workbook, "staff-details.xlsx");
+};
+
  
 
   const fetchStaff = useCallback(async () => {
@@ -134,20 +158,26 @@ const handleUpdateStaff = async (updatedStaff) => {
       <h2>Staff Details</h2>
 
       {/* 🔘 Department Buttons */}
-      <div className="dept-buttons">
-        {departments.map(dept => (
-          <button
-            key={dept}
-            onClick={() => handleFilter(dept)}
-            className={selectedDept === dept ? "active" : ""}
-          >
-            {dept}
-          </button>
-        ))}
-        <button onClick={() => setShowModal(true)} className="add-staff-btn">
-          Add Staff
-        </button>
-      </div>
+     <div className="dept-buttons">
+  {departments.map(dept => (
+    <button
+      key={dept}
+      onClick={() => handleFilter(dept)}
+      className={selectedDept === dept ? "active" : ""}
+    >
+      {dept}
+    </button>
+  ))}
+
+  <button onClick={handleExportStaff} className="add-staff-btn">
+    Export Staff
+  </button>
+
+  <button onClick={() => setShowModal(true)} className="add-staff-btn">
+    Add Staff
+  </button>
+</div>
+
 
       {/* 🔍 Search Bar */}
       <input
