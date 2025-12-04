@@ -93,6 +93,10 @@ const Interface = () => {
   const [outTimeMessage, setOutTimeMessage] = useState({ text: '', type: '' });
   const [cOffEarnedDate, setCOffEarnedDate] = useState('');
   const [isOTElligible, setIsOTElligible] = useState(false);
+  const [delayInfoMessage, setDelayInfoMessage] = useState('');
+  const [outPermissionInfoMessage, setOutPermissionInfoMessage] = useState('');
+
+
 
 
 
@@ -326,16 +330,34 @@ const timeToMinutes = (timeStr) => {
 
    const handleChange = (e) => {
     const { id, value } = e.target;
-    if (id === 'dailyLeaveType') {
-    setFormData(prev => ({ ...prev, dailyLeaveType: value }));
-    return;
+   if (id === 'dailyLeaveType') {
+  setFormData(prev => ({ ...prev, dailyLeaveType: value }));
+
+  if (value === 'Second 50% Leave') {
+    setOutPermissionInfoMessage(
+      'You Have Selected Second 50% Leave. Kindly Update The Leave Section As Well.'
+    );
+  } else {
+    setOutPermissionInfoMessage('');
   }
 
+  return;
+}
+
+
      // Add this block right here:
-  if (id === 'delayReason') {
-    setFormData((prev) => ({ ...prev, delayReason: value }));
-    return;
+if (id === 'delayReason') {
+  setFormData(prev => ({ ...prev, delayReason: value }));
+
+  if (value === 'First 50% Leave') {
+    setDelayInfoMessage('You Have Selected First 50% Leave. Kindly Update The Leave Section Also.');
+  } else {
+    setDelayInfoMessage('');
   }
+
+  return;
+}
+
     
     // --- MODIFIED: Set inTimeMethod to 'manual' on direct change ---
     if (id === 'inTime') {
@@ -602,38 +624,53 @@ const handleLeaveSubmit = async (e) => {
                   </label>
                   <input type="time" id="inTime" className="form-control" value={formData.inTime} onChange={handleChange} />
                 </div>
+
                 {/* Conditionally show Delay Reason if inTime is after 09:15 */}
       {formData.inTime && formData.inTime > '09:15' && (
-        <div className="form-group mb-2">
-          <label>Delay Reason</label>
+  <div className="form-group mb-2">
+    <label>Delay Reason</label>
 
-      <select
-  id="delayReason"
-  className="form-control"
-  value={isOTElligible ? "OT Reason" : (formData.delayReason || "Late Mark")}
-  onChange={handleChange}
-  required
-  disabled={isOTElligible}
->
-  <option value="Late Mark">Late Mark</option>
-  <option value="Permission">Permission</option>
-  <option value="TOM">TOM</option>
-  <option value="Late Flexi">Late Flexi</option>
-  <option value="Project Requirement">Project Requirement</option>
-  <option value="Office Work">Office Work</option>
+    <select
+      id="delayReason"
+      className="form-control"
+      value={isOTElligible ? "OT Reason" : (formData.delayReason || "Late Mark")}
+      onChange={handleChange}
+      required
+      disabled={isOTElligible}
+    >
+      <option value="Late Mark">Late Mark</option>
+      <option value="Permission">Permission</option>
+      <option value="TOM">TOM</option>
+      <option value="Late Flexi">Late Flexi</option>
+      <option value="Project Requirement">Project Requirement</option>
+      <option value="Office Work">Office Work</option>
+      <option value="First 50% Leave">First 50% Leave</option>
+      <option value="Deputation">Deputation</option>
+      <option value="OT Reason">OT Reason</option>
+    </select>
 
-  <option value="First 50% Leave">First 50% Leave</option>
-  <option value="Deputation">Deputation</option>
-  <option value="OT Reason">OT Reason</option>
-</select>
+    {isOTElligible && (
+      <small className="text-success">
+        OT Reason automatically applied due to previous day's extra hours.
+      </small>
+    )}
 
-{isOTElligible && (
-  <small className="text-success">OT Reason automatically applied due to previous day's extra hours.</small>
+    {delayInfoMessage && (
+      <div
+        className="mt-1 px-2 py-1"
+        style={{
+          backgroundColor: '#fd5a09ff',
+          color:'#fbfafbff' ,
+          borderRadius: '4px',
+          fontSize: '0.9rem',
+        }}
+      >
+        {delayInfoMessage}
+      </div>
+    )}
+  </div>
 )}
 
-
-        </div>
-      )}
 
 
                 <div className="mt-auto"><button className="btn btn-primary btn-block" type="submit" disabled={staffNotFound || !formData.id}>Submit</button></div>
@@ -665,25 +702,44 @@ const handleLeaveSubmit = async (e) => {
                 <StaffIdInput inputId="idOutTime" value={idInputs.outTime} onChange={(e) => handleIdChange(e, 'outTime')} staffNotFound={staffNotFound} />
                 <div className="form-group mb-2"><label>Date</label><input type="date" className="form-control" value={formData.date} readOnly /></div>
                 <div className="form-group mb-2"><label>Out Time</label><input type="time" id="outTime" className="form-control" value={formData.outTime} onChange={handleChange} /></div>
-                <div className="form-group mb-3"><label htmlFor="dailyLeaveType">Permission Type</label>
-                  <select id="dailyLeaveType" className="form-control" value={formData.dailyLeaveType} onChange={handleChange}>
-                    <option value="">Select Permission</option>
-                    <option value="Second 50% Leave">Second 50% Leave</option>
-                    <option value="Personal Permission">Personal Permission</option>
-                    <option value="Health Issue">Health Issue</option>
-                    <option value="Emergency Permission">Emergency Permission</option>
-                    <option value="Office Work">Office Work</option>
-                    <option value="TOM">TOM</option>
-                    <option value="FLEXI">FLEXI</option>
-                    <option value="Call">Call</option>
-                     <option value="Festival">Festival</option>
-                     <option value="Project Requirement">Project Requirement</option>
-                     <option value="WFH">WFH</option>
-                     
-                    <option value="Casual Type">Casual Type</option>
-                    
-                  </select>
-                </div>
+                <div className="form-group mb-3">
+  <label htmlFor="dailyLeaveType">Permission Type</label>
+  <select
+    id="dailyLeaveType"
+    className="form-control"
+    value={formData.dailyLeaveType}
+    onChange={handleChange}
+  >
+    <option value="">Select Permission</option>
+    <option value="Second 50% Leave">Second 50% Leave</option>
+    <option value="Personal Permission">Personal Permission</option>
+    <option value="Health Issue">Health Issue</option>
+    <option value="Emergency Permission">Emergency Permission</option>
+    <option value="Office Work">Office Work</option>
+    <option value="TOM">TOM</option>
+    <option value="FLEXI">FLEXI</option>
+    <option value="Call">Call</option>
+    <option value="Festival">Festival</option>
+    <option value="Project Requirement">Project Requirement</option>
+    <option value="WFH">WFH</option>
+    <option value="Casual Type">Casual Type</option>
+  </select>
+
+  {outPermissionInfoMessage && (
+    <div
+      className="mt-1 px-2 py-1"
+      style={{
+        backgroundColor: '#fd5a09ff',
+        color: '#fbfafbff',
+        borderRadius: '4px',
+        fontSize: '0.9rem',
+      }}
+    >
+      {outPermissionInfoMessage}
+    </div>
+  )}
+</div>
+
                 {outTimeMessage.text && (<div className={`time-message mb-3 ${outTimeMessage.type === 'success' ? 'text-success' : 'text-danger'}`}>{outTimeMessage.text}</div>)}
                 <div className="mt-auto"><button className="btn btn-primary btn-block" type="submit" disabled={staffNotFound || !formData.id}>Submit</button></div>
               </form>
