@@ -95,6 +95,8 @@ const Interface = () => {
   const [isOTElligible, setIsOTElligible] = useState(false);
   const [delayInfoMessage, setDelayInfoMessage] = useState('');
   const [outPermissionInfoMessage, setOutPermissionInfoMessage] = useState('');
+  const [halfDayReason, setHalfDayReason] = useState('');   // reason for First/Second Half
+
 
 
 
@@ -363,9 +365,16 @@ if (id === 'delayReason') {
     if (id === 'inTime') {
       setInTimeMethod('manual'); // Mark as manual entry
     }
-     if (id === 'leaveType' && value !== 'C-Off Leave') {
+    if (id === 'leaveType') {
+  if (value !== 'C-Off Leave') {
     setCOffEarnedDate('');
   }
+  // reset half‑day reason whenever leave type changes
+  if (value !== 'First Half Leave' && value !== 'Second Half Leave') {
+    setHalfDayReason('');
+  }
+}
+
 
    if (id === 'outTime') {
   if (value >= '18:00') {
@@ -373,6 +382,10 @@ if (id === 'delayReason') {
   } else {
     setFormData(prev => ({ ...prev, outTime: value, dailyLeaveType: '' }));
   }
+  return;
+}
+if (id === 'halfDayReason') {
+  setHalfDayReason(value);
   return;
 }
   // <-- ADD THIS DEFAULT CASE -->
@@ -566,6 +579,12 @@ const handleLeaveSubmit = async (e) => {
     return;
   }
   let leaveType = formData.leaveType;
+if ((leaveType === 'First Half Leave' || leaveType === 'Second Half Leave') && !halfDayReason) {
+  alert('Please select reason (Sick / Casual / Privilege) for half-day leave.');
+  return;
+}
+
+
   // If "C-Off Leave" selected, check cOffEarnedDate and combine
   if (leaveType === 'C-Off Leave') {
     if (!cOffEarnedDate) {
@@ -574,13 +593,15 @@ const handleLeaveSubmit = async (e) => {
     }
     leaveType = `C-Off Leave [Earned on: ${cOffEarnedDate}]`;
   }
-  const payload = { 
-    id: formData.id, 
-    name: formData.name, 
-    date: formData.date, 
-    day: formData.day, 
-    leaveType 
-  };
+ const payload = { 
+  id: formData.id, 
+  name: formData.name, 
+  date: formData.date, 
+  day: formData.day, 
+  leaveType,
+  halfDayReason
+};
+
   submitData(payload, 'leave');
 };
 
@@ -801,6 +822,25 @@ const handleLeaveSubmit = async (e) => {
 </select>
 
                     </div>
+
+    {(formData.leaveType === 'First Half Leave' || formData.leaveType === 'Second Half Leave') && (
+  <div className="form-group mb-3">
+    <label htmlFor="halfDayReason">Reason for Half Day</label>
+    <select
+      id="halfDayReason"
+      className="form-control"
+      value={halfDayReason}
+      onChange={handleChange}
+      required
+    >
+      <option disabled value="">Select Reason</option>
+      <option value="Sick Leave">Sick Leave</option>
+      <option value="Casual Leave">Casual Leave</option>
+      <option value="Privilege Leave">Privilege Leave</option>
+    </select>
+  </div>
+)}
+                
                   {formData.leaveType === 'C-Off Leave' && (
   <div className="form-group mb-2">
     <label htmlFor="cOffEarnedDate">C-Off Earned On</label>

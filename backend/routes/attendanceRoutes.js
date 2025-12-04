@@ -40,11 +40,48 @@ async function getAddressFromCoordinates(locationString) {
   }
 }
 
+// Half‑day deduction helper for Sick / Casual / Privilege
+function deductHalfDayPriority(b, primaryType) {
+  // b = LeaveBalance document
+  // primaryType is one of: 'Sick', 'Casual', 'Privilege'
+
+  const fields = {
+    Sick: 'sickLeaves',
+    Casual: 'casualLeaves',
+    Privilege: 'privilegeLeaves',
+  };
+
+  const order = {
+    Sick:      ['sickLeaves', 'casualLeaves', 'privilegeLeaves'],
+    Casual:    ['casualLeaves', 'privilegeLeaves'],
+    Privilege: ['privilegeLeaves', 'casualLeaves'],
+  };
+
+  let isLOP = false;
+
+  for (const field of order[primaryType]) {
+    if (b[field] > 0) {
+      b[field] -= 0.5;
+      return { isLOP: false };
+    }
+  }
+
+  // No balance anywhere → make primary field negative
+  const primaryField = fields[primaryType];
+  b[primaryField] -= 0.5;
+  isLOP = true;
+
+  return { isLOP };
+}
+
+
 /* ------------------------------------------------------------------
    Leave balance update helper (kept intact)
    NOTE: Called ONLY when a full-day leaveType is submitted.
 ------------------------------------------------------------------ */
-async function updateLeaveBalance(employeeId, leaveType) {
+async function updateLeaveBalance(employeeId, leaveType, options = {}) {
+  const { halfDayReason } = options;  
+  
   try {
     const b = await LeaveBalance.findOne({ employeeId });
     if (!b) {
@@ -69,28 +106,48 @@ async function updateLeaveBalance(employeeId, leaveType) {
       };
     }
 
-    /* -------------------------------------------------------------
-       HALF DAY LEAVES
-       (Juniors use monthlyLeaveStatus, seniors use casualLeaves)
-    --------------------------------------------------------------*/
-    if (leaveType === "First Half Leave" || leaveType === "Second Half Leave") {
-      if (b.role === 'junior') {
-        if (b.monthlyLeaveStatus < 0.5) {
-          isLOP = true;
-          message = "Half-day leave recorded as LOP due to insufficient balance.";
-        }
-        b.monthlyLeaveStatus -= 0.5;
-      } else {
-        if (b.casualLeaves < 0.5) {
-          isLOP = true;
-          message = "Half-day leave recorded as LOP due to insufficient balance.";
-        }
-        b.casualLeaves -= 0.5;
-      }
+  /* -------------------------------------------------------------
+   HALF DAY LEAVES (First / Second Half)
+   Reason must be: Sick Leave / Casual Leave / Privilege Leave
+   Priority:
+   - Sick:      Sick → Casual → Privilege → Sick negative
+   - Casual:    Casual → Privilege → Casual negative
+   - Privilege: Privilege → Casual → Privilege negative
+--------------------------------------------------------------*/
+if (leaveType === "First Half Leave" || leaveType === "Second Half Leave") {
+  if (
+    !halfDayReason ||
+    !["Sick Leave", "Casual Leave", "Privilege Leave"].includes(halfDayReason)
+  ) {
+    return {
+      success: false,
+      message: "Half-day reason must be Sick Leave, Casual Leave or Privilege Leave."
+    };
+  }
 
-      await b.save();
-      return { success: true, name: b.name, message, isLOP };
-    }
+  let result;
+
+  if (halfDayReason === "Sick Leave") {
+    result = deductHalfDayPriority(b, "Sick");
+    message = "Half-day Sick Leave recorded.";
+  } else if (halfDayReason === "Casual Leave") {
+    result = deductHalfDayPriority(b, "Casual");
+    message = "Half-day Casual Leave recorded.";
+  } else if (halfDayReason === "Privilege Leave") {
+    result = deductHalfDayPriority(b, "Privilege");
+    message = "Half-day Privilege Leave recorded.";
+  }
+
+  isLOP = result.isLOP;
+
+  if (isLOP) {
+    message += " Insufficient balance, taken as negative (will be treated as LOP).";
+  }
+
+  await b.save();
+  return { success: true, name: b.name, message, isLOP };
+}
+
 
     /* -------------------------------------------------------------
        FULL DAY LEAVES BASED ON NEW RULES
@@ -159,11 +216,12 @@ async function updateLeaveBalance(employeeId, leaveType) {
 ------------------------------------------------------------------ */
 router.post('/save', async (req, res) => {
   let {
-    id, date, inTime, lunchOut, lunchIn, outTime, day,
-    permissionType, hours, dailyLeaveType, leaveType, location,
-    inTimeMethod,
-    delayReason // <-- Added this as per latest requirements
-  } = req.body;
+  id, date, inTime, lunchOut, lunchIn, outTime, day,
+  permissionType, hours, dailyLeaveType, leaveType, location,
+  inTimeMethod,
+  delayReason,
+  halfDayReason          // <-- NEW: reason for First/Second Half Leave
+} = req.body;
 
   if (!id || !date) {
     return res.status(400).json({ error: 'ID and Date are required' });
@@ -205,7 +263,7 @@ router.post('/save', async (req, res) => {
       let lopInfo = null;
 
       if (shouldAffectBalance && !attendance.leaveType) {
-        const balanceUpdateResult = await updateLeaveBalance(id, leaveType);
+  const balanceUpdateResult = await updateLeaveBalance(id, leaveType, { halfDayReason });
         if (!balanceUpdateResult.success) {
           return res.status(400).json({ error: balanceUpdateResult.message });
         }
@@ -264,7 +322,7 @@ router.post('/save', async (req, res) => {
       let isLOP = false;
 
       if (shouldAffectBalance) {
-        const balanceUpdateResult = await updateLeaveBalance(id, leaveType);
+  const balanceUpdateResult = await updateLeaveBalance(id, leaveType, { halfDayReason });
         if (!balanceUpdateResult.success) {
           return res.status(400).json({ error: balanceUpdateResult.message });
         }
