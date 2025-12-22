@@ -7,6 +7,7 @@ const AttendanceSchema = new mongoose.Schema({
   day: { type: String, required: true },
   inTime: { type: String },
   inTimeMethod: { type: String }, 
+  systemInTime: { type: String }, 
   delayReason: { type: String, default: null },
   lunchIn: { type: String },
   lunchOut: { type: String },

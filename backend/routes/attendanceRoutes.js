@@ -219,6 +219,7 @@ router.post('/save', async (req, res) => {
   id, date, inTime, lunchOut, lunchIn, outTime, day,
   permissionType, hours, dailyLeaveType, leaveType, location,
   inTimeMethod,
+  systemInTime, 
   delayReason,
   halfDayReason          // <-- NEW: reason for First/Second Half Leave
 } = req.body;
@@ -275,6 +276,7 @@ router.post('/save', async (req, res) => {
 
       if (typeof inTime !== 'undefined') attendance.inTime = inTime;
       if (typeof inTimeMethod !== 'undefined') attendance.inTimeMethod = inTimeMethod;
+      if (typeof systemInTime !== 'undefined') attendance.systemInTime = systemInTime;
       if (typeof lunchOut !== 'undefined') attendance.lunchOut = lunchOut;
       if (typeof lunchIn !== 'undefined') attendance.lunchIn = lunchIn;
       if (typeof outTime !== 'undefined') attendance.outTime = outTime;
@@ -354,6 +356,7 @@ router.post('/save', async (req, res) => {
         day,
         inTime,
         inTimeMethod,
+        systemInTime,
         lunchOut,
         lunchIn,
         outTime,

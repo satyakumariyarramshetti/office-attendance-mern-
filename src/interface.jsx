@@ -71,7 +71,9 @@ const Interface = () => {
   // --- STATE MANAGEMENT ---
   const [formData, setFormData] = useState({
    id: '', name: '', date: '', day: '',
-  inTime: '', lunchIn: '', lunchOut: '', outTime: '',
+  inTime: '',
+   systemInTime: '',  
+   lunchIn: '', lunchOut: '', outTime: '',
   permissionType: '', 
   
   
@@ -193,10 +195,11 @@ const timeToMinutes = (timeStr) => {
           newInTime = getCurrentTime();
           setInTimeMethod('live'); // Mark as live time
       }
+  const newSystemInTime = attendanceData.systemInTime || '';
 
       setFormData(prev => ({
        ...prev, id: fullId, name: staffName, date: date, day: getCurrentDay(date),
-  inTime: newInTime,
+  inTime: newInTime,systemInTime: newSystemInTime, 
   outTime: attendanceData.outTime || (context === 'outTime' ? getCurrentTime() : ''),
   lunchOut: newLunchOut, lunchIn: newLunchIn,
   permissionType: attendanceData.permissionType || '',
@@ -480,6 +483,9 @@ setFormData({
 if (formType === 'inTime') {
   payload.inTime = formData.inTime;
   payload.inTimeMethod = inTimeMethod;
+  // NEW: actual computer time at submit
+  const now = new Date().toTimeString().slice(0, 5); // "HH:MM"
+  payload.systemInTime = now;
 
   const inLate = formData.inTime > '09:15';
   let delayReasonToSend = formData.delayReason;
@@ -638,13 +644,22 @@ if ((leaveType === 'First Half Leave' || leaveType === 'Second Half Leave') && !
                 <div className="form-group mb-2"><label>Date</label><input type="date" className="form-control" value={formData.date} onChange={handleDateChange} max={getCurrentDate()} /></div>
                 <div className="form-group mb-2"><label>Day</label><input type="text" className="form-control" value={formData.day} readOnly /></div>
                 {/* --- MODIFIED: Added a label to show the time method --- */}
-                <div className="form-group mb-2">
-                  <label>
-                    In Time
-                    {inTimeMethod && <span className="time-method-badge">{inTimeMethod}</span>}
-                  </label>
-                  <input type="time" id="inTime" className="form-control" value={formData.inTime} onChange={handleChange} />
-                </div>
+               <div className="form-group mb-2">
+  <label>
+    In Time (Entered)
+    {inTimeMethod && <span className="time-method-badge">{inTimeMethod}</span>}
+  </label>
+  <input
+    type="time"
+    id="inTime"
+    className="form-control"
+    value={formData.inTime}
+    onChange={handleChange}
+  />
+</div>
+
+
+
 
                 {/* Conditionally show Delay Reason if inTime is after 09:15 */}
       {formData.inTime && formData.inTime > '09:15' && (

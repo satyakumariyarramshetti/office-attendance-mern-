@@ -217,13 +217,16 @@ useEffect(() => {
   // Export functions using monthFilteredRows!
   function exportToCSV() {
     if (!monthFilteredRows.length) return;
-   const headers = [
-  "ID", "Name", "Date", "Day", "In Time",  "Delay Reason", "Lunch Out", "Lunch In", "Out Time",
+ const headers = [
+  "ID", "Name", "Date", "Day",
+  "In Time", "System In Time",  // NEW
+  "Delay Reason",
+  "Lunch Out", "Lunch In", "Out Time",
   "Lunch Hours", "Working Hours", "Gross Hours",
-  "Daily Leave Type", "Permission Type", 
-         
+  "Daily Leave Type", "Permission Type",
   "Hours", "Leave Type", "Location"
 ];
+
 
     const csvRows = [headers.join(",")];
     for (const record of monthFilteredRows) {
@@ -231,15 +234,27 @@ useEffect(() => {
       const workingHours = calculateNetWorkingHours(record.inTime, record.outTime, record.lunchOut, record.lunchIn);
       const grossHours = computeGrossHours(lunchHours, workingHours);
 
-     const row = [
-  record.id ?? '', record.name ?? '', formatDate(record.date), record.day ?? '',
-  record.inTime ?? '', record.delayReason ?? '', record.lunchOut ?? '', record.lunchIn ?? '', record.outTime ?? '',
-  lunchHours, workingHours, grossHours,
-  record.dailyLeaveType ?? '', record.permissionType ?? '',
-  
-  
-record.hours ?? '', getLeaveOrHoliday(record), record.location ?? ''
+   const row = [
+  record.id ?? '',
+  record.name ?? '',
+  formatDate(record.date),
+  record.day ?? '',
+  record.inTime ?? '',
+  record.systemInTime ?? '',         // NEW
+  record.delayReason ?? '',
+  record.lunchOut ?? '',
+  record.lunchIn ?? '',
+  record.outTime ?? '',
+  lunchHours,
+  workingHours,
+  grossHours,
+  record.dailyLeaveType ?? '',
+  record.permissionType ?? '',
+  record.hours ?? '',
+  getLeaveOrHoliday(record),
+  record.location ?? ''
 ].map(field => `"${String(field)}"`).join(',');
+
 
       csvRows.push(row);
     }
@@ -263,6 +278,7 @@ record.hours ?? '', getLeaveOrHoliday(record), record.location ?? ''
   'Date': formatDate(record.date),
   'Day': record.day,
   'In Time': record.inTime,
+  'System In Time': record.systemInTime || '', 
   'Delay Reason': record.delayReason || '',
   'Lunch Out': record.lunchOut,
   'Lunch In': record.lunchIn,
@@ -330,6 +346,7 @@ record.hours ?? '', getLeaveOrHoliday(record), record.location ?? ''
     <th>Date</th>
     <th>Day</th>
     <th>In Time</th>
+    <th>System In Time</th>
     <th>Delay Reason</th> {/* <-- Add this line */}
     <th>Lunch Out</th>
     <th>Lunch In</th>
@@ -359,6 +376,7 @@ record.hours ?? '', getLeaveOrHoliday(record), record.location ?? ''
                       <td data-label="Date">{formatDate(record.date)}</td>
                       <td data-label="Day">{record.day}</td>
                       <td data-label="In Time">{record.inTime}</td>
+                       <td data-label="System In Time">{record.systemInTime || 'N/A'}</td>
                       <td data-label="Delay Reason">{record.delayReason || ''}</td>
 
                       <td data-label="Lunch Out">{record.lunchOut}</td>
