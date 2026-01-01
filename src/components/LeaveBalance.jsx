@@ -290,7 +290,7 @@ const LeaveBalance = () => {
       )}
       {showPLModal && (
         <div className="modal-backdrop">
-          <div className="modal-content" style={{ maxWidth: '900px' }}>
+<div className="modal-content pl-modal">
             <h3>Privilege Leave Accrual Details (Seniors)</h3>
 
             {plLoading && <p>Loading...</p>}

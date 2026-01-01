@@ -609,20 +609,9 @@ holidays.forEach(h => {
 
 
 
-
-
-
-
-
-
-
 /* ------------------------------------------------------------------
-   Privilege Leave Accrual Helpers
-   - Applies ONLY to 'senior' employees
-   - 1 PL for every completed 20 working days
-   - Working day = present / half-day / specific leave types
+   Privilege Leave Accrual Helpers - FIXED VERSION
 ------------------------------------------------------------------ */
-
 const WORKING_LEAVE_TYPES = new Set([
   'C-Off Leave',
   'C-Off Leave (Sunday / Holiday)',
@@ -632,78 +621,96 @@ const WORKING_LEAVE_TYPES = new Set([
   'Over-Time Leave'
 ]);
 
-/**
- * Get continuous working-days total for a staff member.
- * This is the "lifetime" working days count used for PL accrual.
- * Returns { totalWorkingDays, earnedPrivilegeLeaves }
- */
 async function getWorkingDaysStats(employeeId) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);  // Normalize to start of day
-  
-  const allRecords = await Attendance.find({ id: employeeId }).sort({ date: 1 });
-  
+
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  // 👉 ONLY TODAY record
+  const rec = await Attendance.findOne({
+    id: employeeId,
+    date: todayStr
+  });
+
   let totalWorkingDays = 0;
-  
-  for (const rec of allRecords) {
-    const recDate = new Date(rec.date);
-    recDate.setHours(0, 0, 0, 0);
-    
-    // Skip FUTURE dates only (include all past & today)
-    if (recDate > today) continue;
-    
-    // Rest of logic unchanged...
-    if (rec.holidayName) continue;
-    
-    if (rec.leaveType && WORKING_LEAVE_TYPES.has(rec.leaveType)) {
-      totalWorkingDays += 1;
-      continue;
-    }
-    
-    if (rec.dailyLeaveType === 'First Half Leave' || rec.dailyLeaveType === 'Second Half Leave') {
-      totalWorkingDays += 0.5;
-      continue;
-    }
-    
-    if (rec.inTime || rec.outTime) {  // Present full day
-      totalWorkingDays += 1;
-      continue;
-    }
+
+  if (!rec) {
+    // ❌ No attendance today
+    return { totalWorkingDays: 0, earnedPrivilegeLeaves: 0 };
   }
-  
+
+  // ❌ Holiday
+  if (rec.holidayName) {
+    return { totalWorkingDays: 0, earnedPrivilegeLeaves: 0 };
+  }
+
+  // ✅ Working leave types
+  if (rec.leaveType && WORKING_LEAVE_TYPES.has(rec.leaveType)) {
+    totalWorkingDays = 1;
+  }
+  // ✅ Half day
+  else if (
+    rec.dailyLeaveType === 'First Half Leave' ||
+    rec.dailyLeaveType === 'Second Half Leave'
+  ) {
+    totalWorkingDays = 0.5;
+  }
+  // ✅ Present
+  else if (rec.inTime || rec.outTime) {
+    totalWorkingDays = 1;
+  }
+
   const earnedPrivilegeLeaves = Math.floor(totalWorkingDays / 20);
+
   return { totalWorkingDays, earnedPrivilegeLeaves };
 }
 
-/**
- * Ensure PL accrual for a single employee.
- * - Only applies when Staff.role === 'senior'
- * - Uses a "lifetimePLCredited" virtual concept based on a shadow field
- *   stored in LeaveBalance: plCreditedFromWorkingDays (number)
- */
+
 async function ensurePrivilegeLeaveAccrualForEmployee(employeeId) {
-  const staff = await Staff.findOne({ id: employeeId });
-  if (!staff || staff.role !== 'senior') return;
-
+  console.log(`🔄 Processing PL for senior: ${employeeId}`);
+  
+  // AUTO-CREATE Staff if missing (FIXES main issue)
+  let staff = await Staff.findOne({ id: employeeId });
+  if (!staff) {
+    const lb = await LeaveBalance.findOne({ employeeId });
+    if (lb) {
+      staff = await Staff.create({
+        id: employeeId,
+        name: lb.name,
+        role: lb.role,  // Copies "senior" from LeaveBalance
+        department: "General",
+        designation: "Staff"
+      });
+      console.log(`✅ Auto-created Staff: ${employeeId}`);
+    }
+  }
+  
+  // Use LeaveBalance role (reliable)
   const lb = await LeaveBalance.findOne({ employeeId });
-  if (!lb) return;
-
-  // Shadow field to remember how many PLs were already credited by accrual logic
+  if (!lb || lb.role !== 'senior') {
+    console.log(`❌ Not senior or no LeaveBalance: ${employeeId}`);
+    return null;
+  }
+  
   if (lb.plCreditedFromWorkingDays == null) {
     lb.plCreditedFromWorkingDays = 0;
-  }
-
-  const { totalWorkingDays, earnedPrivilegeLeaves } = await getWorkingDaysStats(employeeId);
-
-  const alreadyCredited = lb.plCreditedFromWorkingDays || 0;
-  const toCredit = earnedPrivilegeLeaves - alreadyCredited;
-
-  if (toCredit > 0) {
-    lb.privilegeLeaves += toCredit;
-    lb.plCreditedFromWorkingDays = alreadyCredited + toCredit;
     await lb.save();
   }
-
+  
+  const { totalWorkingDays, earnedPrivilegeLeaves } = await getWorkingDaysStats(employeeId);
+  
+  const alreadyCredited = lb.plCreditedFromWorkingDays || 0;
+  const toCredit = earnedPrivilegeLeaves - alreadyCredited;
+  
+  let newlyCredited = 0;
+  if (toCredit > 0) {
+    lb.privilegeLeaves += toCredit;
+    lb.plCreditedFromWorkingDays += toCredit;
+    await lb.save();
+    newlyCredited = toCredit;
+    console.log(`💰 Credited ${toCredit} PL to ${employeeId}`);
+  }
+  
+  // ALWAYS return data for seniors
   return {
     employeeId,
     name: lb.name,
@@ -711,18 +718,15 @@ async function ensurePrivilegeLeaveAccrualForEmployee(employeeId) {
     totalWorkingDays,
     earnedPrivilegeLeaves,
     alreadyCredited: lb.plCreditedFromWorkingDays,
-    newlyCredited: Math.max(toCredit, 0),
+    newlyCredited,
     currentPrivilegeLeaves: lb.privilegeLeaves,
   };
 }
 
-/**
- * Recalculate PL accrual for ALL senior employees.
- * Use this to sync data or before showing reports.
- */
 async function recalcPrivilegeLeaveForAllSeniors() {
   const seniors = await LeaveBalance.find({ role: 'senior' });
-
+  console.log(`👥 Found ${seniors.length} seniors in LeaveBalance`);
+  
   const result = [];
   for (const s of seniors) {
     const r = await ensurePrivilegeLeaveAccrualForEmployee(s.employeeId);
@@ -732,11 +736,8 @@ async function recalcPrivilegeLeaveForAllSeniors() {
 }
 
 /* ------------------------------------------------------------------
-   API: Recalculate & show PL accrual details (admin use)
+   API Routes - UNCHANGED
 ------------------------------------------------------------------ */
-
-// GET  /api/attendance/privilege-leaves/details
-// Returns working-day stats and PL accrual info per senior employee.
 router.get('/privilege-leaves/details', async (req, res) => {
   try {
     const data = await recalcPrivilegeLeaveForAllSeniors();
@@ -749,8 +750,6 @@ router.get('/privilege-leaves/details', async (req, res) => {
     res.status(500).json({ message: 'Error calculating privilege leaves.', error: err.message });
   }
 });
-// POST /api/attendance/privilege-leaves/recalc          -> all seniors
-// POST /api/attendance/privilege-leaves/recalc/:employeeId  -> one employee
 
 router.post('/privilege-leaves/recalc', async (req, res) => {
   try {
@@ -768,12 +767,11 @@ router.post('/privilege-leaves/recalc', async (req, res) => {
 router.post('/privilege-leaves/recalc/:employeeId', async (req, res) => {
   try {
     const { employeeId } = req.params;
-
     const info = await ensurePrivilegeLeaveAccrualForEmployee(employeeId);
     if (!info) {
       return res.status(404).json({ message: 'Employee not found or not a senior.' });
     }
-    return res.status(200).json({
+    res.status(200).json({
       message: 'Privilege Leave accrual updated for employee.',
       data: info,
     });
@@ -782,10 +780,6 @@ router.post('/privilege-leaves/recalc/:employeeId', async (req, res) => {
     res.status(500).json({ message: 'Error recalculating privilege leaves.', error: err.message });
   }
 });
-
-
-
-
 
 
 module.exports = router;
