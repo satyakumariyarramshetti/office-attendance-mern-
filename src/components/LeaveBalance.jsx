@@ -17,6 +17,12 @@ const LeaveBalance = () => {
   });
   const [searchTerm, setSearchTerm] = useState('');
 
+    const [showPLModal, setShowPLModal] = useState(false);
+  const [plDetails, setPlDetails] = useState([]);
+  const [plLoading, setPlLoading] = useState(false);
+  const [plError, setPlError] = useState('');
+
+
   // Fetch leave balances from deployed backend API
   const fetchBalances = async () => {
     try {
@@ -39,6 +45,20 @@ const LeaveBalance = () => {
       ? Number(value) 
       : value;
     setEditingMember({ ...editingMember, [name]: updatedValue });
+  };
+
+    const fetchPrivilegeLeaveDetails = async () => {
+    try {
+      setPlLoading(true);
+      setPlError('');
+      const res = await axios.get(`${API_BASE_URL}/api/attendance/privilege-leaves/details`);
+      setPlDetails(res.data.data || []);
+    } catch (error) {
+      console.error("Error fetching PL details:", error);
+      setPlError('Failed to fetch privilege leave details.');
+    } finally {
+      setPlLoading(false);
+    }
   };
 
   const handleAddMember = async (e) => {
@@ -111,7 +131,7 @@ const LeaveBalance = () => {
       <div className="page-wrap">
         <div className="lb-toolbar">
           <h2 className="lb-title">Leave Balance Status</h2>
-          <div>
+                    <div>
             <button
               className="reset-leaves-btn"
               onClick={handleResetMonthlyLeaves}
@@ -119,10 +139,24 @@ const LeaveBalance = () => {
             >
               Reset Monthly Leaves
             </button>
+
+            <button
+              className="reset-leaves-btn"
+              onClick={() => {
+                setShowPLModal(true);
+                fetchPrivilegeLeaveDetails();
+              }}
+              title="Shows detailed Privilege Leave accrual info for senior employees."
+              style={{ marginLeft: '8px' }}
+            >
+              Privilege Leave Info
+            </button>
+
             <button className="add-member-btn" onClick={() => setShowAddModal(true)}>
               + Add Member
             </button>
           </div>
+
         </div>
         
         <div className="search-container">
@@ -254,6 +288,69 @@ const LeaveBalance = () => {
           </div>
         </div>
       )}
+      {showPLModal && (
+        <div className="modal-backdrop">
+          <div className="modal-content" style={{ maxWidth: '900px' }}>
+            <h3>Privilege Leave Accrual Details (Seniors)</h3>
+
+            {plLoading && <p>Loading...</p>}
+            {plError && <p style={{ color: 'red' }}>{plError}</p>}
+
+            {!plLoading && !plError && plDetails.length === 0 && (
+              <p>No senior employees found or no working days recorded yet.</p>
+            )}
+
+            {!plLoading && !plError && plDetails.length > 0 && (
+              <div className="table-container" style={{ maxHeight: '400px', overflow: 'auto' }}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Employee ID</th>
+                      <th>Name</th>
+                      <th>Total Working Days</th>
+                      <th>PL Earned (20 days each)</th>
+                      <th>PL Already Credited</th>
+                      <th>Newly Credited (this calc)</th>
+                      <th>Current PL Balance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {plDetails.map((d) => (
+                      <tr key={d.employeeId}>
+                        <td>{d.employeeId}</td>
+                        <td>{d.name}</td>
+                        <td>{d.totalWorkingDays}</td>
+                        <td>{d.earnedPrivilegeLeaves}</td>
+                        <td>{d.alreadyCredited}</td>
+                        <td>{d.newlyCredited}</td>
+                        <td>{d.currentPrivilegeLeaves}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div className="modal-actions">
+              <button type="button" onClick={() => setShowPLModal(false)}>Close</button>
+            </div>
+
+            <div style={{ marginTop: '10px', fontSize: '12px', color: '#555' }}>
+              <p>
+                Privilege Leave is accrued only for senior employees. For every 20 accumulated working days
+                (including eligible leave types and half-days as 0.5), 1 PL is credited automatically.
+              </p>
+              <p>
+                Working days include: normal present days, half-days, C-Off, Client/Site Visit, Over-Time and Travel Leave.
+                Other leave types do not contribute to PL accrual.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+
     </div>
   );
 };

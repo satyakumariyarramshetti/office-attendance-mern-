@@ -22,6 +22,7 @@ const staffRoutes = require('./routes/staffRoutes');
 const payslipRoutes = require('./routes/payslipRoutes');
 const leaveBalanceRoutes = require('./routes/leaveBalanceRoutes');
 const leaveRequestsRoutes = require('./routes/leaveRequestsRoutes');
+// ADD THIS LINE
 
 // Express setup
 const app = express();

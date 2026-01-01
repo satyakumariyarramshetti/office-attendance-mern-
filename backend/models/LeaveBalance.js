@@ -25,10 +25,19 @@ const LeaveBalanceSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+
     privilegeLeaves: {
         type: Number,
         default: 0,
     },
+
+    // Number of PLs that were already credited via working-day accrual logic
+    plCreditedFromWorkingDays: {
+        type: Number,
+        default: 0,
+    },
+
+
     // This field can be used for junior staff's monthly leave balance
     monthlyLeaveStatus: {
         type: Number,
