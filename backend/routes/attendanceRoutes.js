@@ -620,47 +620,28 @@ const WORKING_LEAVE_TYPES = new Set([
   'Client / Site Visit Leave',
   'Over-Time Leave'
 ]);
-
-async function getWorkingDaysStats(employeeId) {
-
-  const todayStr = new Date().toISOString().split('T')[0];
-
-  // 👉 ONLY TODAY record
-  const rec = await Attendance.findOne({
+async function getWorkingDaysStats(employeeId, startDate = '2026-01-01') {
+  const endDate = new Date().toISOString().split('T')[0];
+  
+  const records = await Attendance.find({
     id: employeeId,
-    date: todayStr
-  });
+    date: { $gte: startDate, $lte: endDate }
+  }).sort({ date: 1 });
 
   let totalWorkingDays = 0;
-
-  if (!rec) {
-    // ❌ No attendance today
-    return { totalWorkingDays: 0, earnedPrivilegeLeaves: 0 };
-  }
-
-  // ❌ Holiday
-  if (rec.holidayName) {
-    return { totalWorkingDays: 0, earnedPrivilegeLeaves: 0 };
-  }
-
-  // ✅ Working leave types
-  if (rec.leaveType && WORKING_LEAVE_TYPES.has(rec.leaveType)) {
-    totalWorkingDays = 1;
-  }
-  // ✅ Half day
-  else if (
-    rec.dailyLeaveType === 'First Half Leave' ||
-    rec.dailyLeaveType === 'Second Half Leave'
-  ) {
-    totalWorkingDays = 0.5;
-  }
-  // ✅ Present
-  else if (rec.inTime || rec.outTime) {
-    totalWorkingDays = 1;
+  for (const rec of records) {
+    if (rec.holidayName) continue;
+    
+    if (rec.leaveType && WORKING_LEAVE_TYPES.has(rec.leaveType)) {
+      totalWorkingDays += 1;
+    } else if (rec.dailyLeaveType === 'First Half Leave' || rec.dailyLeaveType === 'Second Half Leave') {
+      totalWorkingDays += 0.5;
+    } else if (rec.inTime || rec.outTime) {
+      totalWorkingDays += 1;
+    }
   }
 
   const earnedPrivilegeLeaves = Math.floor(totalWorkingDays / 20);
-
   return { totalWorkingDays, earnedPrivilegeLeaves };
 }
 
@@ -696,8 +677,7 @@ async function ensurePrivilegeLeaveAccrualForEmployee(employeeId) {
     await lb.save();
   }
   
-  const { totalWorkingDays, earnedPrivilegeLeaves } = await getWorkingDaysStats(employeeId);
-  
+const { totalWorkingDays, earnedPrivilegeLeaves } = await getWorkingDaysStats(employeeId, '2026-01-01');  
   const alreadyCredited = lb.plCreditedFromWorkingDays || 0;
   const toCredit = earnedPrivilegeLeaves - alreadyCredited;
   
