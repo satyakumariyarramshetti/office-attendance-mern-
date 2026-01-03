@@ -584,14 +584,16 @@ const handleLeaveSubmit = async (e) => {
     alert('Please enter a valid Staff ID before submitting.');
     return;
   }
+  
   let leaveType = formData.leaveType;
-if ((leaveType === 'First Half Leave' || leaveType === 'Second Half Leave') && !halfDayReason) {
-  alert('Please select reason (Sick / Casual / Privilege) for half-day leave.');
-  return;
-}
+ // Validate half-day reason
+  if ((leaveType === 'First Half Leave' || leaveType === 'Second Half Leave') && !halfDayReason) {
+    alert('Please select reason (Sick / Casual / Privilege) for half-day leave.');
+    return;
+  }
 
 
-  // If "C-Off Leave" selected, check cOffEarnedDate and combine
+  // C-Off special handling (you already had this)
   if (leaveType === 'C-Off Leave') {
     if (!cOffEarnedDate) {
       alert('Please select "C-Off Earned On" date.');
@@ -599,6 +601,13 @@ if ((leaveType === 'First Half Leave' || leaveType === 'Second Half Leave') && !
     }
     leaveType = `C-Off Leave [Earned on: ${cOffEarnedDate}]`;
   }
+  
+  // 🔥 NEW: Combine half-day + reason for display
+  if (leaveType === 'First Half Leave' || leaveType === 'Second Half Leave') {
+    leaveType = `${leaveType} (${halfDayReason})`;
+  }
+
+
  const payload = { 
   id: formData.id, 
   name: formData.name, 
