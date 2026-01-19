@@ -12,7 +12,7 @@ const holidays = [
   { date: "-10-02", name: "Gandhi Jayanti" },
 
   // Festival Holidays
-  { date: "-01-14", name: "Sankranti / Pongal" },
+  { date: "-01-15", name: "Sankranti / Pongal" },
   { date: "-06-07", name: "Bakrid" },
   { date: "-12-25", name: "Christmas" },
   { date: "-10-20", name: "Dussehra" }
