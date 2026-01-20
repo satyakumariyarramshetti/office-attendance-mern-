@@ -24,9 +24,9 @@ const StaffIdInput = ({ inputId, value, onChange, staffNotFound }) => (
         className="form-control"
         value={value}
         onChange={onChange}
-        maxLength={4}
-        pattern="[0-9]*"
-        inputMode="numeric"
+        maxLength={6}           // Increased from 4 to 6 to fit "I0007"
+        pattern="[A-Z0-9]*"    // Allow letters and numbers
+        inputMode="text"       // Change from "numeric" to "text"
         autoComplete="off"
         placeholder="0000"
         onFocus={(e) => e.target.select()}
@@ -142,10 +142,11 @@ const timeToMinutes = (timeStr) => {
 
   // --- CORE DATA FETCHING LOGIC ---
   const fetchStaffAndAttendance = useCallback(async (numericId, date, context) => {
-    if (!numericId || numericId.length < 4 || !date) return;
+  // Change 4 to 1 or 2 so it starts searching as soon as they type "I..."
+  if (!numericId || numericId.length < 2 || !date) return;
 
-    const fullId = PS_PREFIX + numericId;
-    setStaffNotFound(false);
+  const fullId = PS_PREFIX + numericId; // This will now result in "PS-I0007"
+  setStaffNotFound(false);
     setMessage('');
     let staffName = '';
 
@@ -318,15 +319,19 @@ const timeToMinutes = (timeStr) => {
     }
   }, [formData.inTime, formData.outTime, formData.lunchOut, formData.lunchIn]);
 
-  // --- EVENT HANDLERS ---
-  const handleIdChange = (e, cardType) => {
-    const sanitizedValue = e.target.value.replace(/\D/g, '');
-    setIdInputs(prev => ({ ...prev, [cardType]: sanitizedValue }));
-    if (!formData.date) {
-        const today = getCurrentDate();
-        setFormData(prev => ({ ...prev, date: today, day: getCurrentDay(today) }));
-    }
-  };
+const handleIdChange = (e, cardType) => {
+  // REMOVE: const sanitizedValue = e.target.value.replace(/\D/g, ''); 
+  
+  // NEW: Allow letters and numbers, then force to Uppercase
+  const sanitizedValue = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+  
+  setIdInputs(prev => ({ ...prev, [cardType]: sanitizedValue }));
+  
+  if (!formData.date) {
+    const today = getCurrentDate();
+    setFormData(prev => ({ ...prev, date: today, day: getCurrentDay(today) }));
+  }
+};
   
   const handleDateChange = (e) => {
     const selectedDate = e.target.value;
