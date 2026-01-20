@@ -36,16 +36,28 @@ const LeaveBalance = () => {
   useEffect(() => { fetchBalances(); }, []);
 
   const handleAddFormChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  let { name, value } = e.target;
+  
+  if (name === 'employeeId') {
+    value = value.toUpperCase().replace(/[^A-Z0-9-]/g, ""); 
+  }
+  
+  setFormData({ ...formData, [name]: value });
+};
 
-  const handleEditFormChange = (e) => {
-    const { name, value } = e.target;
-    const updatedValue = ['casualLeaves', 'sickLeaves', 'privilegeLeaves', 'monthlyLeaveStatus'].includes(name) 
-      ? Number(value) 
-      : value;
-    setEditingMember({ ...editingMember, [name]: updatedValue });
-  };
+ const handleEditFormChange = (e) => {
+  let { name, value } = e.target;
+
+  if (name === 'employeeId') {
+    value = value.toUpperCase().replace(/[^A-Z0-9-]/g, "");
+  }
+
+  const updatedValue = ['casualLeaves', 'sickLeaves', 'privilegeLeaves', 'monthlyLeaveStatus'].includes(name) 
+    ? Number(value) 
+    : value;
+
+  setEditingMember({ ...editingMember, [name]: updatedValue });
+};
 
     const fetchPrivilegeLeaveDetails = async () => {
     try {
@@ -209,7 +221,14 @@ const LeaveBalance = () => {
           <div className="modal-content">
             <h3>Add New Member</h3>
             <form onSubmit={handleAddMember}>
-              <input type="text" name="employeeId" placeholder="Employee ID (e.g., PS-0000)" value={formData.employeeId} onChange={handleAddFormChange} required />
+        <input 
+          type="text" 
+          name="employeeId" 
+          placeholder="Employee ID (e.g., PS-I0001)" // Placeholder updated
+          value={formData.employeeId} 
+          onChange={handleAddFormChange} 
+          required 
+        />
               <input type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleAddFormChange} required />
               <select name="role" value={formData.role} onChange={handleAddFormChange}>
                 <option value="junior">Junior</option>

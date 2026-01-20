@@ -14,10 +14,11 @@ const LeavePlan = () => {
     dates: []
   });
 
-  // Fetch staff details when 4 digits are entered
+  // ✅ Fetch staff details logic updated
   useEffect(() => {
     const fetchStaffDetails = async () => {
-      if (form.id.length === 4) {
+      // "0007" is 4 chars, "I0007" is 5 chars. So we check >= 4
+      if (form.id.length >= 4) {
         const fullId = `PS-${form.id}`;
         try {
           const response = await fetch(`${API_BASE}/api/staffs/getById`, {
@@ -34,34 +35,24 @@ const LeavePlan = () => {
               reportsTo: data.reportsTo || ''
             }));
           } else {
-            setForm(prev => ({
-              ...prev,
-              name: '',
-              email: '',
-              reportsTo: ''
-            }));
+            setForm(prev => ({ ...prev, name: '', email: '', reportsTo: '' }));
           }
         } catch (error) {
-          setForm(prev => ({
-            ...prev,
-            name: '',
-            email: '',
-            reportsTo: ''
-          }));
+          setForm(prev => ({ ...prev, name: '', email: '', reportsTo: '' }));
         }
       } else {
-        setForm(prev => ({
-          ...prev,
-          name: '',
-          email: '',
-          reportsTo: ''
-        }));
+        setForm(prev => ({ ...prev, name: '', email: '', reportsTo: '' }));
       }
     };
-    fetchStaffDetails();
+
+    // Optional: Add a small debounce to avoid too many API calls while typing letters
+    const timer = setTimeout(() => {
+        fetchStaffDetails();
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, [form.id, API_BASE]);
 
-  // Remove an individual selected date
   const removeDate = (dateObj) => {
     setForm((prev) => ({
       ...prev,
@@ -69,19 +60,20 @@ const LeavePlan = () => {
     }));
   };
 
-  // Text fields
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Dates field
   const handleDateChange = (dates) => {
     setForm({ ...form, dates });
   };
 
-  // Submit event
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.name) {
+        alert("Please enter a valid Staff ID first.");
+        return;
+    }
     try {
       const response = await fetch(`${API_BASE}/api/leave-requests/create`, {
         method: "POST",
@@ -97,14 +89,7 @@ const LeavePlan = () => {
       });
       if (response.ok) {
         alert('Leave request submitted!');
-        setForm({
-          id: '',
-          name: '',
-          email: '',
-          reportsTo: '',
-          leaveReason: '',
-          dates: []
-        });
+        handleCancel();
       } else {
         alert('Error submitting leave request');
       }
@@ -113,7 +98,6 @@ const LeavePlan = () => {
     }
   };
 
-  // Cancel event
   const handleCancel = () => {
     setForm({
       id: '',
@@ -135,52 +119,32 @@ const LeavePlan = () => {
             type="text"
             name="id"
             value={`PS-${form.id}`}
+            placeholder="PS-I0001"
             onChange={(e) => {
-              let val = e.target.value;
+              let val = e.target.value.toUpperCase(); // Force Uppercase
               if (val.startsWith("PS-")) {
                 val = val.slice(3);
               }
-              val = val.replace(/[^0-9]/g, "");
+              // ✅ MODIFIED: Allow letters (A-Z) and numbers (0-9)
+              val = val.replace(/[^A-Z0-9]/g, "");
               setForm({ ...form, id: val });
             }}
             required
           />
         </label>
+        
+        {/* Fields below remain the same */}
         <label>
           Name:
-          <input
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            required
-            readOnly
-            style={{ background: "#f4f7fa" }}
-          />
+          <input type="text" name="name" value={form.name} readOnly style={{ background: "#f4f7fa" }} />
         </label>
         <label>
           Email:
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            required
-            readOnly
-            style={{ background: "#f4f7fa" }}
-          />
+          <input type="email" name="email" value={form.email} readOnly style={{ background: "#f4f7fa" }} />
         </label>
         <label>
           Reports To:
-          <input
-            type="text"
-            name="reportsTo"
-            value={form.reportsTo}
-            onChange={handleChange}
-            required
-            readOnly
-            style={{ background: "#f4f7fa" }}
-          />
+          <input type="text" name="reportsTo" value={form.reportsTo} readOnly style={{ background: "#f4f7fa" }} />
         </label>
         <label>
           Leave Reason:
