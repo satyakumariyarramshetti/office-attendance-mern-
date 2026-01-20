@@ -17,6 +17,9 @@ const getLeaveOrHoliday = (record) => {
     return `Holiday - ${record.holidayName}`;
   }
   if (record.leaveType) {
+    if (record.halfDayReason && (record.leaveType === 'First Half Leave' || record.leaveType === 'Second Half Leave')) {
+      return `${record.leaveType} (${record.halfDayReason})`;
+    }
     return record.leaveType;
   }
   return 'N/A';

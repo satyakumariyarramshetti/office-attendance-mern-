@@ -16,6 +16,7 @@ const AttendanceSchema = new mongoose.Schema({
   hours: { type: String, default: '' },  
   dailyLeaveType: { type: String ,default:null}, 
   leaveType: { type: String,default:null },
+  halfDayReason: { type: String,default:null },
   location: { type: String },
   // --- NEW FIELD ---
   // This flag will be true if the leave was taken without a positive balance.

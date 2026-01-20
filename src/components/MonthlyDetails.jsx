@@ -81,10 +81,10 @@ if (isHoliday) {
   return acc;
 }
 
-      if (record.leaveType === 'First Half Leave' || record.leaveType === 'Second Half Leave') {
-        acc[record.id].workingDays += 0.5;
-        acc[record.id].leaves += 0.5;
-      } else if (record.leaveType) {
+      if (record.leaveType && (record.leaveType.includes('First Half Leave') || record.leaveType.includes('Second Half Leave'))) {
+  acc[record.id].workingDays += 0.5;
+  acc[record.id].leaves += 0.5;
+} else if (record.leaveType) {
         acc[record.id].leaves += 1;
       } else if (record.inTime && record.outTime) {
         acc[record.id].workingDays += 1;

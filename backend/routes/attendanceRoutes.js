@@ -57,8 +57,6 @@ function deductHalfDayPriority(b, primaryType) {
     Privilege: ['privilegeLeaves', 'casualLeaves'],
   };
 
-  let isLOP = false;
-
   for (const field of order[primaryType]) {
     if (b[field] > 0) {
       b[field] -= 0.5;
@@ -66,12 +64,9 @@ function deductHalfDayPriority(b, primaryType) {
     }
   }
 
-  // No balance anywhere → make primary field negative
   const primaryField = fields[primaryType];
   b[primaryField] -= 0.5;
-  isLOP = true;
-
-  return { isLOP };
+  return { isLOP: true };
 }
 
 
@@ -284,6 +279,9 @@ router.post('/save', async (req, res) => {
       if (typeof delayReason !== 'undefined') {
         attendance.delayReason = delayReason || null;
       }
+      if (typeof halfDayReason !== 'undefined') {
+  attendance.halfDayReason = halfDayReason || null;
+}
 
       if (isOutTimeCard) {
         attendance.dailyLeaveType = permissionType || null;
@@ -366,6 +364,7 @@ router.post('/save', async (req, res) => {
           ? (permissionType || null)
           : (typeof finalDailyLeaveType !== 'undefined' ? finalDailyLeaveType : null),
         leaveType: shouldAffectBalance ? leaveType : null,
+        halfDayReason: halfDayReason || null,
         location: address,
         delayReason: delayReason || null, 
         isLOP
@@ -620,6 +619,7 @@ const WORKING_LEAVE_TYPES = new Set([
   'Client / Site Visit Leave',
   'Over-Time Leave'
 ]);
+// --- AttendanceRoutes.js లో చివర్లో ఉంటుంది ---
 async function getWorkingDaysStats(employeeId, startDate = '2026-01-01') {
   const endDate = new Date().toISOString().split('T')[0];
   
@@ -634,7 +634,12 @@ async function getWorkingDaysStats(employeeId, startDate = '2026-01-01') {
     
     if (rec.leaveType && WORKING_LEAVE_TYPES.has(rec.leaveType)) {
       totalWorkingDays += 1;
-    } else if (rec.dailyLeaveType === 'First Half Leave' || rec.dailyLeaveType === 'Second Half Leave') {
+    } 
+    // ⬇️ ఇక్కడ మార్పు: leaveType లో హాఫ్ డే ఉంటే 0.5 కలపాలి ⬇️
+    else if (rec.leaveType === 'First Half Leave' || rec.leaveType === 'Second Half Leave') {
+      totalWorkingDays += 0.5;
+    } 
+    else if (rec.dailyLeaveType === 'First Half Leave' || rec.dailyLeaveType === 'Second Half Leave') {
       totalWorkingDays += 0.5;
     } else if (rec.inTime || rec.outTime) {
       totalWorkingDays += 1;
