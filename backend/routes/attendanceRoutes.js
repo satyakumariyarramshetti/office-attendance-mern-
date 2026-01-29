@@ -13,7 +13,7 @@ const holidays = [
 
   // Festival Holidays
   { date: "-01-15", name: "Sankranti / Pongal" },
-  { date: "-06-07", name: "Bakrid" },
+  { date: "-05-27", name: "Bakrid" },
   { date: "-12-25", name: "Christmas" },
   { date: "-10-20", name: "Dussehra" }
 ];
@@ -74,9 +74,17 @@ function deductHalfDayPriority(b, primaryType) {
    Leave balance update helper (kept intact)
    NOTE: Called ONLY when a full-day leaveType is submitted.
 ------------------------------------------------------------------ */
+// ... (existing imports and holidays array)
+
+// ... (getAddressFromCoordinates and deductHalfDayPriority functions - keep as is)
+
+/* ------------------------------------------------------------------
+   Leave balance update helper (MODIFIED)
+   Returns: { success, message, isLOP, balances, deductedFrom }
+------------------------------------------------------------------ */
 async function updateLeaveBalance(employeeId, leaveType, options = {}) {
-  const { halfDayReason } = options;  
-  
+  const { halfDayReason } = options;
+
   try {
     const b = await LeaveBalance.findOne({ employeeId });
     if (!b) {
@@ -84,113 +92,195 @@ async function updateLeaveBalance(employeeId, leaveType, options = {}) {
     }
 
     let isLOP = false;
-    let message = `${leaveType} recorded successfully.`;
+    let message = '';
+    let deductedFrom = ''; // To track which leave type was actually used
+    let leaveToDeduct = 1; // Default for full day
 
-    // Leave types that SHOULD NOT deduct anything
+    // Determine deduction amount for half-day leaves
+    if (leaveType === "First Half Leave" || leaveType === "Second Half Leave") {
+        leaveToDeduct = 0.5;
+    }
+
+    // Leave types that SHOULD NOT deduct anything from core balances
     if (
       leaveType.startsWith('C-Off Leave') ||
       leaveType === 'Travel Leave' ||
       leaveType === 'Client/Site Visit' ||
       leaveType === 'Over-Time Leave'
     ) {
+      message = `Your ${leaveType} has been recorded. No leave balance deduction.`;
+      // No save needed as no balance change
       return {
         success: true,
-        name: b.name,
         message,
-        isLOP: false
+        isLOP: false,
+        balances: { // Return current balances without change
+          casualLeaves: b.casualLeaves,
+          sickLeaves: b.sickLeaves,
+          privilegeLeaves: b.privilegeLeaves,
+          monthlyLeaveStatus: b.monthlyLeaveStatus,
+        }
       };
     }
 
-  /* -------------------------------------------------------------
-   HALF DAY LEAVES (First / Second Half)
-   Reason must be: Sick Leave / Casual Leave / Privilege Leave
-   Priority:
-   - Sick:      Sick → Casual → Privilege → Sick negative
-   - Casual:    Casual → Privilege → Casual negative
-   - Privilege: Privilege → Casual → Privilege negative
---------------------------------------------------------------*/
-if (leaveType === "First Half Leave" || leaveType === "Second Half Leave") {
-  if (
-    !halfDayReason ||
-    !["Sick Leave", "Casual Leave", "Privilege Leave"].includes(halfDayReason)
-  ) {
-    return {
-      success: false,
-      message: "Half-day reason must be Sick Leave, Casual Leave or Privilege Leave."
-    };
-  }
+    /* -------------------------------------------------------------
+       HALF DAY LEAVES (First / Second Half)
+       Reason must be: Sick Leave / Casual Leave / Privilege Leave
+    --------------------------------------------------------------*/
+    if (leaveType === "First Half Leave" || leaveType === "Second Half Leave") {
+      if (
+        !halfDayReason ||
+        !["Sick Leave", "Casual Leave", "Privilege Leave"].includes(halfDayReason)
+      ) {
+        return {
+          success: false,
+          message: "Half-day reason must be Sick Leave, Casual Leave or Privilege Leave."
+        };
+      }
 
-  let result;
+      let result;
 
-  if (halfDayReason === "Sick Leave") {
-    result = deductHalfDayPriority(b, "Sick");
-    message = "Half-day Sick Leave recorded.";
-  } else if (halfDayReason === "Casual Leave") {
-    result = deductHalfDayPriority(b, "Casual");
-    message = "Half-day Casual Leave recorded.";
-  } else if (halfDayReason === "Privilege Leave") {
-    result = deductHalfDayPriority(b, "Privilege");
-    message = "Half-day Privilege Leave recorded.";
-  }
+      if (halfDayReason === "Sick Leave") {
+        if (b.sickLeaves >= leaveToDeduct) {
+          b.sickLeaves -= leaveToDeduct;
+          deductedFrom = 'Sick Leave';
+          message = `Your ${leaveType} (Sick) has been recorded.`;
+        } else if (b.casualLeaves >= leaveToDeduct) { // Fallback to Casual
+          b.casualLeaves -= leaveToDeduct;
+          deductedFrom = 'Casual Leave';
+          message = `Your Sick Leave balance is insufficient. ${leaveToDeduct} day has been deducted from your Casual Leave balance.`;
+        } else if (b.privilegeLeaves >= leaveToDeduct) { // Fallback to Privilege
+          b.privilegeLeaves -= leaveToDeduct;
+          deductedFrom = 'Privilege Leave';
+          message = `Your Sick Leave balance is insufficient. ${leaveToDeduct} day has been deducted from your Privilege Leave balance.`;
+        } else {
+          b.sickLeaves -= leaveToDeduct; // Go negative
+          isLOP = true;
+          deductedFrom = 'Sick Leave (LOP)';
+          message = `You have insufficient Sick, Casual, and Privilege Leaves. ${leaveToDeduct} day will be treated as Loss of Pay (LOP).`;
+        }
+      } else if (halfDayReason === "Casual Leave") {
+        if (b.casualLeaves >= leaveToDeduct) {
+          b.casualLeaves -= leaveToDeduct;
+          deductedFrom = 'Casual Leave';
+          message = `Your ${leaveType} (Casual) has been recorded.`;
+        } else if (b.privilegeLeaves >= leaveToDeduct) { // Fallback to Privilege
+          b.privilegeLeaves -= leaveToDeduct;
+          deductedFrom = 'Privilege Leave';
+          message = `Your Casual Leave balance is insufficient. ${leaveToDeduct} day has been deducted from your Privilege Leave balance.`;
+        } else {
+          b.casualLeaves -= leaveToDeduct; // Go negative
+          isLOP = true;
+          deductedFrom = 'Casual Leave (LOP)';
+          message = `You have insufficient Casual and Privilege Leaves. ${leaveToDeduct} day will be treated as Loss of Pay (LOP).`;
+        }
+      } else if (halfDayReason === "Privilege Leave") {
+        if (b.privilegeLeaves >= leaveToDeduct) {
+          b.privilegeLeaves -= leaveToDeduct;
+          deductedFrom = 'Privilege Leave';
+          message = `Your ${leaveType} (Privilege) has been recorded.`;
+        } else if (b.casualLeaves >= leaveToDeduct) { // Fallback to Casual
+          b.casualLeaves -= leaveToDeduct;
+          deductedFrom = 'Casual Leave';
+          message = `Your Privilege Leave balance is insufficient. ${leaveToDeduct} day has been deducted from your Casual Leave balance.`;
+        } else {
+          b.privilegeLeaves -= leaveToDeduct; // Go negative
+          isLOP = true;
+          deductedFrom = 'Privilege Leave (LOP)';
+          message = `You have insufficient Privilege and Casual Leaves. ${leaveToDeduct} day will be treated as Loss of Pay (LOP).`;
+        }
+      }
 
-  isLOP = result.isLOP;
-
-  if (isLOP) {
-    message += " Insufficient balance, taken as negative (will be treated as LOP).";
-  }
-
-  await b.save();
-  return { success: true, name: b.name, message, isLOP };
-}
+      await b.save();
+      return {
+        success: true,
+        message,
+        isLOP,
+        deductedFrom,
+        balances: {
+          casualLeaves: b.casualLeaves,
+          sickLeaves: b.sickLeaves,
+          privilegeLeaves: b.privilegeLeaves,
+          monthlyLeaveStatus: b.monthlyLeaveStatus,
+        }
+      };
+    }
 
 
     /* -------------------------------------------------------------
        FULL DAY LEAVES BASED ON NEW RULES
     --------------------------------------------------------------*/
-
     // --------- CASUAL LEAVE LOGIC --------- //
     if (leaveType === "Casual Leave") {
-      if (b.casualLeaves > 0) {
-        b.casualLeaves -= 1;
-      } else if (b.privilegeLeaves > 0) {
-        b.privilegeLeaves -= 1;
+      if (b.casualLeaves >= leaveToDeduct) {
+        b.casualLeaves -= leaveToDeduct;
+        deductedFrom = 'Casual Leave';
+        message = `Your Casual Leave has been recorded.`;
+      } else if (b.privilegeLeaves >= leaveToDeduct) {
+        b.privilegeLeaves -= leaveToDeduct;
+        deductedFrom = 'Privilege Leave';
+        message = `Your Casual Leave balance is insufficient. ${leaveToDeduct} day has been deducted from your Privilege Leave balance.`;
       } else {
-        b.casualLeaves -= 1; // go negative
+        b.casualLeaves -= leaveToDeduct; // go negative
         isLOP = true;
-        message = "Casual Leave applied but insufficient leaves. Deducted as negative.";
+        deductedFrom = 'Casual Leave (LOP)';
+        message = `You have insufficient Casual and Privilege Leaves. ${leaveToDeduct} day will be treated as Loss of Pay (LOP).`;
       }
     }
 
     // --------- PRIVILEGE LEAVE LOGIC --------- //
     else if (leaveType === "Privilege Leave") {
-      if (b.privilegeLeaves > 0) {
-        b.privilegeLeaves -= 1;
-      } else if (b.casualLeaves > 0) {
-        b.casualLeaves -= 1;
+      if (b.privilegeLeaves >= leaveToDeduct) {
+        b.privilegeLeaves -= leaveToDeduct;
+        deductedFrom = 'Privilege Leave';
+        message = `Your Privilege Leave has been recorded.`;
+      } else if (b.casualLeaves >= leaveToDeduct) {
+        b.casualLeaves -= leaveToDeduct;
+        deductedFrom = 'Casual Leave';
+        message = `Your Privilege Leave balance is insufficient. ${leaveToDeduct} day has been deducted from your Casual Leave balance.`;
       } else {
-        b.privilegeLeaves -= 1; // negative
+        b.privilegeLeaves -= leaveToDeduct; // negative
         isLOP = true;
-        message = "Privilege Leave applied but insufficient leaves. Deducted as negative.";
+        deductedFrom = 'Privilege Leave (LOP)';
+        message = `You have insufficient Privilege and Casual Leaves. ${leaveToDeduct} day will be treated as Loss of Pay (LOP).`;
       }
     }
 
     // --------- SICK LEAVE LOGIC --------- //
     else if (leaveType === "Sick Leave") {
-      if (b.sickLeaves > 0) {
-        b.sickLeaves -= 1;
-      } else if (b.casualLeaves > 0) {
-        b.casualLeaves -= 1;
-      } else if (b.privilegeLeaves > 0) {
-        b.privilegeLeaves -= 1;
+      if (b.sickLeaves >= leaveToDeduct) {
+        b.sickLeaves -= leaveToDeduct;
+        deductedFrom = 'Sick Leave';
+        message = `Your Sick Leave has been recorded.`;
+      } else if (b.casualLeaves >= leaveToDeduct) {
+        b.casualLeaves -= leaveToDeduct;
+        deductedFrom = 'Casual Leave';
+        message = `Your Sick Leave balance is insufficient. ${leaveToDeduct} day has been deducted from your Casual Leave balance.`;
+      } else if (b.privilegeLeaves >= leaveToDeduct) {
+        b.privilegeLeaves -= leaveToDeduct;
+        deductedFrom = 'Privilege Leave';
+        message = `Your Sick Leave balance is insufficient. ${leaveToDeduct} day has been deducted from your Privilege Leave balance.`;
       } else {
-        b.sickLeaves -= 1; // negative
+        b.sickLeaves -= leaveToDeduct; // negative
         isLOP = true;
-        message = "Sick Leave applied but insufficient leaves. Deducted as negative.";
+        deductedFrom = 'Sick Leave (LOP)';
+        message = `You have insufficient Sick, Casual, and Privilege Leaves. ${leaveToDeduct} day will be treated as Loss of Pay (LOP).`;
       }
     }
 
     await b.save();
-    return { success: true, name: b.name, message, isLOP };
+    return {
+      success: true,
+      message,
+      isLOP,
+      deductedFrom,
+      balances: {
+        casualLeaves: b.casualLeaves,
+        sickLeaves: b.sickLeaves,
+        privilegeLeaves: b.privilegeLeaves,
+        monthlyLeaveStatus: b.monthlyLeaveStatus,
+      }
+    };
 
   } catch (error) {
     console.error("Error updating leave balance:", error);
@@ -200,30 +290,23 @@ if (leaveType === "First Half Leave" || leaveType === "Second Half Leave") {
 
 
 /* ------------------------------------------------------------------
-   SAVE / UPDATE ATTENDANCE
-   Rules:
-   - Leave Details card: leaveType present -> update balances + set leaveType
-   - Out Time card: outTime present + permissionType present -> store that
-     permissionType into *dailyLeaveType* (leaving early reason); no balance change
-   - Permission Details card: permissionType present + hours present -> store into
-     permissionType & hours; no balance change
-   - If dailyLeaveType is sent directly, store it as-is (no balance change)
+   SAVE / UPDATE ATTENDANCE (MODIFIED)
 ------------------------------------------------------------------ */
 router.post('/save', async (req, res) => {
   let {
   id, date, inTime, lunchOut, lunchIn, outTime, day,
   permissionType, hours, dailyLeaveType, leaveType, location,
   inTimeMethod,
-  systemInTime, 
+  systemInTime,
   delayReason,
-  halfDayReason          // <-- NEW: reason for First/Second Half Leave
+  halfDayReason
 } = req.body;
 
   if (!id || !date) {
     return res.status(400).json({ error: 'ID and Date are required' });
   }
 
-  // --- LATE MARK VALIDATION BLOCK ---
+  // --- LATE MARK VALIDATION BLOCK --- (keep as is)
   if (inTime && inTime > '09:15') {
     if (!delayReason) {
       return res.status(400).json({ error: 'Delay reason must be provided for late in-time.' });
@@ -242,33 +325,30 @@ router.post('/save', async (req, res) => {
 
   try {
     const isLeaveCard = !!leaveType;
-    const isOutTimeCard = !!outTime && !!permissionType && !leaveType && !hours;
+    const isOutTimeCard = !!outTime && !!dailyLeaveType && !leaveType && !hours; // Changed to dailyLeaveType for consistency
     const isPermissionCard = !!permissionType && !!hours && !leaveType;
-    const isDailyOnly = !!dailyLeaveType && !leaveType && !permissionType;
+    const isDailyOnly = !!dailyLeaveType && !leaveType && !permissionType && !outTime; // New logic for only daily status
 
-    let finalDailyLeaveType =
-      isOutTimeCard ? (permissionType || null)
-                    : (typeof dailyLeaveType !== 'undefined' ? (dailyLeaveType || null) : undefined);
 
-    const shouldAffectBalance = isLeaveCard;
+    let finalDailyLeaveType = isOutTimeCard ? dailyLeaveType : (typeof dailyLeaveType !== 'undefined' ? dailyLeaveType : undefined);
+
 
     let attendance = await Attendance.findOne({ id: String(id).trim(), date });
 
    if (attendance) {
       // ---- UPDATE EXISTING RECORD ----
-      let lopInfo = null;
+      let leaveUpdateResult = null; // Will store the detailed result from updateLeaveBalance
 
-      if (shouldAffectBalance && !attendance.leaveType) {
-  const balanceUpdateResult = await updateLeaveBalance(id, leaveType, { halfDayReason });
-        if (!balanceUpdateResult.success) {
-          return res.status(400).json({ error: balanceUpdateResult.message });
-        }
-        attendance.isLOP = balanceUpdateResult.isLOP;
-        attendance.name = balanceUpdateResult.name || attendance.name;
-        attendance.leaveType = leaveType;
-        lopInfo = balanceUpdateResult;
+      if (isLeaveCard && !attendance.leaveType) { // Only update balance if a leaveType is being submitted AND it wasn't already a leave
+          leaveUpdateResult = await updateLeaveBalance(id, leaveType, { halfDayReason });
+          if (!leaveUpdateResult.success) {
+              return res.status(400).json({ error: leaveUpdateResult.message });
+          }
+          attendance.isLOP = leaveUpdateResult.isLOP;
+          attendance.leaveType = leaveType;
+          attendance.halfDayReason = halfDayReason || null; // Update halfDayReason on attendance record
       }
-
+      // Update other fields as before
       if (typeof inTime !== 'undefined') attendance.inTime = inTime;
       if (typeof inTimeMethod !== 'undefined') attendance.inTimeMethod = inTimeMethod;
       if (typeof systemInTime !== 'undefined') attendance.systemInTime = systemInTime;
@@ -279,71 +359,83 @@ router.post('/save', async (req, res) => {
       if (typeof delayReason !== 'undefined') {
         attendance.delayReason = delayReason || null;
       }
-      if (typeof halfDayReason !== 'undefined') {
-  attendance.halfDayReason = halfDayReason || null;
-}
+      // Ensure halfDayReason is also updated if present, even if not a new leave submission
+      if (typeof halfDayReason !== 'undefined' && isLeaveCard) { // only if it's a leave card submission
+          attendance.halfDayReason = halfDayReason || null;
+      }
+
 
       if (isOutTimeCard) {
-        attendance.dailyLeaveType = permissionType || null;
-      } else if (typeof finalDailyLeaveType !== 'undefined') {
-        attendance.dailyLeaveType = finalDailyLeaveType;
+          attendance.dailyLeaveType = dailyLeaveType || null;
+          attendance.permissionType = null; // Clear if it was an out-time with dailyLeaveType
+          attendance.hours = null;
+      } else if (isPermissionCard) {
+          attendance.permissionType = permissionType || null;
+          attendance.hours = hours;
+          attendance.dailyLeaveType = null; // Clear if it was a permission card
+      } else if (isDailyOnly) {
+          attendance.dailyLeaveType = dailyLeaveType || null;
+          attendance.permissionType = null;
+          attendance.hours = null;
+      } else if (typeof finalDailyLeaveType !== 'undefined' && !isLeaveCard) { // For other cases where dailyLeaveType might be sent
+          attendance.dailyLeaveType = finalDailyLeaveType;
       }
 
-      if (isPermissionCard) {
-        attendance.permissionType = permissionType || null;
-        if (typeof hours !== 'undefined') attendance.hours = hours;
-      } else {
-        if (typeof permissionType !== 'undefined' && !isOutTimeCard) {
-          attendance.permissionType = permissionType || null;
-        }
-        if (typeof hours !== 'undefined' && !isOutTimeCard) {
-          attendance.hours = hours;
-        }
-      }
 
       await attendance.save();
 
-      const message = shouldAffectBalance
-        ? (lopInfo ? lopInfo.message : 'Leave submitted successfully.')
-        : isOutTimeCard
-          ? 'Out-time recorded. Reason stored as Daily Leave Type.'
-          : isPermissionCard
-            ? 'Permission recorded successfully.'
-            : 'Attendance record updated successfully.';
+      // Return the detailed message and balances for leave submissions
+      if (isLeaveCard && leaveUpdateResult) {
+          return res.json({
+              message: leaveUpdateResult.message,
+              isLOP: leaveUpdateResult.isLOP,
+              balances: leaveUpdateResult.balances,
+              deductedFrom: leaveUpdateResult.deductedFrom
+          });
+      }
+
+      // Fallback for other card types
+      const message =
+        isOutTimeCard ? 'Out-time recorded. Reason stored as Daily Leave Type.' :
+        isPermissionCard ? 'Permission recorded successfully.' :
+        isDailyOnly ? 'Daily status recorded successfully.' :
+        'Attendance record updated successfully.';
 
       return res.json({
         message,
-        isLOP: lopInfo ? lopInfo.isLOP : attendance.isLOP || false
+        isLOP: attendance.isLOP || false
       });
     } else {
       // ---- CREATE NEW RECORD ----
       let staffName;
       let message = 'Attendance created successfully';
       let isLOP = false;
+      let leaveUpdateResult = null; // To store result from updateLeaveBalance
+      let currentBalances = null;
 
-      if (shouldAffectBalance) {
-  const balanceUpdateResult = await updateLeaveBalance(id, leaveType, { halfDayReason });
-        if (!balanceUpdateResult.success) {
-          return res.status(400).json({ error: balanceUpdateResult.message });
-        }
-        staffName = balanceUpdateResult.name;
-        message = balanceUpdateResult.message;
-        isLOP = balanceUpdateResult.isLOP;
+      if (isLeaveCard) {
+          leaveUpdateResult = await updateLeaveBalance(id, leaveType, { halfDayReason });
+          if (!leaveUpdateResult.success) {
+              return res.status(400).json({ error: leaveUpdateResult.message });
+          }
+          staffName = await Staff.findOne({ id: String(id).trim() }).then(s => s ? s.name : 'Unknown Staff'); // Fetch name if not in balance result
+          message = leaveUpdateResult.message;
+          isLOP = leaveUpdateResult.isLOP;
+          currentBalances = leaveUpdateResult.balances; // Get balances for new record response
       } else {
-        const staff = await Staff.findOne({ id: String(id).trim() });
-        if (!staff) return res.status(400).json({ error: 'Invalid staff ID' });
-        staffName = staff.name;
-        if (isOutTimeCard) {
-          message = 'Out-time recorded. Reason stored as Daily Leave Type.';
-        } else if (isPermissionCard) {
-          message = 'Permission recorded successfully.';
-        } else if (isDailyOnly) {
-          message = 'Daily status recorded successfully.';
-        } else {
-          message = 'Attendance created successfully';
-        }
+          const staff = await Staff.findOne({ id: String(id).trim() });
+          if (!staff) return res.status(400).json({ error: 'Invalid staff ID' });
+          staffName = staff.name;
+          if (isOutTimeCard) {
+              message = 'Out-time recorded. Reason stored as Daily Leave Type.';
+          } else if (isPermissionCard) {
+              message = 'Permission recorded successfully.';
+          } else if (isDailyOnly) {
+              message = 'Daily status recorded successfully.';
+          } else {
+              message = 'Attendance created successfully';
+          }
       }
-
 
       const address = await getAddressFromCoordinates(location);
 
@@ -361,25 +453,37 @@ router.post('/save', async (req, res) => {
         permissionType: isPermissionCard ? (permissionType || null) : null,
         hours: isPermissionCard ? hours : undefined,
         dailyLeaveType: isOutTimeCard
-          ? (permissionType || null)
-          : (typeof finalDailyLeaveType !== 'undefined' ? finalDailyLeaveType : null),
-        leaveType: shouldAffectBalance ? leaveType : null,
-        halfDayReason: halfDayReason || null,
+          ? (dailyLeaveType || null) // Use dailyLeaveType for outTimeCard
+          : (isDailyOnly ? (dailyLeaveType || null) : null), // Use dailyLeaveType if only daily status
+        leaveType: isLeaveCard ? leaveType : null,
+        halfDayReason: isLeaveCard ? (halfDayReason || null) : null,
         location: address,
-        delayReason: delayReason || null, 
+        delayReason: delayReason || null,
         isLOP
       });
 
       await newAttendance.save();
-  // ⬇️ REPLACE your old `return res.json({ message });` with this:
-  return res.json({ message, isLOP });
-}
+
+      // Return the detailed message and balances for leave submissions
+      if (isLeaveCard && leaveUpdateResult) {
+          return res.json({
+              message: leaveUpdateResult.message,
+              isLOP: leaveUpdateResult.isLOP,
+              balances: currentBalances, // Use currentBalances here
+              deductedFrom: leaveUpdateResult.deductedFrom
+          });
+      }
+
+      return res.json({ message, isLOP });
+    }
 
   } catch (error) {
     console.error('Error saving attendance:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// ... (Rest of attendanceRoutes.js - keep as is)
 
 
 /* ------------------------------------------------------------------

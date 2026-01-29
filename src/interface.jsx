@@ -431,13 +431,21 @@ if (id === 'halfDayReason') {
         case 'permission':
           msg = `${payload.name} submitted Permission request.`;
           break;
-        case 'leave':
-          if (result.isLOP) {
-            msg = result.message || `${payload.name}, your leave makes the balance negative and may be treated as LOP.`;
-          } else {
-            msg = result.message || 'Leave submitted successfully.';
-          }
-          break;
+       // Interface.js లోని submitData ఫంక్షన్‌లో 'leave' కేస్‌ని ఇలా మార్చండి:
+
+case 'leave':
+  // బ్యాకెండ్ నుండి వచ్చిన మెసేజ్‌ని తీసుకుంటాం
+  let leaveBaseMsg = result.message || (result.isLOP 
+    ? `${payload.name}, your leave makes the balance negative and may be treated as LOP.` 
+    : 'Leave submitted successfully.');
+
+  if (result.balances) {
+    const { casualLeaves, sickLeaves, privilegeLeaves } = result.balances;
+    msg = `${leaveBaseMsg}\n\nRemaining Balances:\n• Casual: ${casualLeaves}\n• Sick: ${sickLeaves}\n• Privilege: ${privilegeLeaves}`;
+  } else {
+    msg = leaveBaseMsg;
+  }
+  break;
         default:
           msg = result.message || 'Submitted successfully!';
       }
