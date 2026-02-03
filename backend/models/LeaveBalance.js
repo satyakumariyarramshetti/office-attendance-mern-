@@ -37,6 +37,10 @@ const LeaveBalanceSchema = new mongoose.Schema({
         default: 0,
     },
 
+   
+    seniorPromotionDate: { type: Date } ,
+   
+
 
     // This field can be used for junior staff's monthly leave balance
     monthlyLeaveStatus: {

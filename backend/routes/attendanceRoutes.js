@@ -724,11 +724,13 @@ const WORKING_LEAVE_TYPES = new Set([
   'Over-Time Leave'
 ]);
 // --- AttendanceRoutes.js లో చివర్లో ఉంటుంది ---
-async function getWorkingDaysStats(employeeId, startDate = '2026-01-01') {
+// MODIFIED getWorkingDaysStats to accept a startDate
+async function getWorkingDaysStats(employeeId, startDate) { // No longer has a default
   const endDate = new Date().toISOString().split('T')[0];
   
   const records = await Attendance.find({
     id: employeeId,
+    // Use the dynamic startDate passed to the function
     date: { $gte: startDate, $lte: endDate }
   }).sort({ date: 1 });
 
@@ -738,12 +740,9 @@ async function getWorkingDaysStats(employeeId, startDate = '2026-01-01') {
     
     if (rec.leaveType && WORKING_LEAVE_TYPES.has(rec.leaveType)) {
       totalWorkingDays += 1;
-    } 
-    // ⬇️ ఇక్కడ మార్పు: leaveType లో హాఫ్ డే ఉంటే 0.5 కలపాలి ⬇️
-    else if (rec.leaveType === 'First Half Leave' || rec.leaveType === 'Second Half Leave') {
+    } else if (rec.leaveType === 'First Half Leave' || rec.leaveType === 'Second Half Leave') {
       totalWorkingDays += 0.5;
-    } 
-    else if (rec.dailyLeaveType === 'First Half Leave' || rec.dailyLeaveType === 'Second Half Leave') {
+    } else if (rec.dailyLeaveType === 'First Half Leave' || rec.dailyLeaveType === 'Second Half Leave') {
       totalWorkingDays += 0.5;
     } else if (rec.inTime || rec.outTime) {
       totalWorkingDays += 1;
@@ -755,29 +754,27 @@ async function getWorkingDaysStats(employeeId, startDate = '2026-01-01') {
 }
 
 
+
 async function ensurePrivilegeLeaveAccrualForEmployee(employeeId) {
   console.log(`🔄 Processing PL for senior: ${employeeId}`);
   
-  // AUTO-CREATE Staff if missing (FIXES main issue)
+  // AUTO-CREATE Staff if missing
   let staff = await Staff.findOne({ id: employeeId });
   if (!staff) {
     const lb = await LeaveBalance.findOne({ employeeId });
     if (lb) {
       staff = await Staff.create({
-        id: employeeId,
-        name: lb.name,
-        role: lb.role,  // Copies "senior" from LeaveBalance
-        department: "General",
-        designation: "Staff"
+        id: employeeId, name: lb.name, role: lb.role,
+        department: "General", designation: "Staff"
       });
       console.log(`✅ Auto-created Staff: ${employeeId}`);
     }
   }
   
-  // Use LeaveBalance role (reliable)
   const lb = await LeaveBalance.findOne({ employeeId });
-  if (!lb || lb.role !== 'senior') {
-    console.log(`❌ Not senior or no LeaveBalance: ${employeeId}`);
+  // Check for role AND the new seniorPromotionDate
+  if (!lb || lb.role !== 'senior' || !lb.seniorPromotionDate) {
+    console.log(`❌ Not a senior with a promotion date: ${employeeId}`);
     return null;
   }
   
@@ -786,7 +783,10 @@ async function ensurePrivilegeLeaveAccrualForEmployee(employeeId) {
     await lb.save();
   }
   
-const { totalWorkingDays, earnedPrivilegeLeaves } = await getWorkingDaysStats(employeeId, '2026-01-01');  
+  // Use seniorPromotionDate as the start date
+  const startDate = lb.seniorPromotionDate.toISOString().split('T')[0];
+  const { totalWorkingDays, earnedPrivilegeLeaves } = await getWorkingDaysStats(employeeId, startDate);  
+  
   const alreadyCredited = lb.plCreditedFromWorkingDays || 0;
   const toCredit = earnedPrivilegeLeaves - alreadyCredited;
   
@@ -796,10 +796,9 @@ const { totalWorkingDays, earnedPrivilegeLeaves } = await getWorkingDaysStats(em
     lb.plCreditedFromWorkingDays += toCredit;
     await lb.save();
     newlyCredited = toCredit;
-    console.log(`💰 Credited ${toCredit} PL to ${employeeId}`);
+    console.log(`💰 Credited ${toCredit} PL to ${employeeId} starting from ${startDate}`);
   }
   
-  // ALWAYS return data for seniors
   return {
     employeeId,
     name: lb.name,
@@ -810,7 +809,7 @@ const { totalWorkingDays, earnedPrivilegeLeaves } = await getWorkingDaysStats(em
     newlyCredited,
     currentPrivilegeLeaves: lb.privilegeLeaves,
   };
-}
+} 
 
 async function recalcPrivilegeLeaveForAllSeniors() {
   const seniors = await LeaveBalance.find({ role: 'senior' });

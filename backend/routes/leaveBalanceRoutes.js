@@ -65,6 +65,8 @@ router.post('/add', async (req, res) => {
             newBalance.casualLeaves = 4;
             newBalance.privilegeLeaves = 12;
             newBalance.monthlyLeaveStatus = 0;
+            newBalance.seniorPromotionDate = new Date();
+
         } else {
             newBalance.monthlyLeaveStatus = 1;
         }
@@ -84,20 +86,20 @@ router.put('/edit/:id', async (req, res) => {
         const { id } = req.params;
         const updateData = req.body;
 
-        // JUNIOR LOGIC
-        if (updateData.role === 'junior') {
-            if (
-                updateData.monthlyLeaveStatus === undefined ||
-                updateData.monthlyLeaveStatus === null ||
-                updateData.monthlyLeaveStatus === ""
-            ) {
-                updateData.monthlyLeaveStatus = 1;
-            }
+        const currentMember = await LeaveBalance.findById(id);
+        if (!currentMember) {
+            return res.status(404).json({ message: 'Member not found.' });
         }
 
-        // SENIOR LOGIC
-        if (updateData.role === 'senior') {
-            updateData.monthlyLeaveStatus = 0;
+        // ▼▼▼▼▼ NEW LOGIC: Check if role is changing to senior ▼▼▼▼▼
+        if (updateData.role === 'senior' && currentMember.role === 'junior') {
+            // Set the promotion date ONLY when changing from junior to senior
+            updateData.seniorPromotionDate = new Date();
+            updateData.monthlyLeaveStatus = 0; // Also set monthly status for seniors
+        } else if (updateData.role === 'junior') {
+            // If changing back to junior, clear the promotion date
+            updateData.seniorPromotionDate = null;
+            updateData.monthlyLeaveStatus = 1;
         }
 
         const updatedBalance = await LeaveBalance.findByIdAndUpdate(
@@ -105,10 +107,6 @@ router.put('/edit/:id', async (req, res) => {
             { $set: updateData },
             { new: true, runValidators: true }
         );
-
-        if (!updatedBalance) {
-            return res.status(404).json({ message: 'Member not found.' });
-        }
 
         res.status(200).json({
             message: 'Member updated successfully',

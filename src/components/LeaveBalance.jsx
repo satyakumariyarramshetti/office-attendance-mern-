@@ -243,22 +243,34 @@ const LeaveBalance = () => {
         </div>
       )}
 
-      {showEditModal && editingMember && (
-        <div className="modal-backdrop">
-          <div className="modal-content">
-            <h3>Edit Member Details</h3>
-            <form onSubmit={handleUpdateMember}>
-              <label>Employee ID</label>
-              <input type="text" name="employeeId" value={editingMember.employeeId} onChange={handleEditFormChange} required />
-              
-              <label>Full Name</label>
-              <input type="text" name="name" value={editingMember.name} onChange={handleEditFormChange} required />
+       {showEditModal && editingMember && (
+      <div className="modal-backdrop">
+        <div className="modal-content">
+          <h3>Edit Member Details</h3>
+          <form onSubmit={handleUpdateMember}>
+            <label>Employee ID</label>
+            <input type="text" name="employeeId" value={editingMember.employeeId} onChange={handleEditFormChange} required />
+            
+            <label>Full Name</label>
+            <input type="text" name="name" value={editingMember.name} onChange={handleEditFormChange} required />
 
-              <label>Role</label>
-              <select name="role" value={editingMember.role} onChange={handleEditFormChange}>
-                <option value="junior">Junior</option>
-                <option value="senior">Senior</option>
-              </select>
+            <label>Role</label>
+            <select name="role" value={editingMember.role} onChange={handleEditFormChange}>
+              <option value="junior">Junior</option>
+              <option value="senior">Senior</option>
+            </select>
+{/* ▼▼▼▼▼ NEW: Display the promotion date if the member is a senior ▼▼▼▼▼ */}
+            {editingMember.role === 'senior' && editingMember.seniorPromotionDate && (
+              <>
+                <label>Senior Since</label>
+                <input
+                  type="text"
+                  value={new Date(editingMember.seniorPromotionDate).toLocaleDateString()}
+                  readOnly
+                  title="This date is set automatically when role is changed to senior."
+                />
+              </>
+            )}
 
             {/* COMMON FIELDS FOR BOTH JUNIOR & SENIOR */}
 <label>Casual Leaves</label>
