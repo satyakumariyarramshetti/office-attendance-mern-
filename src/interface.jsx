@@ -50,7 +50,7 @@ const getNetAndGrossMins = (attendance) => {
   const inMins = timeToMinutes(attendance.inTime);
   const outMins = timeToMinutes(attendance.outTime);
 
-  if (!attendance.inTime || !attendance.outTime) return { net: 0, gross: 0 };
+  if (!attendance.inTime || !attendance.outTime) return {  gross: 0 };
 
   let lunchMins = 0;
   if (attendance.lunchOut && attendance.lunchIn) {
@@ -59,9 +59,9 @@ const getNetAndGrossMins = (attendance) => {
     if (lInM > lOutM) lunchMins = lInM - lOutM;
   }
 
-  const net = outMins - inMins - lunchMins;
+  // const net = outMins - inMins - lunchMins;
   const gross = outMins - inMins;
-  return { net, gross };
+  return {  gross };
 };
 
 
@@ -248,6 +248,7 @@ const timeToMinutes = (timeStr) => {
     const timer = setTimeout(() => fetchStaffAndAttendance(idInputs.leave, formData.date, 'leave'), 500);
     return () => clearTimeout(timer);
   }, [idInputs.leave, formData.date, fetchStaffAndAttendance]);
+
 useEffect(() => {
   if (!formData.inTime || !formData.date || !formData.id) {
     setIsOTElligible(false);
@@ -267,7 +268,7 @@ useEffect(() => {
       setIsOTElligible(false);
       return;
     }
-    const { net, gross } = getNetAndGrossMins(prevAtt);  // gross = out-in (no lunch)
+    const {  gross } = getNetAndGrossMins(prevAtt);  // gross = out-in (no lunch)
     const inMinsToday = timeToMinutes(formData.inTime);
     
     // ✅ FIXED: Both conditions use GROSS, numeric comparisons
