@@ -124,12 +124,6 @@ const getPrevDate = (dateString) => {
   return d.toISOString().split('T')[0];
 };
 
-// Helper to calculate minutes between given times
-const timeToMinutes = (timeStr) => {
-  if (!timeStr || !/^\d{2}:\d{2}$/.test(timeStr)) return 0;
-  const [hours, minutes] = timeStr.split(':').map(Number);
-  return hours * 60 + minutes;
-};
 
 
 
@@ -268,7 +262,7 @@ useEffect(() => {
       setIsOTElligible(false);
       return;
     }
-    const { net, gross } = getNetAndGrossMins(prevAtt);  // gross = out-in (no lunch)
+    const { gross } = getNetAndGrossMins(prevAtt);  // gross = out-in (no lunch)
     const inMinsToday = timeToMinutes(formData.inTime);
     
     // ✅ FIXED: Both conditions use GROSS, numeric comparisons
