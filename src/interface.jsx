@@ -248,13 +248,13 @@ const timeToMinutes = (timeStr) => {
     const timer = setTimeout(() => fetchStaffAndAttendance(idInputs.leave, formData.date, 'leave'), 500);
     return () => clearTimeout(timer);
   }, [idInputs.leave, formData.date, fetchStaffAndAttendance]);
-
- useEffect(() => {
+useEffect(() => {
   if (!formData.inTime || !formData.date || !formData.id) {
     setIsOTElligible(false);
-    if (formData.inTime <= '09:15') setFormData(prev => ({ ...prev, delayReason: "" }));
+    setFormData(prev => ({ ...prev, delayReason: "" }));
     return;
   }
+  
   const prevDate = getPrevDate(formData.date);
   fetch(`${API_BASE}/api/attendance/getByIdDate`, {
     method: 'POST',
@@ -267,15 +267,17 @@ const timeToMinutes = (timeStr) => {
       setIsOTElligible(false);
       return;
     }
-    const { net, gross } = getNetAndGrossMins(prevAtt);
+    const { net, gross } = getNetAndGrossMins(prevAtt);  // gross = out-in (no lunch)
     const inMinsToday = timeToMinutes(formData.inTime);
-    if ((net >= 630 && inMinsToday <= 570) || (gross >= 690 && inMinsToday <= 600)) {
+    
+    // ✅ FIXED: Both conditions use GROSS, numeric comparisons
+    if ((gross >= 630 && inMinsToday <= 570) || (gross >= 690 && inMinsToday <= 600)) {
       setIsOTElligible(true);
       setFormData(prev => ({ ...prev, delayReason: "OT Reason" }));
     } else {
       setIsOTElligible(false);
-      if (formData.inTime > '09:15') {
-        // Set delayReason to "Late Mark" ONLY if not already set or user didn't interact
+      const lateThreshold = timeToMinutes('09:15');  // 555 min
+      if (inMinsToday > lateThreshold) {
         setFormData(prev => ({ ...prev, delayReason: prev.delayReason || "Late Mark" }));
       } else {
         setFormData(prev => ({ ...prev, delayReason: "" }));
@@ -284,6 +286,7 @@ const timeToMinutes = (timeStr) => {
   })
   .catch(() => setIsOTElligible(false));
 }, [formData.inTime, formData.date, formData.id, API_BASE]);
+
 
 
 
@@ -681,8 +684,7 @@ const handleLeaveSubmit = async (e) => {
 
 
                 {/* Conditionally show Delay Reason if inTime is after 09:15 */}
-      {formData.inTime && formData.inTime > '09:15' && (
-  <div className="form-group mb-2">
+{formData.inTime && timeToMinutes(formData.inTime) > timeToMinutes('09:15') && (  <div className="form-group mb-2">
     <label>Delay Reason</label>
 
     <select
