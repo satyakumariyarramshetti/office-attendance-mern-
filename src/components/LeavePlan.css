@@ -1,0 +1,178 @@
+/* -------------------- GLOBAL -------------------- */
+body, #root {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  background-color: #010915;
+  color: #1e293b;
+}
+
+/* -------------------- CONTAINER -------------------- */
+.leave-plan-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 10px;
+}
+
+/* -------------------- CARD FORM -------------------- */
+.leave-form {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(37, 99, 235, 0.12);
+  padding: 40px 36px;
+  max-width: 420px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: fadeIn 0.5s ease;
+}
+
+/* -------------------- TITLE -------------------- */
+.leave-form h2 {
+  font-size: 1.9rem;
+  margin-bottom: 10px;
+  text-align: center;
+  font-weight: 600;
+  color: #1d4ed8;
+  letter-spacing: 0.3px;
+}
+
+/* -------------------- LABELS -------------------- */
+.leave-form label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.96rem;
+  font-weight: 500;
+  color: #334155;
+}
+
+/* -------------------- INPUTS -------------------- */
+.leave-form input[type="text"],
+.leave-form input[type="email"],
+.date-picker {
+  width: 100%;
+  font-size: 1rem;
+  padding: 11px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  outline: none;
+  background: #f9fafb;
+  transition: all 0.25s ease;
+  margin-top: 5px;
+}
+
+.leave-form input:focus,
+.date-picker:focus {
+  border-color: #3b82f6;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* -------------------- BUTTONS -------------------- */
+.form-buttons {
+  display: flex;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.submit-btn,
+.cancel-btn {
+  flex: 1 1 0px;
+  padding: 11px 0;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+/* Primary Button */
+.submit-btn {
+  background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(59, 130, 246, 0.25);
+}
+
+.submit-btn:hover {
+  background: linear-gradient(90deg, #1d4ed8 0%, #2563eb 100%);
+  transform: translateY(-1px);
+}
+
+/* Cancel Button */
+.cancel-btn {
+  background: #f1f5f9;
+  color: #1e3a8a;
+  border: 1px solid #cbd5e1;
+}
+
+.cancel-btn:hover {
+  background: #e2e8f0;
+}
+
+/* -------------------- SELECTED DATES -------------------- */
+.selected-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.date-chip {
+  background: linear-gradient(90deg, #e0f2fe 0%, #bfdbfe 100%);
+  color: #1e40af;
+  font-weight: 500;
+  border-radius: 24px;
+  padding: 6px 14px 6px 12px;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  box-shadow: 0 1px 5px rgba(37, 99, 235, 0.18);
+}
+
+.remove-date {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 1.1rem;
+  margin-left: 8px;
+  cursor: pointer;
+  transition: color 0.2s;
+  font-weight: bold;
+}
+
+.remove-date:hover {
+  color: #dc2626;
+}
+
+/* -------------------- RESPONSIVE -------------------- */
+@media (max-width: 768px) {
+  .leave-form {
+    padding: 28px 20px;
+    max-width: 95%;
+  }
+  .leave-form h2 {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .leave-form {
+    border-radius: 12px;
+    padding: 24px 18px;
+  }
+  .form-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+/* -------------------- ANIMATION -------------------- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

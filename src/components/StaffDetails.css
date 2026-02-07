@@ -1,0 +1,207 @@
+/* ===== Staff Details Container ===== */
+.staff-table-container {
+  max-height: 600px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 12px;
+  border: 1.5px solid #ccc;
+  background-color: #f9fbff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== Title ===== */
+.staff-details-container h2 {
+  margin-bottom: 1.8rem;
+  color: #12263a;
+  font-weight: 700;
+  font-size: 2rem;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+/* ===== Department Buttons ===== */
+.dept-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.dept-buttons button {
+  padding: 0.55rem 1.4rem;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  background: #e4eaf3;
+  color: #1f3b5d;
+  transition: all 0.25s ease;
+}
+
+.dept-buttons button:hover:not(.active) {
+  background-color: #1f3b5d;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.dept-buttons button.active {
+  background: linear-gradient(135deg, #4070f4, #2c3e91);
+  color: #fff;
+}
+
+.add-staff-btn {
+  background: linear-gradient(135deg, #162d50, #000000);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 25px;
+  padding: 0.55rem 1.4rem;
+  margin-left: auto;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+.add-staff-btn:hover {
+  background: linear-gradient(135deg, #154eac, #0d326f);
+  transform: translateY(-2px);
+}
+
+/* ===== Search Box ===== */
+.search-input {
+  display: block;
+  margin: 1rem auto 2rem;
+  padding: 10px 16px;
+  width: 350px;
+  max-width: 90%;
+  border-radius: 30px;
+  border: 2px solid #1f3b5d;
+  outline: none;
+  font-size: 1rem;
+  transition: 0.3s;
+}
+
+.search-input:focus {
+  box-shadow: 0 0 10px rgba(36, 91, 180, 0.4);
+  border-color: #4070f4;
+}
+
+/* ===== Table Container ===== */
+.staff-table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1.5px solid #ccc;
+  background-color: #f9fbff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  max-height: 600px;
+}
+
+/* Ensure header and body widths stay aligned */
+.staff-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto; /* 🩵 allow flexible column width */
+  font-size: 0.95rem;
+  word-wrap: break-word;
+}
+
+
+.staff-table thead {
+  background-color: #1f3b5d;
+  color: #0b0a0a;
+  position: sticky; /* ✅ Keep header fixed while scrolling */
+  top: 0;
+  z-index: 2;
+  
+}
+
+.staff-table th,
+.staff-table td {
+  text-align: center; /* ✅ Center header and data */
+  padding: 1rem 1.2rem;
+  white-space: nowrap;
+  vertical-align: middle;
+  border-bottom: 1px solid #d4ddee;
+  word-break: break-word;
+  max-width: 200px;
+}
+
+
+.staff-table tbody tr {
+  background-color: #f3f6fc;
+  border-bottom: 1px solid #d4ddee;
+  transition: background 0.25s ease, transform 0.2s ease;
+}
+
+.staff-table tbody tr:hover {
+  background-color: #eaf0ff;
+  transform: scale(1.005);
+}
+
+.staff-table td {
+  padding: 1rem 1.2rem;
+  color: #1a1a1a;
+  vertical-align: middle;
+  text-align: center; /* ✅ Center cell data */
+  white-space: nowrap;
+}
+
+
+/* ===== Buttons ===== */
+.edit-btn {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 0.4rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-right: 8px;
+}
+.edit-btn:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
+  transform: translateY(-2px);
+}
+
+.remove-btn {
+  background: linear-gradient(135deg, #e63946, #b71c1c);
+  border: none;
+  border-radius: 20px;
+  padding: 0.4rem 1rem;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.remove-btn:hover:enabled {
+  background: linear-gradient(135deg, #c92a2a, #8c1616);
+  transform: translateY(-2px);
+}
+
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 768px) {
+  .staff-details-container {
+    margin-left: 0;
+    padding: 1.2rem;
+    max-width: 95%;
+  }
+
+  .dept-buttons {
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .staff-table {
+    font-size: 0.9rem;
+  }
+
+  .staff-table thead th,
+  .staff-table td {
+    padding: 0.8rem;
+  }
+
+  .edit-btn,
+  .remove-btn {
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+  }
+}
