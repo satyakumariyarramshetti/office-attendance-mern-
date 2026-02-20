@@ -138,6 +138,26 @@ const LeaveBalance = () => {
     balance.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+
+  const handleResetLOP = async () => {
+  const confirmReset = window.confirm(
+    "Are you sure you want to reset all LOP leaves to 0?"
+  );
+  if (!confirmReset) return;
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/attendance/reset-lop-leaves`, {
+      method: "PUT",
+    });
+
+    const data = await res.json();
+    alert(data.message);
+    window.location.reload();
+  } catch (error) {
+    console.error("Reset error:", error);
+  }
+};
+
   return (
     <div className="leave-balance-container">
       <div className="page-wrap">
@@ -151,6 +171,14 @@ const LeaveBalance = () => {
             >
               Reset Monthly Leaves
             </button>
+
+           
+            <button
+             className="reset-leaves-btn"
+               title="Resets all LOP leaves to 0 for every employee."
+              onClick={handleResetLOP}>
+  Auto Reset LOP Leaves
+</button>
 
             <button
               className="reset-leaves-btn"
@@ -191,6 +219,7 @@ const LeaveBalance = () => {
                   <th>Casual Leaves</th>
                   <th>Sick Leaves</th>
                   <th>Privilege Leaves</th>
+                  <th>LOP Leaves</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -203,6 +232,7 @@ const LeaveBalance = () => {
                  <td>{b.casualLeaves}</td>
 <td>{b.sickLeaves}</td>
 <td>{b.privilegeLeaves}</td>
+<td>{b.lopLeaves}</td>
 
                     <td className="action-buttons">
                       <button className="edit-btn" onClick={() => openEditModal(b)}>Edit</button>
@@ -294,6 +324,14 @@ const LeaveBalance = () => {
   type="number"
   name="privilegeLeaves"
   value={editingMember.privilegeLeaves}
+  onChange={handleEditFormChange}
+/>
+
+<label>LOP Leaves</label>
+<input
+  type="number"
+  name="lopLeaves"
+  value={editingMember.lopLeaves}
   onChange={handleEditFormChange}
 />
 

@@ -31,6 +31,11 @@ const LeaveBalanceSchema = new mongoose.Schema({
         default: 0,
     },
 
+    lopLeaves: {
+    type: Number,
+    default: 0,
+},
+
     // Number of PLs that were already credited via working-day accrual logic
     plCreditedFromWorkingDays: {
         type: Number,

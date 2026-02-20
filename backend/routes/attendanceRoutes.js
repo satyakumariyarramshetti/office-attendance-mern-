@@ -69,6 +69,10 @@ function deductHalfDayPriority(b, primaryType) {
   return { isLOP: true };
 }
 
+// 🔥 Central LOP handler (NEW)
+function applyLOP(b, days) {
+  b.lopLeaves = (b.lopLeaves || 0) - days;
+}
 
 /* ------------------------------------------------------------------
    Leave balance update helper (kept intact)
@@ -154,11 +158,11 @@ async function updateLeaveBalance(employeeId, leaveType, options = {}) {
           deductedFrom = 'Privilege Leave';
           message = `Your Sick Leave balance is insufficient. ${leaveToDeduct} day has been deducted from your Privilege Leave balance.`;
         } else {
-          b.sickLeaves -= leaveToDeduct; // Go negative
-          isLOP = true;
-          deductedFrom = 'Sick Leave (LOP)';
-          message = `You have insufficient Sick, Casual, and Privilege Leaves. ${leaveToDeduct} day will be treated as Loss of Pay (LOP).`;
-        }
+  applyLOP(b, leaveToDeduct);
+  isLOP = true;
+  deductedFrom = 'LOP Leave';
+  message =` You have insufficient Sick, Casual, and Privilege Leaves. ${leaveToDeduct} day treated as Loss of Pay (LOP).`;
+}
       } else if (halfDayReason === "Casual Leave") {
         if (b.casualLeaves >= leaveToDeduct) {
           b.casualLeaves -= leaveToDeduct;
@@ -168,12 +172,12 @@ async function updateLeaveBalance(employeeId, leaveType, options = {}) {
           b.privilegeLeaves -= leaveToDeduct;
           deductedFrom = 'Privilege Leave';
           message = `Your Casual Leave balance is insufficient. ${leaveToDeduct} day has been deducted from your Privilege Leave balance.`;
-        } else {
-          b.casualLeaves -= leaveToDeduct; // Go negative
-          isLOP = true;
-          deductedFrom = 'Casual Leave (LOP)';
-          message = `You have insufficient Casual and Privilege Leaves. ${leaveToDeduct} day will be treated as Loss of Pay (LOP).`;
-        }
+        }  else {
+  applyLOP(b, leaveToDeduct);
+  isLOP = true;
+  deductedFrom = 'LOP Leave';
+  message =` You have insufficient Sick, Casual, and Privilege Leaves. ${leaveToDeduct} day treated as Loss of Pay (LOP).`;
+}
       } else if (halfDayReason === "Privilege Leave") {
         if (b.privilegeLeaves >= leaveToDeduct) {
           b.privilegeLeaves -= leaveToDeduct;
@@ -184,11 +188,11 @@ async function updateLeaveBalance(employeeId, leaveType, options = {}) {
           deductedFrom = 'Casual Leave';
           message = `Your Privilege Leave balance is insufficient. ${leaveToDeduct} day has been deducted from your Casual Leave balance.`;
         } else {
-          b.privilegeLeaves -= leaveToDeduct; // Go negative
-          isLOP = true;
-          deductedFrom = 'Privilege Leave (LOP)';
-          message = `You have insufficient Privilege and Casual Leaves. ${leaveToDeduct} day will be treated as Loss of Pay (LOP).`;
-        }
+  applyLOP(b, leaveToDeduct);
+  isLOP = true;
+  deductedFrom = 'LOP Leave';
+  message =` You have insufficient Sick, Casual, and Privilege Leaves. ${leaveToDeduct} day treated as Loss of Pay (LOP).`;
+}
       }
 
       await b.save();
@@ -220,13 +224,20 @@ async function updateLeaveBalance(employeeId, leaveType, options = {}) {
         b.privilegeLeaves -= leaveToDeduct;
         deductedFrom = 'Privilege Leave';
         message = `Your Casual Leave balance is insufficient. ${leaveToDeduct} day has been deducted from your Privilege Leave balance.`;
-      } else {
-        b.casualLeaves -= leaveToDeduct; // go negative
-        isLOP = true;
-        deductedFrom = 'Casual Leave (LOP)';
-        message = `You have insufficient Casual and Privilege Leaves. ${leaveToDeduct} day will be treated as Loss of Pay (LOP).`;
-      }
+      }  else {
+  applyLOP(b, leaveToDeduct);
+  isLOP = true;
+  deductedFrom = 'LOP Leave';
+  message =` You have insufficient Sick, Casual, and Privilege Leaves. ${leaveToDeduct} day treated as Loss of Pay (LOP).`;
+}
     }
+
+    else if (leaveType === "LOP Leave") {
+    b.lopLeaves = (b.lopLeaves || 0) - 1;   // 🔥 minus instead of plus
+    isLOP = true;
+    deductedFrom = 'LOP Leave';
+    message = `1 day recorded as Loss of Pay (LOP).`;
+}
 
     // --------- PRIVILEGE LEAVE LOGIC --------- //
     else if (leaveType === "Privilege Leave") {
@@ -238,12 +249,12 @@ async function updateLeaveBalance(employeeId, leaveType, options = {}) {
         b.casualLeaves -= leaveToDeduct;
         deductedFrom = 'Casual Leave';
         message = `Your Privilege Leave balance is insufficient. ${leaveToDeduct} day has been deducted from your Casual Leave balance.`;
-      } else {
-        b.privilegeLeaves -= leaveToDeduct; // negative
-        isLOP = true;
-        deductedFrom = 'Privilege Leave (LOP)';
-        message = `You have insufficient Privilege and Casual Leaves. ${leaveToDeduct} day will be treated as Loss of Pay (LOP).`;
-      }
+      }  else {
+  applyLOP(b, leaveToDeduct);
+  isLOP = true;
+  deductedFrom = 'LOP Leave';
+  message =` You have insufficient Sick, Casual, and Privilege Leaves. ${leaveToDeduct} day treated as Loss of Pay (LOP).`;
+}
     }
 
     // --------- SICK LEAVE LOGIC --------- //
@@ -260,12 +271,12 @@ async function updateLeaveBalance(employeeId, leaveType, options = {}) {
         b.privilegeLeaves -= leaveToDeduct;
         deductedFrom = 'Privilege Leave';
         message = `Your Sick Leave balance is insufficient. ${leaveToDeduct} day has been deducted from your Privilege Leave balance.`;
-      } else {
-        b.sickLeaves -= leaveToDeduct; // negative
-        isLOP = true;
-        deductedFrom = 'Sick Leave (LOP)';
-        message = `You have insufficient Sick, Casual, and Privilege Leaves. ${leaveToDeduct} day will be treated as Loss of Pay (LOP).`;
-      }
+      }  else {
+  applyLOP(b, leaveToDeduct);
+  isLOP = true;
+  deductedFrom = 'LOP Leave';
+  message =` You have insufficient Sick, Casual, and Privilege Leaves. ${leaveToDeduct} day treated as Loss of Pay (LOP).`;
+}
     }
 
     await b.save();
@@ -279,6 +290,7 @@ async function updateLeaveBalance(employeeId, leaveType, options = {}) {
         sickLeaves: b.sickLeaves,
         privilegeLeaves: b.privilegeLeaves,
         monthlyLeaveStatus: b.monthlyLeaveStatus,
+        lopLeaves: b.lopLeaves,
       }
     };
 
@@ -866,6 +878,28 @@ router.post('/privilege-leaves/recalc/:employeeId', async (req, res) => {
   } catch (err) {
     console.error('Error in /privilege-leaves/recalc/:employeeId:', err);
     res.status(500).json({ message: 'Error recalculating privilege leaves.', error: err.message });
+  }
+});
+
+
+/* ------------------------------------------------------------------
+   🔥 RESET ALL LOP LEAVES (ADMIN ACTION)
+------------------------------------------------------------------ */
+router.put('/reset-lop-leaves', async (req, res) => {
+  try {
+    await LeaveBalance.updateMany({}, { $set: { lopLeaves: 0 } });
+
+    res.status(200).json({
+      success: true,
+      message: 'All LOP leaves have been reset to 0 successfully.'
+    });
+
+  } catch (error) {
+    console.error('Error resetting LOP leaves:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reset LOP leaves.'
+    });
   }
 });
 
