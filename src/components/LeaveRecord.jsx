@@ -49,28 +49,33 @@ const LeaveRecord = () => {
   const normalizedSearch = searchTerm.trim().toLowerCase();
   const filteredData = Object.keys(groupedByMonth)
     .map(month => {
-      const filteredRecords = groupedByMonth[month].filter(record => {
-        const leaveTypeStr = (record.leaveType || '').toLowerCase();
-        return (
-          record.id.toLowerCase().includes(normalizedSearch) ||
-          (record.name || '').toLowerCase().includes(normalizedSearch) ||
-          formatDate(record.date).includes(normalizedSearch) ||
-          leaveTypeStr.includes(normalizedSearch)
-        );
-      });
+     // LeaveRecord.js లోని ఈ భాగాన్ని వెతకండి (Line 46 దగ్గర)
+const filteredRecords = groupedByMonth[month].filter(record => {
+  const leaveTypeStr = (record.leaveType || '').toLowerCase();
+  const halfDayReasonStr = (record.halfDayReason || '').toLowerCase(); // దీనిని యాడ్ చేయండి
+  const fullLeaveInfo = `${leaveTypeStr} ${halfDayReasonStr}`; // రెండింటినీ కలిపి చెక్ చేయడానికి
+  
+  return (
+    record.id.toLowerCase().includes(normalizedSearch) ||
+    (record.name || '').toLowerCase().includes(normalizedSearch) ||
+    formatDate(record.date).includes(normalizedSearch) ||
+    fullLeaveInfo.includes(normalizedSearch) // ఇక్కడ మార్చండి
+  );
+});
+
       return { month, records: filteredRecords };
     })
     .filter(group => group.records.length > 0);
 
-  // Export function
-  const exportToExcel = (month, records) => {
-    // Prepare worksheet data
-    const wsData = records.map(r => ({
-      ID: r.id,
-      Name: r.name,
-      Date: formatDate(r.date),
-      'Leave Type': r.leaveType
-    }));
+ const exportToExcel = (month, records) => {
+  const wsData = records.map(r => ({
+    ID: r.id,
+    Name: r.name,
+    Date: formatDate(r.date),
+    'Leave Type': r.halfDayReason ? `${r.leaveType} (${r.halfDayReason})` : r.leaveType
+  }));
+
+ 
 
     // Create worksheet and workbook
     const worksheet = XLSX.utils.json_to_sheet(wsData);
@@ -126,8 +131,10 @@ const LeaveRecord = () => {
                             <td data-label="ID">{record.id}</td>
                             <td data-label="Name">{record.name}</td>
                             <td data-label="Date">{formatDate(record.date)}</td>
-                            <td data-label="Leave Type">{record.leaveType}</td>
-                          </tr>
+<td data-label="Leave Type">
+  {record.leaveType}
+  {record.halfDayReason ? ` (${record.halfDayReason})` : ''}
+</td>                          </tr>
                         ))}
                       </tbody>
                     </table>

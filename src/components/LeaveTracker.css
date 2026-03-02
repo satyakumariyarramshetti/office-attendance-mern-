@@ -1,0 +1,67 @@
+.leave-tracker-wrapper {
+  min-height: 100vh;
+  background: #0a192f;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.leave-tracker-card {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 800px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+.leave-tracker-title {
+  margin-bottom: 30px;
+  font-weight: 600;
+  color: #0a192f;
+}
+
+.leave-tracker-buttons {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.tracker-button-card {
+  background: #f8f9fa;
+  padding: 30px;
+  width: 260px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+}
+
+.tracker-button-card:hover {
+  background: #0d6efd;
+  color: #fff;
+  transform: translateY(-5px);
+}
+
+.tracker-icon {
+  font-size: 40px;
+  margin-bottom: 15px;
+  color: #0d6efd;
+}
+
+.tracker-button-card:hover .tracker-icon {
+  color: #fff;
+}
+
+.tracker-button-card h5 {
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.tracker-button-card p {
+  font-size: 14px;
+  margin: 0;
+}

@@ -127,6 +127,10 @@ async function updateLeaveBalance(employeeId, leaveType, options = {}) {
       };
     }
 
+
+
+    
+
     /* -------------------------------------------------------------
        HALF DAY LEAVES (First / Second Half)
        Reason must be: Sick Leave / Casual Leave / Privilege Leave
@@ -770,16 +774,20 @@ async function getWorkingDaysStats(employeeId, startDate) { // No longer has a d
 async function ensurePrivilegeLeaveAccrualForEmployee(employeeId) {
   console.log(`🔄 Processing PL for senior: ${employeeId}`);
   
-  // AUTO-CREATE Staff if missing
+ // 1. AUTO-CREATE Staff if missing (FIXED with dummy email)
   let staff = await Staff.findOne({ id: employeeId });
   if (!staff) {
     const lb = await LeaveBalance.findOne({ employeeId });
     if (lb) {
       staff = await Staff.create({
-        id: employeeId, name: lb.name, role: lb.role,
-        department: "General", designation: "Staff"
+        id: employeeId, 
+        name: lb.name, 
+        role: lb.role,
+        email: `${employeeId.toLowerCase()}@company.com`, // FIX: Adding dummy email
+        department: "General", 
+        designation: "Staff"
       });
-      console.log(`✅ Auto-created Staff: ${employeeId}`);
+      console.log(`✅ Auto-created Staff for: ${employeeId}`);
     }
   }
   
@@ -900,6 +908,62 @@ router.put('/reset-lop-leaves', async (req, res) => {
       success: false,
       message: 'Failed to reset LOP leaves.'
     });
+  }
+});
+
+
+
+/* -------------------------------------------------------
+   📊 Get Month-wise Leave Summary for Employee
+------------------------------------------------------- */
+router.get('/monthly-summary/:id', async (req, res) => {
+  try {
+    const employeeId = req.params.id;
+
+    const records = await Attendance.find({
+      id: employeeId,
+      leaveType: { $ne: null }
+    });
+
+    const summary = {};
+
+    records.forEach(rec => {
+      const dateObj = new Date(rec.date);
+      const month = dateObj.toLocaleString("en-US", { month: "long" });
+      const year = dateObj.getFullYear();
+      const key = `${month} ${year}`;
+
+      if (!summary[key]) {
+        summary[key] = {
+          Casual: 0,
+          Sick: 0,
+          Privilege: 0,
+          LOP: 0
+        };
+      }
+
+      const leaveDays =
+        rec.leaveType === "First Half Leave" ||
+        rec.leaveType === "Second Half Leave"
+          ? 0.5
+          : 1;
+
+      if (rec.isLOP) {
+        summary[key].LOP += leaveDays;
+      } else if (rec.leaveType === "Casual Leave") {
+        summary[key].Casual += leaveDays;
+      } else if (rec.leaveType === "Sick Leave") {
+        summary[key].Sick += leaveDays;
+      } else if (rec.leaveType === "Privilege Leave") {
+        summary[key].Privilege += leaveDays;
+      }
+    });
+
+    res.json(summary);
+
+  } catch (error) {
+    console.error("Error fetching monthly summary:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 

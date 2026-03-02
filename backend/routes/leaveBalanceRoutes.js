@@ -133,4 +133,26 @@ router.delete('/remove/:id', async (req, res) => {
     }
 });
 
+
+// GET: Fetch leave balance by Employee ID
+router.get('/employee/:employeeId', async (req, res) => {
+    try {
+        const { employeeId } = req.params;
+
+        const employee = await LeaveBalance.findOne({ employeeId });
+
+        if (!employee) {
+            return res.status(404).json({ message: 'Employee not found' });
+        }
+
+        res.status(200).json(employee);
+
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error fetching employee leave balance',
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;

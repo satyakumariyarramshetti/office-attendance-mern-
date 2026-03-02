@@ -638,7 +638,19 @@ const handleLeaveSubmit = async (e) => {
         
         {/* --- THIS IS THE SECTION TO ADD/MODIFY --- */}
         <div className="header-links">
-          <Link to="/your-attendance" className="btn btn-outline-light me-2">Your Attendance</Link>
+         <Link 
+  to="/your-attendance" 
+  className="btn custom-blue-btn me-2"
+>
+  Your Attendance
+</Link>
+
+<Link 
+  to="/leave-tracker" 
+  className="btn custom-blue-btn me-2"
+>
+  Your Leave Tracker
+</Link>
            <Link to="/leave-plan" className="btn btn-outline-light me-2">Your Leave Plan</Link>
            <Link to="/lp-dashboard" className="btn btn-outline-light me-2">LP Dashboard</Link>
           <Link to="/admin-login" className="admin-login-link">Admin login</Link>
