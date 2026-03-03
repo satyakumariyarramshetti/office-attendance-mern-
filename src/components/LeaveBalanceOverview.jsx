@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 import "./LeaveBalanceOverview.css";
 
 const LeaveBalanceOverview = () => {
   const [employeeId, setEmployeeId] = useState("");
   const [balance, setBalance] = useState(null);
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();   // 👈 Add this
 
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -16,7 +20,6 @@ const LeaveBalanceOverview = () => {
       setError("");
       setBalance(null);
 
-      // 👇 Automatically attach PS-
       const fullEmployeeId = `PS-${employeeId}`;
 
       const res = await axios.get(
@@ -29,7 +32,6 @@ const LeaveBalanceOverview = () => {
     }
   };
 
-  // 👇 Enter key support
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
       handleSearch();
@@ -39,6 +41,15 @@ const LeaveBalanceOverview = () => {
   return (
     <div className="balance-wrapper">
       <div className="balance-card">
+
+        {/* ✅ Back Button */}
+        <button 
+          className="back-button"
+          onClick={() => navigate(-1)}
+        >
+          <FaArrowLeft /> Back
+        </button>
+
         <h2 className="balance-title">Leave Balance Overview</h2>
 
         <div className="search-section">

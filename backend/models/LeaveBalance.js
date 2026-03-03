@@ -42,6 +42,13 @@ const LeaveBalanceSchema = new mongoose.Schema({
         default: 0,
     },
 
+    plCreditHistory: [
+  {
+    creditedOn: { type: Date },
+    daysCredited: { type: Number }
+  }
+],
+
    
     seniorPromotionDate: { type: Date } ,
    

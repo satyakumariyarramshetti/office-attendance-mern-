@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./LeaveTracker.css";
-import { FaBalanceScale, FaHistory } from "react-icons/fa";
+import { FaBalanceScale, FaHistory, FaArrowLeft } from "react-icons/fa";
 
 const LeaveTracker = () => {
   const navigate = useNavigate();
@@ -9,6 +9,15 @@ const LeaveTracker = () => {
   return (
     <div className="leave-tracker-wrapper">
       <div className="leave-tracker-card">
+
+        {/* Back Button */}
+        <button 
+          className="back-button"
+          onClick={() => navigate(-1)}
+        >
+          <FaArrowLeft /> Back
+        </button>
+
         <h2 className="leave-tracker-title">Your Leave Tracker</h2>
 
         <div className="leave-tracker-buttons">
@@ -24,7 +33,8 @@ const LeaveTracker = () => {
 
           <div 
             className="tracker-button-card"
-onClick={() => navigate("/monthly-leave-summary")}          >
+            onClick={() => navigate("/monthly-leave-summary")}
+          >
             <FaHistory className="tracker-icon" />
             <h5>Your Leave Record</h5>
             <p>View your previous leave history</p>

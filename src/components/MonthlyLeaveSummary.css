@@ -149,3 +149,21 @@
   color: #95a5a6;
   font-style: italic;
 }
+
+.back-button {
+  background: transparent;
+  border: none;
+  color: #007bff;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 15px;
+  font-size: 20px;
+  transition: 0.3s ease;
+}
+
+.back-button:hover {
+  color: #0056b3;
+}

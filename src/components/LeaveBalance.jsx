@@ -381,6 +381,7 @@ const LeaveBalance = () => {
                       <th>PL Already Credited</th>
                       <th>Newly Credited (this calc)</th>
                       <th>Current PL Balance</th>
+                       <th>PL Credit History</th> 
                     </tr>
                   </thead>
                   <tbody>
@@ -393,6 +394,19 @@ const LeaveBalance = () => {
                         <td>{d.alreadyCredited}</td>
                         <td>{d.newlyCredited}</td>
                         <td>{d.currentPrivilegeLeaves}</td>
+                        <td>
+  {d.plCreditHistory && d.plCreditHistory.length > 0 ? (
+    d.plCreditHistory.map((history, index) => (
+      <div key={index}>
+        {new Date(history.creditedOn).toLocaleDateString("en-IN")} 
+        {" "}({history.daysCredited} PL)
+      </div>
+    ))
+  ) : (
+    "—"
+  )}
+</td>
+
                       </tr>
                     ))}
                   </tbody>

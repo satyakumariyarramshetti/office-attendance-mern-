@@ -811,24 +811,32 @@ async function ensurePrivilegeLeaveAccrualForEmployee(employeeId) {
   const toCredit = earnedPrivilegeLeaves - alreadyCredited;
   
   let newlyCredited = 0;
-  if (toCredit > 0) {
-    lb.privilegeLeaves += toCredit;
-    lb.plCreditedFromWorkingDays += toCredit;
-    await lb.save();
-    newlyCredited = toCredit;
+ if (toCredit > 0) {
+  lb.privilegeLeaves += toCredit;
+  lb.plCreditedFromWorkingDays += toCredit;
+
+  // 🔥 Add history record
+  lb.plCreditHistory.push({
+    creditedOn: new Date(),
+    daysCredited: toCredit
+  });
+
+  await lb.save();
+  newlyCredited = toCredit;
     console.log(`💰 Credited ${toCredit} PL to ${employeeId} starting from ${startDate}`);
   }
   
-  return {
-    employeeId,
-    name: lb.name,
-    role: lb.role,
-    totalWorkingDays,
-    earnedPrivilegeLeaves,
-    alreadyCredited: lb.plCreditedFromWorkingDays,
-    newlyCredited,
-    currentPrivilegeLeaves: lb.privilegeLeaves,
-  };
+ return {
+  employeeId,
+  name: lb.name,
+  role: lb.role,
+  totalWorkingDays,
+  earnedPrivilegeLeaves,
+  alreadyCredited: lb.plCreditedFromWorkingDays,
+  newlyCredited,
+  currentPrivilegeLeaves: lb.privilegeLeaves,
+  plCreditHistory: lb.plCreditHistory || []  
+};
 } 
 
 async function recalcPrivilegeLeaveForAllSeniors() {

@@ -65,3 +65,21 @@
   font-size: 14px;
   margin: 0;
 }
+
+.back-button {
+  background: transparent;
+  border: none;
+  color: #0d6efd;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 15px;
+  font-size: 25px;
+  transition: 0.3s ease;
+}
+
+.back-button:hover {
+  color: #0a58ca;
+}
