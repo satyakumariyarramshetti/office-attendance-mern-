@@ -7,15 +7,18 @@ const Staff = require('../models/Staff');
 const LeaveBalance = require('../models/LeaveBalance');
 // ---- COMPANY HOLIDAYS  month+day----
 const holidays = [
-  { date: "-01-26", name: "Republic Day" },
-  { date: "-08-15", name: "Independence Day" },
-  { date: "-10-02", name: "Gandhi Jayanti" },
+  { date: "-01-26", name: "REPUBLIC DAY" },
+  { date: "-08-15", name: "INDEPENDENCE DAY" },
+  { date: "-10-02", name: "GANDHI JAYANTI" },
 
   // Festival Holidays
-  { date: "-01-15", name: "Sankranti / Pongal" },
-  { date: "-05-27", name: "Bakrid" },
-  { date: "-12-25", name: "Christmas" },
-  { date: "-10-20", name: "Dussehra" }
+  { date: "-01-15", name: "PONGAL" },
+  { date: "-03-19", name: "UGADI" },
+  { date: "-09-14", name: "VINAYAKA CHAVITHI" },
+  { date: "-10-20", name: "DUSSEHRA" },
+  { date: "-12-25", name: "CHRISTMAS" }
+  
+  
 ];
 
 

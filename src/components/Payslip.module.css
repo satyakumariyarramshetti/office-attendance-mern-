@@ -174,7 +174,7 @@
 }
 
 .logoSection img {
-  width: 100px !important;
+  width: auto !important;
   height: 100px;
 }
 
@@ -508,12 +508,12 @@
 }
 
 .exportView .compactPayslipTable {
-  border: 0.3px solid #000;
+  border: 0.2px solid #000;
 }
 
 .exportView .compactPayslipTable th,
 .exportView .compactPayslipTable td {
-  border: 0.2px solid #000;
+  border: 0.15px solid #000;
   background-color: #fff !important;
 }
 
@@ -538,25 +538,31 @@
 
 .exportView .compactPayslipTable th:nth-child(2),
 .exportView .compactPayslipTable td:nth-child(2) {
-  width: 10%;   /* 🔥 FIXED – % / Fixed column */
+  width: 12%;   /* 🔥 FIXED – % / Fixed column */
+  text-align: center;
 }
 
 .exportView .compactPayslipTable th:nth-child(3),
 .exportView .compactPayslipTable td:nth-child(3) {
-  width: 15%;
+  width: 12%;
 }
 
 .exportView .compactPayslipTable th:nth-child(4),
 .exportView .compactPayslipTable td:nth-child(4) {
-  width: 22%;
+  width: 26%;
 }
 
 .exportView .compactPayslipTable th:nth-child(5),
 .exportView .compactPayslipTable td:nth-child(5) {
-  width: 10%;   /* 🔥 FIXED – % / Fixed column */
+  width: 12%;   /* 🔥 FIXED – % / Fixed column */
+  text-align: center;
 }
 
 .exportView .compactPayslipTable th:nth-child(6),
 .exportView .compactPayslipTable td:nth-child(6) {
-  width: 15%;
+  width: 12%;
+}
+
+.exportView .fixedCell {
+  text-align: center !important;
 }
