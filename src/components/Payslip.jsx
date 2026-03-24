@@ -27,7 +27,7 @@ const initialPayslipState = {
   gratuityAmount: "",
   monthlyTotal: "",
   monthlyEarnings: "",
-  profTaxDeduction: "200.00",
+  profTaxDeduction: "200",
   netSalary: ""
   
 };
@@ -35,10 +35,10 @@ const initialPayslipState = {
 // Helper function to determine Provident Fund amounts (12% or fixed 1800)
 const calculatePf = (basic) => {
   if (basic > 15000) {
-    return { pfEEAmount: "1800.00", pfERAmount: "1800.00" };
+    return { pfEEAmount: "1800", pfERAmount: "1800" };
   }
-  const pfValue = (basic * 0.12).toFixed(2);
-  return { pfEEAmount: pfValue, pfERAmount: pfValue };
+  const pfValue = Math.round(basic * 0.12);
+return { pfEEAmount: pfValue.toString(), pfERAmount: pfValue.toString() };
 };
 
 // Method 1 - EXACT FORMULAS as specified
@@ -47,19 +47,19 @@ const getMethod1Data = (calculatedBasic) => {
   const data = { ...initialPayslipState };
   
   // Fixed values
-  data.basicSalary = calculatedBasic.toFixed(2);
+data.basicSalary = Math.round(calculatedBasic).toString();
   data.telephoneAmount = "300";
   data.educationAmount = "200";
   data.medicalAmount = "1250";
-  data.profTaxDeduction = "200.00";
+  data.profTaxDeduction = "200";
   
   // Formula calculations
-  data.hraAmount = (calculatedBasic * 0.40).toFixed(2);
-  data.conveyanceAmount = (calculatedBasic * 0.05).toFixed(2);
+  data.hraAmount = Math.round(calculatedBasic * 0.40).toString();
+data.conveyanceAmount = Math.round(calculatedBasic * 0.05).toString();
   const pfAmounts = calculatePf(calculatedBasic);
   data.pfEEAmount = pfAmounts.pfEEAmount;
   data.pfERAmount = pfAmounts.pfERAmount;
-  data.gratuityAmount = (calculatedBasic * 0.0465).toFixed(2);
+  data.gratuityAmount = Math.round(calculatedBasic * 0.0481).toString();
   
   // Special Allowance formula
   const specialAllowanceCalc = 
@@ -69,20 +69,23 @@ const getMethod1Data = (calculatedBasic) => {
       parseFloat(data.medicalAmount) + parseFloat(data.pfEEAmount) + 
       parseFloat(data.pfERAmount) + parseFloat(data.gratuityAmount)
     );
-  data.specialAllowanceAmount = Math.max(0, specialAllowanceCalc).toFixed(2);
+data.specialAllowanceAmount = Math.max(0, Math.round(specialAllowanceCalc)).toString();
   
   // Monthly Total
   const monthlyTotal = 
     parseFloat(data.basicSalary) + parseFloat(data.hraAmount) + parseFloat(data.conveyanceAmount) +
     parseFloat(data.telephoneAmount) + parseFloat(data.educationAmount) + parseFloat(data.specialAllowanceAmount) +
     parseFloat(data.medicalAmount) + parseFloat(data.pfERAmount) + parseFloat(data.pfEEAmount) + parseFloat(data.gratuityAmount);
-  data.monthlyTotal = monthlyTotal.toFixed(2);
-  
+data.monthlyTotal = Math.round(monthlyTotal).toString();  
   // Monthly Earnings
-  data.monthlyEarnings = (monthlyTotal - parseFloat(data.pfEEAmount)).toFixed(2);
+  data.monthlyEarnings = Math.round(
+  monthlyTotal - parseFloat(data.pfEEAmount)
+).toString();
   
   // Net Salary
-  data.netSalary = (parseFloat(data.monthlyEarnings) - parseFloat(data.pfERAmount) - 200).toFixed(2);
+ data.netSalary = Math.round(
+  parseFloat(data.monthlyEarnings) - parseFloat(data.pfERAmount) - 200
+).toString();
   
   return data;
 };
@@ -599,7 +602,7 @@ const mpaValue = `${monthlyDetails.noOfDays || 0}/${monthlyDetails.noOfPayDays |
       <td className={styles.fixedCell}>Fixed</td>
       <td><SwappableField key="educationAmount" name="educationAmount" value={payslipData.educationAmount} type="number" readOnly /></td>
       <td>Gratuity</td>
-      <td className={styles.fixedCell}>4.65%</td>
+      <td className={styles.fixedCell}>4.81%</td>
       <td><SwappableField key="gratuityAmount" name="gratuityAmount" value={payslipData.gratuityAmount} onChange={handlePayslipChange} type="number" placeholder="Enter" /></td>
     </tr>
     {/* Supplementary Allowance DELETED - Special Allowance moved here */}

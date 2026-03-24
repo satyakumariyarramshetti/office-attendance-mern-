@@ -533,7 +533,8 @@
 /* Column widths (6 columns total) */
 .exportView .compactPayslipTable th:nth-child(1),
 .exportView .compactPayslipTable td:nth-child(1) {
-  width: 28%;
+  width: 30%;
+   white-space: nowrap;
 }
 
 .exportView .compactPayslipTable th:nth-child(2),
