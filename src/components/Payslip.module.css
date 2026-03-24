@@ -425,6 +425,24 @@
   display: none;
 }
 
+
+.exportView .headerTop {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.exportView .logoSection {
+  position: absolute;
+  left: -5mm;
+  top: -5mm;   /* 🔥 move up */
+}
+
+.exportView .companyTitle {
+  text-align: center;
+}
+
 .exportView .editInput {
   display: none !important;
 }
@@ -533,9 +551,11 @@
 /* Column widths (6 columns total) */
 .exportView .compactPayslipTable th:nth-child(1),
 .exportView .compactPayslipTable td:nth-child(1) {
-  width: 30%;
+   width: 30%;
    white-space: nowrap;
 }
+
+  
 
 .exportView .compactPayslipTable th:nth-child(2),
 .exportView .compactPayslipTable td:nth-child(2) {

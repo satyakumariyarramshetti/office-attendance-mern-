@@ -670,7 +670,7 @@ const mpaValue = `${monthlyDetails.noOfDays || 0}/${monthlyDetails.noOfPayDays |
               <div className={styles.footerMeta}>
 <span>{formData.month}-{formData.year}</span>
                 <span>Confidential – All Rights Reserved - Praxsol</span>
-                <span>Doc.No: PSE-COM-RD-3D-001</span>
+                <span>Doc.No: PSE-COM-RD-HRM-001</span>
               </div>
             </div>
           </div>
