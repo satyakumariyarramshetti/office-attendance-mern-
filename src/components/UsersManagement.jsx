@@ -29,7 +29,7 @@ const UsersManagement = () => {
         body: JSON.stringify({ userId })
       });
       
-      const data = await response.json();
+      // const data = await response.json();
       
       if(response.ok) {
         alert("Success: User has been logged out successfully!"); // ఇక్కడ మెసేజ్ యాడ్ చేశాను
