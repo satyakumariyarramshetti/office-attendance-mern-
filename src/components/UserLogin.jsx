@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 
 const UserLogin = () => {
+  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:5000/api/users/login', {
+      const res = await fetch(`${API_BASE}/api/users/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -16,7 +18,7 @@ const UserLogin = () => {
      // ... handleLogin లోపల ...
 if (data.success) {
   localStorage.setItem('userAuth', 'true');
-  localStorage.setItem('userId', data.userId); // staffId బదులు userId వాడుతున్నాం
+  localStorage.setItem('userId', data.userId);
   window.location.href = "/";
 } else {
         alert("Invalid login details!");
@@ -38,4 +40,4 @@ if (data.success) {
   );
 };
 
-export default UserLogin; // ఇక్కడ కూడా export default ఉండాలి
+export default UserLogin; 

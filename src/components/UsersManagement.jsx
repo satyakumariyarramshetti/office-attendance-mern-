@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; 
 
 const UsersManagement = () => {
   const [users, setUsers] = useState([]);
   const [form, setForm] = useState({ username: '', email: '', password: '' });
-  const API_BASE = "http://localhost:5000";
+  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
-  const fetchUsers = () => {
-    fetch(`${API_BASE}/api/users/all`).then(res => res.json()).then(data => setUsers(data));
-  };
+ const fetchUsers = useCallback(() => {
+    fetch(`${API_BASE}/api/users/all`)
+      .then(res => res.json())
+      .then(data => setUsers(data));
+  }, [API_BASE]);
 
-  useEffect(() => { fetchUsers(); }, []);
-
+ useEffect(() => { 
+    fetchUsers(); 
+  }, [fetchUsers]); 
   const handleAdd = async () => {
     if(!form.username || !form.email || !form.password) { alert("Please fill all fields!"); return; }
     const res = await fetch(`${API_BASE}/api/users/add`, {
