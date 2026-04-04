@@ -11,6 +11,8 @@ import LeaveBalance from '../components/LeaveBalance';
 // --- NEW: Import the MonthlyDetails component ---
 import MonthlyDetails from '../components/MonthlyDetails'; 
 import './Dashboard.css';
+import UsersManagement from '../components/UsersManagement'; 
+
 
 const Dashboard = () => {
   const [section, setSection] = useState('staff');
@@ -20,6 +22,7 @@ const Dashboard = () => {
     localStorage.removeItem('adminToken');
     navigate('/login');
   };
+
 
   return (
     <div className="dashboard-container">
@@ -35,6 +38,8 @@ const Dashboard = () => {
           {section === 'payslip' && <Payslip/>}
           {/* --- NEW: Add conditional rendering for the new section --- */}
           {section === 'monthly' && <MonthlyDetails />} 
+          {section === 'users' && <UsersManagement />}
+
         </div>
       </div>
     </div>

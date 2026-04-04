@@ -249,6 +249,9 @@ useEffect(() => {
     setFormData(prev => ({ ...prev, delayReason: "" }));
     return;
   }
+
+
+  
   
   const prevDate = getPrevDate(formData.date);
   fetch(`${API_BASE}/api/attendance/getByIdDate`, {
@@ -281,6 +284,37 @@ useEffect(() => {
   })
   .catch(() => setIsOTElligible(false));
 }, [formData.inTime, formData.date, formData.id, API_BASE]);
+
+
+
+
+useEffect(() => {
+    const checkInterval = setInterval(async () => {
+      const userId = localStorage.getItem('userId');
+      if (userId) {
+        try {
+          const res = await fetch(`${API_BASE}/api/users/check-status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId })
+          });
+          
+          if (res.ok) {
+            const data = await res.json();
+            if (data.active === false) {
+              alert("Your session has been terminated by the Admin. Please login again to continue."); 
+              localStorage.clear();
+              window.location.href = "/";
+            }
+          }
+        } catch (err) {
+          console.error("Session check failed:", err);
+        }
+      }
+    }, 10000); 
+
+    return () => clearInterval(checkInterval);
+  }, [API_BASE]);
 
 
 

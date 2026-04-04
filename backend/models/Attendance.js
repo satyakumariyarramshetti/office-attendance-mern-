@@ -24,12 +24,9 @@ const AttendanceSchema = new mongoose.Schema({
 });
 
 
-// 1. పాత ఇండెక్స్ (ఇది డూప్లికేట్స్ రాకుండా చూస్తుంది)
 AttendanceSchema.index({ id: 1, date: 1 }, { unique: true });
 
-// 2. కొత్త ఇండెక్స్ (లీవ్ సమ్మరీ ఫాస్ట్ అవ్వడానికి)
-// ఇది కేవలం 'leaveType' ఖాళీగా లేని రికార్డ్స్ ని మాత్రమే ఇండెక్స్ చేస్తుంది (Partial Index)
-// దీనివల్ల డేటాబేస్ సైజ్ పెరగదు కానీ సెర్చ్ సూపర్ ఫాస్ట్ అవుతుంది.
+
 AttendanceSchema.index(
   { id: 1, leaveType: 1, date: -1 }, 
   { 

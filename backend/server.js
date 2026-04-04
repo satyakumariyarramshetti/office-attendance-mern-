@@ -22,6 +22,8 @@ const staffRoutes = require('./routes/staffRoutes');
 const payslipRoutes = require('./routes/payslipRoutes');
 const leaveBalanceRoutes = require('./routes/leaveBalanceRoutes');
 const leaveRequestsRoutes = require('./routes/leaveRequestsRoutes');
+const userRoutes = require('./routes/userRoutes'); // ఈ లైన్ యాడ్ చేయండి
+
 // ADD THIS LINE
 
 // Express setup
@@ -41,6 +43,8 @@ app.use('/api/staffs', staffRoutes);
 app.use('/api/payslip', payslipRoutes);
 app.use('/api/leave-balance', leaveBalanceRoutes);
 app.use('/api/leave-requests', leaveRequestsRoutes);
+app.use('/api/users', userRoutes); // ఈ లైన్ యాడ్ చేయండి
+
 
 // Put this after your API routes (before DB connect)
 app.get("/test-mail", async (req, res) => {

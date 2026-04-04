@@ -90,8 +90,13 @@ data.monthlyTotal = Math.round(monthlyTotal).toString();
   return data;
 };
 
+
+
+
 function Payslip() {
   const pdfRef = useRef();
+  const summaryRef = useRef(); // Summary PDF కోసం
+const [summaryDataList, setSummaryDataList] = useState([]); // Summary డేటా స్టోర్ చేయడానికి
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
   const [formData, setFormData] = useState({
@@ -256,84 +261,193 @@ function Payslip() {
     }
   };
   
-  const handleBulkPdfExport = async () => {
-    if (excelData.length === 0) {
-      alert("Please process an Excel file first.");
-      return;
+//   const handleBulkPdfExport = async () => {
+//     if (excelData.length === 0) {
+//       alert("Please process an Excel file first.");
+//       return;
+//     }
+
+//     setProcessing(true);
+//     setProgress(0);
+//     const zip = new JSZip();
+//     const failedEmployees = [];
+
+//     for (let i = 0; i < excelData.length; i++) {
+//       const employee = excelData[i];
+//       const employeeIdentifier = employee.employee_name || employee.employee_id || `Row ${i + 2}`;
+
+//       try {
+//         setFormData({
+//           empId: (employee.employee_id || '').toString().replace('PS-', '').trim(),
+//           empName: employee.employee_name,
+//           designation: employee.designation,
+//           email: employee.email,
+//           year: employee.year || "2025",
+//           month: employee.month || "May",
+//           day: employee.day || "31",
+//         });
+
+//        const currentMonthlyDetails = {
+//   basicSalaryAmount: employee.basic_salary_amount,
+//   noOfDays: employee.no_of_days,
+//   noOfWorkingDays: employee.no_of_working_days,
+//   noOfLeaves: employee.no_of_leaves,
+//   noOfPayDays: employee.no_of_pay_days,
+// };
+
+// setMonthlyDetails(currentMonthlyDetails);
+
+        
+//         const calculatedBasic = (parseFloat(currentMonthlyDetails.basicSalaryAmount) * 
+//                                (parseFloat(currentMonthlyDetails.noOfPayDays) / 
+//                                parseFloat(currentMonthlyDetails.noOfDays)));
+        
+//         const newPayslipData = getMethod1Data(calculatedBasic);
+//         setPayslipData(newPayslipData);
+        
+//         await new Promise(resolve => setTimeout(resolve, 500)); 
+
+//         const pdfBlob = await performExport('blob', employee.employee_name, employee.month);
+//         if (pdfBlob) {
+//           zip.file(`${employee.employee_name}_${employee.month}_payslip.pdf`, pdfBlob);
+//         } else {
+//           throw new Error("PDF generation failed");
+//         }
+//       } catch (error) {
+//         console.error(`Failed to process employee ${employeeIdentifier}:`, error);
+//         failedEmployees.push(employeeIdentifier);
+//       }
+//       setProgress(((i + 1) / excelData.length) * 100);
+//     }
+
+//     if (Object.keys(zip.files).length > 0) {
+//       zip.generateAsync({ type: "blob" }).then(function(content) {
+//         const link = document.createElement('a');
+//         link.href = URL.createObjectURL(content);
+//         link.download = "payslips.zip";
+//         document.body.appendChild(link);
+//         link.click();
+//         document.body.removeChild(link);
+//       });
+//     }
+
+//     setProcessing(false);
+
+//     if (failedEmployees.length > 0) {
+//       alert(`Processing complete. Failed to generate PDFs for: ${failedEmployees.join(', ')}`);
+//     } else {
+//       alert("All payslips have been exported to a zip file.");
+//     }
+//   };
+
+
+const handleBulkPdfExport = async () => {
+  if (excelData.length === 0) {
+    alert("Please process an Excel file first.");
+    return;
+  }
+
+  setProcessing(true);
+  setProgress(0);
+  const zip = new JSZip();
+  const failedEmployees = [];
+  const tempSummaryList = []; // తాత్కాలికంగా డేటా సేవ్ చేయడానికి
+
+  for (let i = 0; i < excelData.length; i++) {
+    const employee = excelData[i];
+    const employeeIdentifier = employee.employee_name || employee.employee_id || `Row ${i + 2}`;
+
+    try {
+      // ... (పాత కోడ్: FormData మరియు MonthlyDetails సెట్ చేయడం)
+      setFormData({
+        empId: (employee.employee_id || '').toString().replace('PS-', '').trim(),
+        empName: employee.employee_name,
+        designation: employee.designation,
+        email: employee.email,
+        year: employee.year || "2025",
+        month: employee.month || "May",
+        day: employee.day || "31",
+      });
+
+      const currentMonthlyDetails = {
+        basicSalaryAmount: employee.basic_salary_amount,
+        noOfDays: employee.no_of_days,
+        noOfWorkingDays: employee.no_of_working_days,
+        noOfLeaves: employee.no_of_leaves,
+        noOfPayDays: employee.no_of_pay_days,
+      };
+      setMonthlyDetails(currentMonthlyDetails);
+
+      const calculatedBasic = (parseFloat(currentMonthlyDetails.basicSalaryAmount) * 
+                             (parseFloat(currentMonthlyDetails.noOfPayDays) / 
+                             parseFloat(currentMonthlyDetails.noOfDays)));
+      
+      const newPayslipData = getMethod1Data(calculatedBasic);
+      setPayslipData(newPayslipData);
+      
+      // Summary కోసం డేటాను యాడ్ చేయడం
+      tempSummaryList.push({
+        name: employee.employee_name,
+        basicSalary: employee.basic_salary_amount,
+        actualMonthlySalary: parseFloat(employee.basic_salary_amount) * 2, // మీ రిక్వెస్ట్ ప్రకారం Basic * 2
+        netSalary: newPayslipData.netSalary
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 600)); // కొంచెం టైమ్ ఇవ్వండి Render అవ్వడానికి
+
+      const pdfBlob = await performExport('blob', employee.employee_name, employee.month);
+     // handleBulkPdfExport లోపల pdfBlob జనరేట్ అయిన తర్వాత
+if (pdfBlob) {
+ // కొత్త లైన్ (New Line - ఇది వాడండి):
+const cleanId = (employee.employee_id || '').toString().replace('PS-', '').trim(); 
+const fileName = `PS-${cleanId}_${employee.employee_name}_${employee.month || 'Payslip'}.pdf`;
+
+zip.file(fileName, pdfBlob);
+}
+    } catch (error) {
+      console.error(`Failed to process employee ${employeeIdentifier}:`, error);
+      failedEmployees.push(employeeIdentifier);
     }
+    setProgress(((i + 0.9) / excelData.length) * 100);
+  }
 
-    setProcessing(true);
-    setProgress(0);
-    const zip = new JSZip();
-    const failedEmployees = [];
+  // --- Summary PDF జనరేషన్ ---
+  setSummaryDataList(tempSummaryList);
+  await new Promise(resolve => setTimeout(resolve, 1000)); // UI అప్‌డేట్ కోసం వెయిట్
 
-    for (let i = 0; i < excelData.length; i++) {
-      const employee = excelData[i];
-      const employeeIdentifier = employee.employee_name || employee.employee_id || `Row ${i + 2}`;
+  const summaryElement = summaryRef.current;
+  // handleBulkPdfExport లోపల ఇలా మార్చండి
+if (summaryElement) {
+  const opt = {
+    margin: [10, 5, 10, 5], // [top, left, bottom, right]
+    filename: 'Salary_Summary.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { 
+      scale: 2, 
+      useCORS: true, 
+      letterRendering: true 
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }, // Landscape లో టేబుల్ బాగా కనిపిస్తుంది
+    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } // పేజీలు కట్ అవ్వకుండా ఉండటానికి
+  };
+  const summaryBlob = await html2pdf().set(opt).from(summaryElement).outputPdf('blob');
+  zip.file("Salary_Summary.pdf", summaryBlob);
+}
 
-      try {
-        setFormData({
-          empId: (employee.employee_id || '').toString().replace('PS-', '').trim(),
-          empName: employee.employee_name,
-          designation: employee.designation,
-          email: employee.email,
-          year: employee.year || "2025",
-          month: employee.month || "May",
-          day: employee.day || "31",
-        });
+  // Zip డౌన్‌లోడ్
+  if (Object.keys(zip.files).length > 0) {
+    const content = await zip.generateAsync({ type: "blob" });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(content);
+    link.download = `Payslips_and_Summary_${new Date().toLocaleDateString()}.zip`;
+    link.click();
+  }
 
-       const currentMonthlyDetails = {
-  basicSalaryAmount: employee.basic_salary_amount,
-  noOfDays: employee.no_of_days,
-  noOfWorkingDays: employee.no_of_working_days,
-  noOfLeaves: employee.no_of_leaves,
-  noOfPayDays: employee.no_of_pay_days,
+  setProcessing(false);
+  alert("Export complete! Check the Zip for payslips and Summary PDF.");
 };
 
-setMonthlyDetails(currentMonthlyDetails);
 
-        
-        const calculatedBasic = (parseFloat(currentMonthlyDetails.basicSalaryAmount) * 
-                               (parseFloat(currentMonthlyDetails.noOfPayDays) / 
-                               parseFloat(currentMonthlyDetails.noOfDays)));
-        
-        const newPayslipData = getMethod1Data(calculatedBasic);
-        setPayslipData(newPayslipData);
-        
-        await new Promise(resolve => setTimeout(resolve, 500)); 
-
-        const pdfBlob = await performExport('blob', employee.employee_name, employee.month);
-        if (pdfBlob) {
-          zip.file(`${employee.employee_name}_${employee.month}_payslip.pdf`, pdfBlob);
-        } else {
-          throw new Error("PDF generation failed");
-        }
-      } catch (error) {
-        console.error(`Failed to process employee ${employeeIdentifier}:`, error);
-        failedEmployees.push(employeeIdentifier);
-      }
-      setProgress(((i + 1) / excelData.length) * 100);
-    }
-
-    if (Object.keys(zip.files).length > 0) {
-      zip.generateAsync({ type: "blob" }).then(function(content) {
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(content);
-        link.download = "payslips.zip";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      });
-    }
-
-    setProcessing(false);
-
-    if (failedEmployees.length > 0) {
-      alert(`Processing complete. Failed to generate PDFs for: ${failedEmployees.join(', ')}`);
-    } else {
-      alert("All payslips have been exported to a zip file.");
-    }
-  };
   
   const handleBulkEmailExport = async () => {
     if (excelData.length === 0) {
@@ -477,7 +591,11 @@ const mpaValue = `${monthlyDetails.noOfDays || 0}/${monthlyDetails.noOfPayDays |
       )}
 
       <div className={styles.mainContent}>
+
+
+
         <div className={styles.leftColumn}>
+
           <div className={styles.monthlyDetailsCard}>
             <h3>Monthly Details</h3>
             <div className={styles.formGroup}>
@@ -505,6 +623,11 @@ const mpaValue = `${monthlyDetails.noOfDays || 0}/${monthlyDetails.noOfPayDays |
             <button onClick={handleMethod1}>Method 1</button>
           </div>
         </div>
+
+
+
+
+
 
         <div className={styles.middleColumn}>
           <div className={styles.pdfWrapper} ref={pdfRef}>
@@ -676,18 +799,81 @@ const mpaValue = `${monthlyDetails.noOfDays || 0}/${monthlyDetails.noOfPayDays |
           </div>
         </div>
 
-        <div className={styles.rightColumn}>
-          <div className={styles.statsCard}>
-            <h3>Export Statistics</h3>
-            <div className={styles.statItem}>
-              <span>PDFs Generated:</span>
-              <strong>{pdfCount}</strong>
-            </div>
-            <div className={styles.statItem}>
-              <span>Emails Exported:</span>
-              <strong>{emailCount}</strong>
-            </div>
-            <button className={styles.resetButton} onClick={resetCounts}>Reset Counts</button>
+         {/* Right Column - Stats */}
+        {/* Right Column - Stats */}
+<div className={styles.rightColumn}>
+  <div className={styles.statsCard}>
+    <h3>Statistics</h3>
+    <div className={styles.statItem}>
+      <span>PDFs Generated:</span>
+      <strong>{pdfCount}</strong>
+    </div>
+    <div className={styles.statItem}>
+      <span>Emails Exported:</span>
+      <strong>{emailCount}</strong>
+    </div>
+    
+    {/* ఈ కింద ఉన్న బటన్‌ని యాడ్ చేయండి */}
+    <button 
+      className={styles.resetButton} 
+      onClick={resetCounts}
+      style={{ marginTop: '10px', backgroundColor: '#e74c3c', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '4px', cursor: 'pointer' }}
+    >
+      Reset Counts
+    </button>
+  </div>
+</div>
+      </div>
+
+      {/* HIDDEN SUMMARY TABLE FOR PDF GENERATION */}
+      <div style={{ position: 'absolute', left: '-9999px', top: '0' }}>
+        <div 
+    ref={summaryRef} 
+    style={{ 
+      padding: '10mm', // mm లో ఇవ్వడం మంచిది
+      width: '280mm',  // Landscape కోసం 280mm, Portrait అయితే 190mm ఇవ్వండి
+      backgroundColor: 'white', 
+      color: 'black', 
+      fontFamily: 'Arial, sans-serif',
+      boxSizing: 'border-box' // ఇది Padding ని లోపలికే ఉంచుతుంది
+    }}
+  >
+
+          
+          <h2 style={{ textAlign: 'center', color: '#2c3e50', borderBottom: '2px solid #2c3e50', paddingBottom: '10px' }}>Salary Summary Report</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', margin: '20px 0' }}>
+            <span><b>Company:</b> Praxsol Engineering Pvt Ltd</span>
+            <span><b>Date:</b> {new Date().toLocaleDateString()}</span>
+          </div>
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
+            <thead>
+                <tr style={{ backgroundColor: '#f2f2f2', color: 'black' }}> 
+
+                <th style={{ border: '1px solid  #ddd', padding: '12px' }}>Sl.No</th>
+                <th style={{ border: '1px solid  #ddd', padding: '12px', textAlign: 'left' }}>Employee Name</th>
+                <th style={{ border: '1px solid  #ddd', padding: '12px' }}>Basic Salary</th>
+                <th style={{ border: '1px solid  #ddd', padding: '12px' }}>Full Salary </th>
+                <th style={{ border: '1px solid  #ddd', padding: '12px' }}>Net Salary </th>
+              </tr>
+            </thead>
+            <tbody>
+              {summaryDataList.map((item, index) => (
+                <tr key={index} style={{ backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'white' }}>
+                  <td style={{ border: '1px solid #ddd', padding: '10px', textAlign: 'center' }}>{index + 1}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '10px',textAlign:'center' }}>{item.name}</td>
+
+                  <td style={{ border: '1px solid #ddd', padding: '10px', textAlign: 'center' }}>{item.basicSalary}</td>
+
+                  <td style={{ border: '1px solid #ddd', padding: '10px', textAlign: 'center' }}>{item.actualMonthlySalary}</td>
+
+                  <td style={{ border: '1px solid #ddd', padding: '10px', textAlign: 'center', fontWeight: 'bold' }}>{item.netSalary}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={{ marginTop: '30px', textAlign: 'right' }}>
+            <p>__________________________</p>
+            <p><b>Authorized Signatory</b></p>
           </div>
         </div>
       </div>

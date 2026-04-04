@@ -8,7 +8,8 @@ import {
   FaFileInvoiceDollar, 
   FaFileAlt, 
   FaChartPie,
-  FaCalendarAlt // --- NEW: Icon for Monthly Details
+  FaCalendarAlt,
+  FaUserShield
 } from 'react-icons/fa';
 import './Sidebar.css';
 
@@ -31,6 +32,17 @@ const Sidebar = ({ onSelect, selected }) => {
       >
         <FaUsers className="menu-icon" /> Staff Details
       </div>
+
+
+       {/* --- NEW: App Users Menu Item (Added here) --- */}
+      <div 
+        className={`menu-item ${selected === 'users' ? 'active' : ''}`} 
+        onClick={() => onSelect('users')}
+      >
+        <FaUserShield className="menu-icon" /> App Users
+      </div>
+
+      
       <div 
         className={`menu-item ${selected === 'today' ? 'active' : ''}`} 
         onClick={() => onSelect('today')}
@@ -72,6 +84,9 @@ const Sidebar = ({ onSelect, selected }) => {
       >
         <FaFileInvoiceDollar className="menu-icon" /> PaySlip
       </div>
+
+
+
 
     </div>
   );

@@ -12,19 +12,28 @@ import LeaveTracker from './components/LeaveTracker';
 import LeaveBalanceOverview from "./components/LeaveBalanceOverview";
 import MonthlyLeaveSummary from "./components/MonthlyLeaveSummary";
 
+import UserLogin from './components/UserLogin'; 
+
+
 
 function App() {
   const [isAdmin, setIsAdmin] = useState(
   localStorage.getItem("isAdmin") === "true"
 );
+
+  const isUserAuthenticated = localStorage.getItem("userAuth") === "true";
+
+
+
   return (
     <BrowserRouter>
       <Routes>
         {/* Public routes */}
-        
-  <Route path="/admin-login" element={<AdminLogin setIsAdmin={setIsAdmin} />} />
-        <Route path="/" element={<Interface />} />
+  {/* Admin Login Route */}
+        <Route path="/admin-login" element={<AdminLogin setIsAdmin={setIsAdmin} />} />
 
+       
+        <Route path="/" element={isUserAuthenticated ? <Interface /> : <UserLogin />} />
        
         {/* --- ADD THIS LINE FOR THE USER ATTENDANCE PAGE --- */}
         <Route path="/your-attendance" element={<UserAttendance />} /> 
