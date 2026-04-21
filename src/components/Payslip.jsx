@@ -633,7 +633,7 @@ const mpaValue = `${monthlyDetails.noOfDays || 0}/${monthlyDetails.noOfPayDays |
           <div className={styles.pdfWrapper} ref={pdfRef}>
             <div className={styles.payslip}>
               <div className={styles.headerTop}>
-                <div className={styles.logoSection}><img src="/CompanyLogo.png" alt="Logo" /></div>
+                <div className={styles.logoSection}><img src="/praxsolcompanylogo.jpg" alt="Logo" /></div>
                 <div className={styles.companyTitle}>
                   <h3>Praxsol Engineering Private Limited</h3>
                   <h2>PAYSLIP</h2>

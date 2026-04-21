@@ -10,6 +10,8 @@ console.log("BREVO KEY RAW:", process.env.BREVO_API_KEY);
 
 
 const express = require('express');
+const dns = require("dns");
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
