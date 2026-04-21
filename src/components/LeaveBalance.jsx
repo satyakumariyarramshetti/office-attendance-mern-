@@ -162,7 +162,7 @@ const LeaveBalance = () => {
     <div className="leave-balance-container">
       <div className="page-wrap">
         <div className="lb-toolbar">
-          <h2 className="lb-title">Leave Balance Status</h2>
+          <h2 className="lb-title">Leave Balance Info</h2>
                     <div>
             <button
               className="reset-leaves-btn"
