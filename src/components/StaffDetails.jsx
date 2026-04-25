@@ -37,7 +37,8 @@ const [selectedStaff, setSelectedStaff] = useState(null);
     Department: s.department,
     Email: s.email || "",
     Phone: s.phone || "",
-    "Reports To": s.reportsTo || "",
+   "DOB": s.dob ? new Date(s.dob).toLocaleDateString() : "",           
+    "Onboarding Date": s.onboardingDate ? new Date(s.onboardingDate).toLocaleDateString() : "", 
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(rows);
@@ -199,6 +200,8 @@ const handleUpdateStaff = async (updatedStaff) => {
     <th>Department</th>
     <th>Email</th>    
     <th>Phone</th>
+    <th>DOB</th>            
+    <th>Onboarding</th>      
     <th>Reports To</th>
     <th>Actions</th>
   </tr>
@@ -212,7 +215,16 @@ const handleUpdateStaff = async (updatedStaff) => {
       <td data-label="Designation">{member.designation}</td>
       <td data-label="Department">{member.department}</td>
       <td data-label="Email">{member.email || "—"}</td>
-      <td data-label="Phone">{member.phone || "—"}</td> {/* ✅ */}
+      <td data-label="Phone">{member.phone || "—"}</td> 
+
+ <td data-label="DOB">
+        {member.dob ? new Date(member.dob).toLocaleDateString('en-GB') : "—"}
+      </td>
+      <td data-label="Onboarding">
+        {member.onboardingDate ? new Date(member.onboardingDate).toLocaleDateString('en-GB') : "—"}
+      </td>
+
+
       <td data-label="Reports To">{member.reportsTo || "—"}</td>
 
       <td data-label="Actions">

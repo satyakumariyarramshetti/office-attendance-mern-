@@ -19,7 +19,10 @@ const AddStaffModal = ({ onClose, onAdd }) => {
   designation: "",
   department: "",
   email: "",     
-  phone: ""      
+  phone: "",
+  reportsTo: "",
+  dob: "",            
+  onboardingDate: ""   
 });
 
 
@@ -86,6 +89,13 @@ const AddStaffModal = ({ onClose, onAdd }) => {
   onChange={handleChange}
   value={formData.reportsTo}
 />
+
+<label style={{fontSize: '12px', color: '#666', marginBottom: '5px', display: 'block'}}>Date of Birth</label>
+<input type="date" name="dob" onChange={handleChange} value={formData.dob} />
+
+<label style={{fontSize: '12px', color: '#666', marginBottom: '5px', display: 'block'}}>Onboarding Date</label>
+<input type="date" name="onboardingDate" onChange={handleChange} value={formData.onboardingDate} />
+
 
 
 

@@ -60,6 +60,23 @@ const EditStaffModal = ({ staffData, onClose, onUpdate }) => {
   onChange={handleChange}
 />
 
+<label>Date of Birth</label>
+<input 
+  type="date" 
+  name="dob" 
+  value={form.dob ? form.dob.split('T')[0] : ""} 
+  onChange={handleChange} 
+/>
+
+<label>Onboarding Date</label>
+<input 
+  type="date" 
+  name="onboardingDate" 
+  value={form.onboardingDate ? form.onboardingDate.split('T')[0] : ""} 
+  onChange={handleChange} 
+/>
+
+
 
           <div className="modal-actions">
             <button type="submit" className="save-btn">Save</button>

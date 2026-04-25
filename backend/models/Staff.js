@@ -8,6 +8,8 @@ const staffSchema = new mongoose.Schema({
   email: { type: String, required: true },
   phone: { type: String },
   reportsTo: { type: String }, 
+  dob: { type: Date },            
+  onboardingDate: { type: Date },  
 });
 
 
