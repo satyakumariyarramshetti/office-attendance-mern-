@@ -11,10 +11,17 @@ const UserAttendance = () => {
   const [error, setError] = useState('');
   const [staffInfo, setStaffInfo] = useState({ name: '', id: '' });
 
-  // Filtering: Default to Current Year & Month
+  // --- Logic for Current and Previous Month ---
   const now = new Date();
-  const [selectedYear, setSelectedYear] = useState(now.getFullYear().toString());
-  const [selectedMonth, setSelectedMonth] = useState((now.getMonth() + 1).toString().padStart(2, '0'));
+  const currentMonthVal = (now.getMonth() + 1).toString().padStart(2, '0');
+  const currentYearVal = now.getFullYear().toString();
+
+  const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const prevMonthVal = (prevMonthDate.getMonth() + 1).toString().padStart(2, '0');
+  const prevYearVal = prevMonthDate.getFullYear().toString();
+
+  // 🔥 Default ga 'current' month chupinchadaniki ikkada 'current' ani pettaamu
+  const [viewMode, setViewMode] = useState('current'); 
 
   const timeToMins = (t) => {
     if (!t || t === 'N/A' || !t.includes(':')) return null;
@@ -58,19 +65,18 @@ const UserAttendance = () => {
     return records.filter(rec => {
       if (!rec.date) return false;
       const [y, m] = rec.date.split('-'); 
-      const yearMatch = selectedYear === 'all' || y === selectedYear;
-      const monthMatch = selectedMonth === 'all' || m === selectedMonth;
-      return yearMatch && monthMatch;
-    });
-  }, [records, selectedYear, selectedMonth]);
+      
+      const isCurrent = (y === currentYearVal && m === currentMonthVal);
+      const isPrevious = (y === prevYearVal && m === prevMonthVal);
 
-  const years = ["all", "2024", "2025", "2026"];
-  const months = [
-    { v: "all", l: "All Months" }, { v: "01", l: "Jan" }, { v: "02", l: "Feb" },
-    { v: "03", l: "Mar" }, { v: "04", l: "Apr" }, { v: "05", l: "May" },
-    { v: "06", l: "Jun" }, { v: "07", l: "Jul" }, { v: "08", l: "Aug" },
-    { v: "09", l: "Sep" }, { v: "10", l: "Oct" }, { v: "11", l: "Nov" }, { v: "12", l: "Dec" }
-  ];
+      if (viewMode === 'current') return isCurrent;
+      if (viewMode === 'previous') return isPrevious;
+      if (viewMode === 'both') return isCurrent || isPrevious;
+      return true;
+    });
+  }, [records, viewMode, currentYearVal, currentMonthVal, prevYearVal, prevMonthVal]);
+
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   return (
     <div className={styles.userAttendancePage}>
@@ -108,15 +114,11 @@ const UserAttendance = () => {
               
               <div className={styles.filterControls}>
                 <div className={styles.selectWrapper}>
-                  <label>Year</label>
-                  <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}>
-                    {years.map(y => <option key={y} value={y}>{y === 'all' ? 'All' : y}</option>)}
-                  </select>
-                </div>
-                <div className={styles.selectWrapper}>
-                  <label>Month</label>
-                  <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
-                    {months.map(m => <option key={m.v} value={m.v}>{m.l}</option>)}
+                  <label>Select Period</label>
+                  <select value={viewMode} onChange={(e) => setViewMode(e.target.value)}>
+                    <option value="current">Current Month ({monthNames[now.getMonth()]})</option>
+                    <option value="previous">Previous Month ({monthNames[prevMonthDate.getMonth()]})</option>
+                    <option value="both">Last 2 Months</option>
                   </select>
                 </div>
               </div>
@@ -175,7 +177,7 @@ const UserAttendance = () => {
                 </tbody>
               </table>
               {filteredRecords.length === 0 && (
-                <div className={styles.noData}>No records found for this period.</div>
+                <div className={styles.noData}>No records found for the selected period.</div>
               )}
             </div>
           </>
