@@ -2,168 +2,231 @@
 
 .summary-page-container {
   min-height: 100vh;
-  background-color: #f8f9fa;
-  padding: 50px 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f2f5;
+  padding: 40px 20px;
+  font-family: 'Inter', sans-serif;
 }
 
 .summary-content-card {
   background: #ffffff;
-  max-width: 1100px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 40px;
-  border-radius: 8px;
-  box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.top-nav {
+  margin-bottom: 20px;
+}
+
+.back-link {
+  background: none;
+  border: none;
+  color: #4a90e2;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  transition: 0.2s;
+}
+
+.back-link:hover {
+  color: #357abd;
+  transform: translateX(-3px);
 }
 
 .summary-page-header {
   text-align: center;
-  margin-bottom: 30px;
-}
-
-.summary-page-header h2 {
-  font-size: 26px;
-  color: #2c3e50;
-  margin-bottom: 5px;
-}
-
-.summary-page-header p {
-  color: #7f8c8d;
-}
-
-/* Search Box Styles */
-.summary-search-bar {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 50px;
-}
-
-.id-input-wrapper {
-  display: flex;
-  border: 1px solid #ced4da;
-  border-radius: 6px;
-  overflow: hidden;
-  width: 100%;
-  max-width: 400px;
-}
-
-.id-tag {
-  background: #f1f3f5;
-  padding: 10px 15px;
-  font-weight: bold;
-  color: #495057;
-  border-right: 1px solid #ced4da;
-}
-
-.id-input-wrapper input {
-  border: none;
-  padding: 10px 15px;
-  flex: 1;
-  outline: none;
-  font-size: 15px;
-}
-
-.summary-fetch-btn {
-  background: #007bff;
-  color: white;
-  border: none;
-  padding: 0 20px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.summary-fetch-btn:hover {
-  background: #0056b3;
-}
-
-/* Table Section Styles */
-.month-record-block {
   margin-bottom: 40px;
 }
 
-.month-accent-header {
-  background: #f8f9fa;
-  padding: 15px 20px;
-  border-left: 5px solid #1abc9c; /* టీల్ బోర్డర్ */
+.icon-circle {
+  width: 60px;
+  height: 60px;
+  background: #eef5ff;
+  color: #4a90e2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+  font-size: 24px;
+}
+
+.summary-page-header h2 {
+  font-size: 28px;
+  color: #1a202c;
+  margin-bottom: 8px;
+}
+
+.summary-page-header p {
+  color: #718096;
+  font-size: 0.95rem;
+}
+
+/* --- Search Bar Style --- */
+.summary-search-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.modern-search-box {
+  display: flex;
+  background: #f7fafc;
+  border: 2px solid #edf2f7;
+  border-radius: 12px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 450px;
+  transition: 0.3s;
+}
+
+.modern-search-box:focus-within {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.modern-search-box input {
+  border: none;
+  background: transparent;
+  padding: 14px 20px;
+  flex: 1;
+  outline: none;
+  font-size: 16px;
+  color: #2d3748;
+}
+
+.modern-search-btn {
+  background: #4a90e2;
+  color: white;
+  border: none;
+  padding: 0 25px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: 0.2s;
+}
+
+.modern-search-btn:hover {
+  background: #357abd;
+}
+
+/* --- Table & Month Sections --- */
+.staff-welcome-note {
+  text-align: center;
+  background: #f0f7ff;
+  color: #2b6cb0;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.month-section {
+  margin-top: 40px;
+}
+
+.month-title-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f1f1f1;
   margin-bottom: 15px;
-  border-radius: 0 4px 4px 0;
 }
 
-.month-accent-header h3 {
+.month-title-bar h3 {
+  font-size: 20px;
+  color: #2d3748;
   margin: 0;
-  font-size: 18px;
-  color: #34495e;
 }
 
-.summary-table-wrapper {
-  overflow-x: auto;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
+.leave-count {
+  background: #edf2f7;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: #4a5568;
+  font-weight: 600;
 }
 
-.summary-data-table {
+.modern-table-container {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #edf2f7;
+}
+
+.modern-table {
   width: 100%;
   border-collapse: collapse;
-  background-color: white;
 }
 
-/* టేబుల్ హెడర్ - డార్క్ బ్లూ/గ్రే */
-.summary-data-table thead tr {
-  background-color: #34495e;
-  color: #ffffff;
-  text-align: left;
-}
-
-.summary-data-table th {
-  padding: 15px 20px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+.modern-table th {
+  background: #f8fafc;
+  padding: 15px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #718096;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.summary-data-table td {
-  padding: 15px 20px;
-  font-size: 14px;
-  color: #444;
+.modern-table td {
+  text-align: center;
+  padding: 15px;
+  color: #4a5568;
   border-bottom: 1px solid #f1f1f1;
 }
 
-/* రో స్టైలింగ్ - Zebra Stripes */
-.summary-data-table tbody tr:nth-child(even) {
-  background-color: #fcfcfc;
+.date-cell {
+  font-weight: 600;
+  color: #2d3748;
 }
 
-.summary-data-table tbody tr:hover {
-  background-color: #f8f9fa;
+.leave-badge {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-block;
 }
 
-.id-text { font-weight: 500; color: #333; }
-.name-text { color: #555; }
-.date-text { color: #666; }
-.type-text { font-weight: 500; color: #555; }
+/* Badge colors based on type */
+.leave-badge.sick-leave { background: #fff5f5; color: #c53030; }
+.leave-badge.casual-leave { background: #f0fff4; color: #2f855a; }
+.leave-badge.privilege-leave { background: #ebf8ff; color: #2b6cb0; }
 
-.no-data-info {
+.empty-state {
   text-align: center;
-  padding: 40px;
-  color: #95a5a6;
+  padding: 60px 20px;
+}
+
+.empty-state img {
+  width: 80px;
+  opacity: 0.3;
+  margin-bottom: 20px;
+}
+
+.empty-state p {
+  color: #a0aec0;
   font-style: italic;
 }
 
-.back-button {
-  background: transparent;
-  border: none;
-  color: #007bff;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 15px;
-  font-size: 20px;
-  transition: 0.3s ease;
+/* Spinner */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
-.back-button:hover {
-  color: #0056b3;
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

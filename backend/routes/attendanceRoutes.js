@@ -44,33 +44,33 @@ async function getAddressFromCoordinates(locationString) {
 }
 
 // Half‑day deduction helper for Sick / Casual / Privilege
-function deductHalfDayPriority(b, primaryType) {
-  // b = LeaveBalance document
-  // primaryType is one of: 'Sick', 'Casual', 'Privilege'
+// function deductHalfDayPriority(b, primaryType) {
+//   // b = LeaveBalance document
+//   // primaryType is one of: 'Sick', 'Casual', 'Privilege'
 
-  const fields = {
-    Sick: 'sickLeaves',
-    Casual: 'casualLeaves',
-    Privilege: 'privilegeLeaves',
-  };
+//   const fields = {
+//     Sick: 'sickLeaves',
+//     Casual: 'casualLeaves',
+//     Privilege: 'privilegeLeaves',
+//   };
 
-  const order = {
-    Sick:      ['sickLeaves', 'casualLeaves', 'privilegeLeaves'],
-    Casual:    ['casualLeaves', 'privilegeLeaves'],
-    Privilege: ['privilegeLeaves', 'casualLeaves'],
-  };
+//   const order = {
+//     Sick:      ['sickLeaves', 'casualLeaves', 'privilegeLeaves'],
+//     Casual:    ['casualLeaves', 'privilegeLeaves'],
+//     Privilege: ['privilegeLeaves', 'casualLeaves'],
+//   };
 
-  for (const field of order[primaryType]) {
-    if (b[field] > 0) {
-      b[field] -= 0.5;
-      return { isLOP: false };
-    }
-  }
+//   for (const field of order[primaryType]) {
+//     if (b[field] > 0) {
+//       b[field] -= 0.5;
+//       return { isLOP: false };
+//     }
+//   }
 
-  const primaryField = fields[primaryType];
-  b[primaryField] -= 0.5;
-  return { isLOP: true };
-}
+//   const primaryField = fields[primaryType];
+//   b[primaryField] -= 0.5;
+//   return { isLOP: true };
+// }
 
 // 🔥 Central LOP handler (NEW)
 function applyLOP(b, days) {
@@ -149,7 +149,7 @@ async function updateLeaveBalance(employeeId, leaveType, options = {}) {
         };
       }
 
-      let result;
+      // let result;
 
       if (halfDayReason === "Sick Leave") {
         if (b.sickLeaves >= leaveToDeduct) {
@@ -556,11 +556,11 @@ router.get('/all', async (req, res) => {
     }
 
     records.forEach(r => {
-      const dateObj = new Date(r.date);
-      const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
-      const dd = String(dateObj.getDate()).padStart(2, "0");
+      // const dateObj = new Date(r.date);
+      // const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
+      // const dd = String(dateObj.getDate()).padStart(2, "0");
 
-      const monthDay = `-${mm}-${dd}`;
+      // const monthDay = `-${mm}-${dd}`;
 
     
 
@@ -728,6 +728,65 @@ holidays.forEach(h => {
   }
 });
 
+
+// 🔍 POST: Fetch attendance by Identification (Password)
+router.post('/my-attendance', async (req, res) => {
+  const { identification } = req.body;
+
+  if (!identification) {
+    return res.status(400).json({ error: 'Identification is required' });
+  }
+
+  try {
+    // 1. Identification ద్వారా స్టాఫ్ ని వెతకాలి
+    const staff = await Staff.findOne({ identification: identification.trim() });
+    
+    if (!staff) {
+      return res.status(404).json({ error: 'Invalid Identification code. Please check again.' });
+    }
+
+    const employeeId = staff.id; // ఆ స్టాఫ్ యొక్క అసలు ID (PS-0003 etc.)
+
+    // 2. ఆ ID కి సంబంధించిన అటెండెన్స్ తీసుకురావాలి
+    const attendance = await Attendance.find({ id: employeeId }).sort({ date: 1 });
+
+    // ---- AUTO INSERT HOLIDAYS LOGIC (మీ పాత కోడ్ లాగే) ----
+    const generatedRecords = [];
+    const recordedDates = new Set(attendance.map(a => a.date));
+    const today = new Date().setHours(0, 0, 0, 0);
+
+    // holidays array మీ ఫైల్ పైన ఉంది కదా, దాన్ని వాడుకుంటున్నాం
+    holidays.forEach(h => {
+      const year = new Date().getFullYear();
+      const holidayDate = `${year}${h.date}`;
+      const holidayTime = new Date(holidayDate).setHours(0, 0, 0, 0);
+
+      if (holidayTime <= today && !recordedDates.has(holidayDate)) {
+        generatedRecords.push({
+          id: employeeId,
+          name: staff.name,
+          date: holidayDate,
+          day: new Date(holidayDate).toLocaleDateString('en-US', { weekday: 'long' }),
+          holidayName: h.name,
+          leaveType: null,
+          inTime: null,
+          outTime: null,
+          isLOP: false
+        });
+      }
+    });
+
+    const finalRecords = [...attendance, ...generatedRecords]
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // రిజల్ట్ పంపేటప్పుడు పేరు కూడా పంపుతున్నాం
+    res.json({ records: finalRecords, staffName: staff.name, staffId: staff.id });
+
+  } catch (err) {
+    console.error("Error fetching attendance by Identification:", err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 
 

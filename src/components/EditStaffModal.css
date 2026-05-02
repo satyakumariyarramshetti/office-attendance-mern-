@@ -5,8 +5,8 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.4); /* కొంచెం డార్క్ బ్యాక్‌గ్రౌండ్ */
+  backdrop-filter: blur(8px);    /* బ్లర్ ఎఫెక్ట్ */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -14,95 +14,120 @@
   animation: fadeIn 0.3s ease;
 }
 
-/* ===== Modal Box (Reduced Size) ===== */
-.modal-content {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
-  width: 340px;             /* ⬅️ reduced from 420px */
-  max-width: 90%;
-  padding: 1.2rem 1.6rem;   /* ⬅️ tighter padding */
+/* ===== Modal Box (Wide Layout) ===== */
+.modal-content.wide-modal {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  width: 750px;              /* విడ్త్ పెంచాము */
+  max-width: 95%;
+  max-height: 90vh;          /* స్క్రీన్ కంటే ఎత్తు పెరగకుండా */
+  padding: 2rem;
   position: relative;
+  overflow-y: auto;          /* కంటెంట్ ఎక్కువైతే లోపల స్క్రోల్ అవుతుంది */
   animation: scaleIn 0.3s ease;
 }
 
 /* ===== Title ===== */
 .modal-content h3 {
-  font-size: 1.2rem;        /* ⬅️ slightly smaller */
+  font-size: 1.5rem;
   font-weight: 700;
   color: #1c1f24;
   text-align: center;
-  margin-bottom: 1.2rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 10px;
 }
 
-/* ===== Form ===== */
-.modal-content form {
+/* ===== Form Layout (Grid) ===== */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 కాలమ్స్ */
+  gap: 20px;                      /* ఫీల్డ్స్ మధ్య దూరం */
+}
+
+/* ఫీల్డ్ గ్రూపింగ్ */
+.form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;              /* ⬅️ reduced gap */
+  gap: 5px;
 }
 
-.modal-content label {
+.form-group label {
   font-weight: 600;
-  font-size: 0.9rem;
-  color: #333;
+  font-size: 0.85rem;
+  color: #444;
 }
 
-.modal-content input,
-.modal-content select {
+.form-group input,
+.form-group select {
   width: 100%;
-  padding: 8px 10px;        /* ⬅️ slightly smaller input height */
-  border: 1.3px solid #ccc;
-  border-radius: 7px;
-  font-size: 0.9rem;
+  padding: 10px 12px;
+  border: 1.5px solid #dce0e4;
+  border-radius: 8px;
+  font-size: 0.95rem;
   outline: none;
-  transition: border-color 0.25s ease;
+  transition: all 0.25s ease;
+  background-color: #f9f9f9;
 }
 
-.modal-content input:focus,
-.modal-content select:focus {
-  border-color: #0056b3;
+/* Input Focus State */
+.form-group input:focus {
+  border-color: #0d6efd;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
 }
 
-/* ===== Buttons ===== */
+/* Disabled Input (ID field) */
+.form-group input:disabled {
+  background-color: #eeeeee;
+  color: #777;
+  cursor: not-allowed;
+}
+
+/* ===== Action Buttons ===== */
 .modal-actions {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 1rem;         /* ⬅️ less space */
-  gap: 0.6rem;
+  justify-content: center;
+  margin-top: 2rem;
+  gap: 15px;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
 }
 
 .save-btn {
-  background: linear-gradient(135deg, #0d6efd, #003f91);
+  background: linear-gradient(135deg, #0d6efd, #0046b1);
   border: none;
   color: #fff;
-  padding: 0.4rem 1rem;
-  border-radius: 7px;
+  padding: 0.7rem 2rem;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.9rem;
-  transition: background 0.3s ease, transform 0.2s ease;
+  font-size: 1rem;
+  transition: all 0.3s ease;
 }
 
 .save-btn:hover {
-  background: linear-gradient(135deg, #084ec1, #002f6c);
+  background: linear-gradient(135deg, #0a58ca, #00378a);
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
 }
 
 .cancel-btn {
-  background: #f5f5f5;
-  border: 1px solid #ccc;
-  color: #333;
-  padding: 0.4rem 1rem;
-  border-radius: 7px;
+  background: #f8f9fa;
+  border: 1.5px solid #dce0e4;
+  color: #444;
+  padding: 0.7rem 2rem;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 1rem;
   transition: all 0.25s ease;
 }
 
 .cancel-btn:hover {
-  background: #e9e9e9;
+  background: #e9ecef;
+  border-color: #adb5bd;
 }
 
 /* ===== Animations ===== */
@@ -113,8 +138,8 @@
 
 @keyframes scaleIn {
   from {
-    transform: scale(0.9);
-    opacity: 0.8;
+    transform: scale(0.95);
+    opacity: 0;
   }
   to {
     transform: scale(1);
@@ -122,10 +147,23 @@
   }
 }
 
-/* ===== Responsive ===== */
-@media (max-width: 480px) {
-  .modal-content {
-    width: 85%;
-    padding: 1rem 1.2rem;
+/* ===== Responsive (Mobile Friendly) ===== */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr; /* చిన్న స్క్రీన్లపై ఒకటే కాలమ్ */
+    gap: 15px;
+  }
+
+  .modal-content.wide-modal {
+    width: 90%;
+    padding: 1.5rem;
+  }
+  
+  .modal-actions {
+    flex-direction: column; /* బటన్స్ ఒకదాని కింద ఒకటి వస్తాయి */
+  }
+
+  .save-btn, .cancel-btn {
+    width: 100%;
   }
 }

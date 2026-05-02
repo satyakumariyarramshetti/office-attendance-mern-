@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const LeaveBalance = require('../models/LeaveBalance');
+const Staff = require('../models/Staff');
 
 // GET: Fetch all leave balance records
 router.get('/', async (req, res) => {
@@ -154,5 +155,38 @@ router.get('/employee/:employeeId', async (req, res) => {
         });
     }
 });
+
+// 🔍 NEW POST: Identification (Password) ద్వారా లీవ్ బ్యాలెన్స్ పొందడం
+router.post('/my-leave-balance', async (req, res) => {
+    try {
+        const { identification } = req.body;
+
+        if (!identification) {
+            return res.status(400).json({ message: 'Identification is required.' });
+        }
+
+        // 1. Identification ద్వారా Staff కలెక్షన్‌లో వెతకాలి
+        const staff = await Staff.findOne({ identification: identification.trim() });
+
+        if (!staff) {
+            return res.status(404).json({ message: 'Invalid Identification code.' });
+        }
+
+        // 2. Staff దొరికితే, అతని 'id' (PS-0003) ని ఉపయోగించి LeaveBalance వెతకాలి
+        const balance = await LeaveBalance.findOne({ employeeId: staff.id });
+
+        if (!balance) {
+            return res.status(404).json({ message: 'Leave balance records not found for this employee.' });
+        }
+
+        res.status(200).json(balance);
+
+    } catch (error) {
+        console.error('Error fetching balance by identification:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+
 
 module.exports = router;

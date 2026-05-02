@@ -5,64 +5,50 @@ import { FaArrowLeft } from "react-icons/fa";
 import "./LeaveBalanceOverview.css";
 
 const LeaveBalanceOverview = () => {
-  const [employeeId, setEmployeeId] = useState("");
+  const [idCode, setIdCode] = useState(""); // Changed name to idCode
   const [balance, setBalance] = useState(null);
   const [error, setError] = useState("");
-
-  const navigate = useNavigate();   // 👈 Add this
-
+  const navigate = useNavigate();
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
   const handleSearch = async () => {
-    if (!employeeId.trim()) return;
+    if (!idCode.trim()) return;
 
     try {
       setError("");
       setBalance(null);
 
-      const fullEmployeeId = `PS-${employeeId}`;
-
-      const res = await axios.get(
-        `${API_BASE}/api/leave-balance/employee/${fullEmployeeId}`
-      );
+      // GET కి బదులు POST ఉపయోగిస్తున్నాం
+      const res = await axios.post(`${API_BASE}/api/leave-balance/my-leave-balance`, {
+        identification: idCode
+      });
 
       setBalance(res.data);
     } catch (err) {
-      setError("Employee not found");
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handleSearch();
+      setError(err.response?.data?.message || "Employee not found");
     }
   };
 
   return (
     <div className="balance-wrapper">
       <div className="balance-card">
-
-        {/* ✅ Back Button */}
-        <button 
-          className="back-button"
-          onClick={() => navigate(-1)}
-        >
-          <FaArrowLeft /> Back
-        </button>
-
+        <button className="back-button" onClick={() => navigate(-1)}><FaArrowLeft /> Back</button>
         <h2 className="balance-title">Leave Balance Overview</h2>
 
         <div className="search-section">
-          <div className="prefix-box">PS-</div>
+          {/* PS- బాక్స్ తీసేశాను, ఎందుకంటే ఇది పాస్‌వర్డ్ లాంటిది */}
           <input
-            type="text"
-            placeholder="Enter ID (e.g. 0003)"
-            value={employeeId}
-            onChange={(e) => setEmployeeId(e.target.value)}
-            onKeyDown={handleKeyPress}
+            type="password" // Password style
+            placeholder="Enter Identification Code"
+            value={idCode}
+            onChange={(e) => setIdCode(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            style={{ borderRadius: '8px', flex: 1 }}
           />
           <button onClick={handleSearch}>Check</button>
         </div>
+
+
 
         {error && <p className="error-text">{error}</p>}
 

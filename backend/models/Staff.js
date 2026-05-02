@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const staffSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   name: { type: String, required: true },
+   identification: { type: String, required: true, unique: true },
   department: { type: String },
   designation: { type: String, required: true },
   email: { type: String, required: true },

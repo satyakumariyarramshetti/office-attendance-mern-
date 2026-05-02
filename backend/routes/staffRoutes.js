@@ -15,13 +15,11 @@ router.get('/', async (req, res) => {
 });
 
 
-// 🔹 GET: Seed dummy staff entries (insert only missing entries)
 router.get('/seed', async (req, res) => {
   const dummyStaff = [
-  { id: "101", name: "Arjun", department: "Piping", designation: "Engineer", email: "arjun@example.com" },
-  { id: "102", name: "Priya", department: "Common", designation: "HR", email: "priya@example.com" },
-  
-];
+    { id: "101", identification: "pass123", name: "Arjun", department: "Piping", designation: "Engineer", email: "arjun@example.com" },
+    { id: "102", identification: "pass456", name: "Priya", department: "Common", designation: "HR", email: "priya@example.com" },
+  ];
 
 
   try {
@@ -43,21 +41,17 @@ router.get('/seed', async (req, res) => {
 });
 
 
-// 🔹 POST: Add new staff entry
 router.post('/', async (req, res) => {
   try {
-    console.log("📥 Received data from frontend:", req.body);
-
     const newStaff = new Staff(req.body);
     await newStaff.save();
     res.json({ message: "✅ Staff added successfully!" });
   } catch (error) {
     console.error("❌ Error adding staff:", error);
-    if (error.name === "ValidationError") {
-      return res.status(400).json({ error: error.message });
-    }
     if (error.code === 11000) {
-      return res.status(400).json({ error: "Staff ID already exists" });
+      // ఇక్కడ Staff ID లేదా Identification రెండింటిలో ఏది డూప్లికేట్ అయినా ఈ ఎర్రర్ వస్తుంది
+      const field = Object.keys(error.keyPattern)[0];
+      return res.status(400).json({ error: `${field} already exists. Please use a unique value.` });
     }
     res.status(500).json({ error: "Error adding staff" });
   }
@@ -134,17 +128,35 @@ router.get('/search/:partialId', async (req, res) => {
   }
 });
 
-// 🔹 PUT: Update staff details
 router.put('/:id', async (req, res) => {
   try {
+const { identification } = req.body; 
+
+    // 1. ఒకవేళ identification మార్చాలని చూస్తే, అది వేరే ఎవరికైనా ఉందేమో చెక్ చేయండి
+    if (identification) {
+      const existingStaff = await Staff.findOne({ 
+        identification: identification, 
+        _id: { $ne: req.params.id } // ప్రస్తుత స్టాఫ్ కాకుండా వేరే వాళ్ళకి ఉందేమో చూస్తుంది
+      });
+
+      if (existingStaff) {
+        return res.status(400).json({ error: "Identification already exists for another staff member." });
+      }
+    }
+
     const updatedStaff = await Staff.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
+
     if (!updatedStaff) return res.status(404).json({ error: "Staff not found" });
     res.json({ message: "✅ Staff updated successfully!", updatedStaff });
+
   } catch (error) {
-    console.error("❌ Error updating staff:", error);
+    console.error("Update Error:", error);
+    if (error.code === 11000) {
+      return res.status(400).json({ error: "Duplicate error: ID or Identification already exists." });
+    }
     res.status(500).json({ error: "Error updating staff" });
   }
 });

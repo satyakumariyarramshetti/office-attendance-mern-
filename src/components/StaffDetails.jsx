@@ -25,6 +25,7 @@ const StaffDetails = () => {
   const [editModal, setEditModal] = useState(false);
 const [selectedStaff, setSelectedStaff] = useState(null);
   // ✅ Fetch all staff from backend
+
   const handleExportStaff = () => {
   // choose which data to export (filtered or all)
   const dataToExport = filteredStaff.length ? filteredStaff : staff;
@@ -35,6 +36,7 @@ const [selectedStaff, setSelectedStaff] = useState(null);
     Name: s.name,
     Designation: s.designation,
     Department: s.department,
+    Identification: s.identification || "",
     Email: s.email || "",
     Phone: s.phone || "",
    "DOB": s.dob ? new Date(s.dob).toLocaleDateString() : "",           
@@ -196,6 +198,7 @@ const handleUpdateStaff = async (updatedStaff) => {
   <tr>
     <th>ID</th>
     <th>Name</th>
+    <th>Identification</th>
     <th>Designation</th>
     <th>Department</th>
     <th>Email</th>    
@@ -212,6 +215,7 @@ const handleUpdateStaff = async (updatedStaff) => {
     <tr key={member._id || member.id}>
       <td data-label="ID">{member.id}</td>
       <td data-label="Name">{member.name}</td>
+       <td data-label="Identification">{member.identification || "—"}</td>
       <td data-label="Designation">{member.designation}</td>
       <td data-label="Department">{member.department}</td>
       <td data-label="Email">{member.email || "—"}</td>
