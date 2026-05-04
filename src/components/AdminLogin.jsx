@@ -15,7 +15,7 @@ const AdminLogin = ({ setIsAdmin }) => {
 
 
     // Hardcoded credentials for now (can replace with backend validation later)
-    if (trimmedUsername === 'W0rk10g@dm!n' && trimmedPassword === 'Ps@dm!n#241219') {
+    if (trimmedUsername === 'W0rkl0g@dm!n' && trimmedPassword === 'Ps@dm!n#241219') {
       localStorage.setItem('adminToken', 'true'); // simulate login
       setIsAdmin(true);
       navigate('/admin');
