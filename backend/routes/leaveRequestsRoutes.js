@@ -158,4 +158,28 @@ Praxsol Engineering Private Limited`;
   }
 });
 
+
+
+// routes/leaveRequestsRoutes.js లో ఈ route ని యాడ్ చేయండి
+router.get('/all/list', async (req, res) => {
+  try {
+    const leaveRequests = await LeaveRequest.find();
+    const rows = leaveRequests.flatMap(req =>
+      req.dates.map(d => ({
+        id: req.id,
+        name: req.name,
+        email: req.email,
+        reportsTo: req.reportsTo,
+        leaveReason: req.leaveReason,
+        date: d.date,
+        status: d.status
+      }))
+    );
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+
 module.exports = router;
