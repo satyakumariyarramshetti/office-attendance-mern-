@@ -64,9 +64,9 @@ const LPDashboard = () => {
   // Logic 2: Final Display Rows (Filter by Year and Month selection)
   const displayedRows = useMemo(() => {
     return roleFiltered.filter(row => {
-      const [d, m, y] = row.date.split('-');
+      const [, m, y] = row.date.split('-');
       const yearMatch = y === selectedYear;
-      const monthMatch = selectedMonth === null || parseInt(m) === (selectedMonth + 1);
+      const monthMatch = selectedMonth === null || parseInt(m,10) === (selectedMonth + 1);
       return yearMatch && monthMatch;
     });
   }, [roleFiltered, selectedYear, selectedMonth]);
@@ -75,9 +75,9 @@ const LPDashboard = () => {
   const monthStats = useMemo(() => {
     const stats = Array(12).fill(0);
     roleFiltered.forEach(row => {
-      const [d, m, y] = row.date.split('-');
+      const [, m, y] = row.date.split('-');
       if (y === selectedYear && row.status === 'pending') {
-        stats[parseInt(m) - 1]++;
+        stats[parseInt(m,10) - 1]++;
       }
     });
     return stats;
