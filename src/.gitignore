@@ -1,0 +1,8 @@
+# frontend
+src/.env
+
+# backend
+backend/.env
+
+# or generally
+.env

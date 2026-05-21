@@ -321,6 +321,8 @@ router.post('/save', async (req, res) => {
   halfDayReason
 } = req.body;
 
+hours = hours ? Number(hours) : null;
+
   if (!id || !date) {
     return res.status(400).json({ error: 'ID and Date are required' });
   }
@@ -344,9 +346,18 @@ router.post('/save', async (req, res) => {
 
   try {
     const isLeaveCard = !!leaveType;
-    const isOutTimeCard = !!outTime && !!dailyLeaveType && !leaveType && !hours; // Changed to dailyLeaveType for consistency
-    const isPermissionCard = !!permissionType && !!hours && !leaveType;
-    const isDailyOnly = !!dailyLeaveType && !leaveType && !permissionType && !outTime; // New logic for only daily status
+const isOutTimeCard =
+  typeof outTime !== 'undefined' &&
+  typeof dailyLeaveType !== 'undefined' &&
+  !leaveType;
+  const isPermissionCard =
+  permissionType !== undefined &&
+  permissionType !== '' &&
+  hours !== undefined &&
+  hours !== null &&
+  hours !== '' &&
+  !leaveType;
+      const isDailyOnly = !!dailyLeaveType && !leaveType && !permissionType && !outTime; // New logic for only daily status
 
 
     let finalDailyLeaveType = isOutTimeCard ? dailyLeaveType : (typeof dailyLeaveType !== 'undefined' ? dailyLeaveType : undefined);
@@ -386,12 +397,12 @@ router.post('/save', async (req, res) => {
 
       if (isOutTimeCard) {
           attendance.dailyLeaveType = dailyLeaveType || null;
-          attendance.permissionType = null; // Clear if it was an out-time with dailyLeaveType
-          attendance.hours = null;
+          // attendance.permissionType = null; // Clear if it was an out-time with dailyLeaveType
+          // attendance.hours = null;
       } else if (isPermissionCard) {
           attendance.permissionType = permissionType || null;
           attendance.hours = hours;
-          attendance.dailyLeaveType = null; // Clear if it was a permission card
+          // attendance.dailyLeaveType = null; // Clear if it was a permission card
       } else if (isDailyOnly) {
           attendance.dailyLeaveType = dailyLeaveType || null;
           attendance.permissionType = null;

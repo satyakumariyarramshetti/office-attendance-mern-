@@ -1,0 +1,7 @@
+
+
+# backend
+backend/.env
+
+# or generally
+.env
