@@ -64,6 +64,30 @@ app.get("/test-mail", async (req, res) => {
 });
 
 
+// Backend (Express)
+
+
+
+app.post('/api/admin/login', (req, res) => {
+    const { username, password } = req.body;
+
+    const envUsername = process.env.ADMIN_USERNAME;
+    const envPassword = process.env.ADMIN_PASSWORD;
+
+    if (username === envUsername && password === envPassword) {
+        // Success: Oka message or token pampandi
+        res.status(200).json({ success: true, message: "Login Successful" });
+    } else {
+        // Failure
+        res.status(401).json({ success: false, message: "Invalid Credentials" });
+    }
+});
+
+
+
+
+
+
 // MongoDB connection
 const uri = process.env.ATLAS_URI;
 
