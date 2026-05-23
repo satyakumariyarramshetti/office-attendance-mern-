@@ -7,9 +7,6 @@ import { FaClock, FaUtensils, FaDoorOpen, FaFileAlt, FaBed } from 'react-icons/f
 const PS_PREFIX = 'PS-';
 
 
-
-
-
 // --- Reusable StaffIdInput Component (No changes) ---
 const StaffIdInput = ({ inputId, value, onChange, staffNotFound }) => (
   <div className="form-group mb-2">
