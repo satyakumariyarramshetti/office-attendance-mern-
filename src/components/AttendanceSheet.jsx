@@ -226,6 +226,7 @@ useEffect(() => {
   "Delay Reason",
   "Lunch Out", "Lunch In", "Out Time",
   "Lunch Hours", "Working Hours", "Gross Hours",
+   "Site Comments Info",
   "Daily Leave Type", "Permission Type",
   "Hours", "Leave Type", "Location"
 ];
@@ -245,6 +246,7 @@ useEffect(() => {
   record.inTime ?? '',
   record.systemInTime ?? '',         // NEW
   record.delayReason ?? '',
+   record.siteComments ?? '',
   record.lunchOut ?? '',
   record.lunchIn ?? '',
   record.outTime ?? '',
@@ -292,7 +294,7 @@ useEffect(() => {
   'Daily Leave Type': record.dailyLeaveType,
   'Permission Type': record.permissionType,
   
-  
+  'Site Comments Info': record.siteComments || '',
   'Hours': record.hours,
   'Leave Type': getLeaveOrHoliday(record),
   'Location': record.location
@@ -358,6 +360,7 @@ useEffect(() => {
     <th>Working Hours</th>
     <th>Gross Hours</th>
     <th>Daily Leave Type</th>
+    <th>Site Comments Info</th>
     <th>Permission Type</th>
     <th>Hours</th>
     <th>Leave Type</th>
@@ -389,6 +392,7 @@ useEffect(() => {
                       <td data-label="Working Hours">{workingHours}</td>
                       <td data-label="Gross Hours">{grossHours}</td>
                      <td data-label="Daily Leave Type">{record.dailyLeaveType || 'N/A'}</td>
+                     <td data-label="Site Comments Info">{record.siteComments || 'N/A'}</td>
                      <td data-label="Permission Type">{record.permissionType || 'N/A'}</td>
                      <td data-label="Hours">{record.hours || 'N/A'}</td>
                      <td data-label="Leave Type">{getLeaveOrHoliday(record)}</td>

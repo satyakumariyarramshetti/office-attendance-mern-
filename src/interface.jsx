@@ -74,7 +74,7 @@ const Interface = () => {
   permissionType: '', 
   
   
-  hours: '', dailyLeaveType: '', leaveType: '', location: '',delayReason: '', 
+  hours: '', dailyLeaveType: '',siteComments: '', leaveType: '', location: '',delayReason: '', 
   });
 
   const [idInputs, setIdInputs] = useState({
@@ -367,21 +367,34 @@ const handleIdChange = (e, cardType) => {
     setFormData((prev) => ({ ...prev, date: selectedDate, day: getCurrentDay(selectedDate) }));
   };
 
-   const handleChange = (e) => {
-    const { id, value } = e.target;
-   if (id === 'dailyLeaveType') {
-  setFormData(prev => ({ ...prev, dailyLeaveType: value }));
+  const handleChange = (e) => {
+  const { id, value } = e.target;
 
-  if (value === 'Second 50% Leave') {
-    setOutPermissionInfoMessage(
-      'You Have Selected Second 50% Leave. Kindly Update The Leave Section As Well.'
-    );
-  } else {
-    setOutPermissionInfoMessage('');
+  if (id === 'dailyLeaveType') {
+    let comments = '';
+
+    if (value === 'Site comments') {
+      const userComment = window.prompt("Please enter Site Comments info:");
+      comments = userComment || ''; 
+    }
+
+    setFormData(prev => ({ 
+      ...prev, 
+      dailyLeaveType: value, 
+      siteComments: comments 
+    }));
+
+    if (value === 'Second 50% Leave') {
+      setOutPermissionInfoMessage(
+        'You Have Selected Second 50% Leave. Kindly Update The Leave Section As Well.'
+      );
+    } else {
+      setOutPermissionInfoMessage('');
+    }
+
+    return;
   }
 
-  return;
-}
 
 
      // Add this block right here:
@@ -575,6 +588,7 @@ if (formType === 'inTime') {
 
   payload.outTime = formData.outTime;
   payload.dailyLeaveType = formData.dailyLeaveType;
+  payload.siteComments = formData.siteComments;
   submitData(payload, 'outTime');
   return;
 }
@@ -811,6 +825,7 @@ const handleLeaveSubmit = async (e) => {
     <option value="Health Issue">Health Issue</option>
     <option value="Emergency Permission">Emergency Permission</option>
     <option value="Office Work">Office Work</option>
+    <option value="Site comments">Site comments</option>
     <option value="TOM">TOM</option>
     <option value="FLEXI">FLEXI</option>
     <option value="Call">Call</option>

@@ -14,7 +14,9 @@ const AttendanceSchema = new mongoose.Schema({
   outTime: { type: String },
   permissionType: { type: String }, 
   hours: { type: String, default: '' },  
-  dailyLeaveType: { type: String ,default:null}, 
+  dailyLeaveType: { type: String ,default:null},
+  
+  siteComments: { type: String, default: null }, 
   leaveType: { type: String,default:null },
   halfDayReason: { type: String,default:null },
   location: { type: String },

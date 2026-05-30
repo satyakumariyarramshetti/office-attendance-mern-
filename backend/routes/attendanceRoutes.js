@@ -314,7 +314,7 @@ async function updateLeaveBalance(employeeId, leaveType, options = {}) {
 router.post('/save', async (req, res) => {
   let {
   id, date, inTime, lunchOut, lunchIn, outTime, day,
-  permissionType, hours, dailyLeaveType, leaveType, location,
+  permissionType, hours, dailyLeaveType,siteComments, leaveType, location,
   inTimeMethod,
   systemInTime,
   delayReason,
@@ -386,6 +386,7 @@ const isOutTimeCard =
       if (typeof lunchIn !== 'undefined') attendance.lunchIn = lunchIn;
       if (typeof outTime !== 'undefined') attendance.outTime = outTime;
       if (typeof day !== 'undefined') attendance.day = day;
+      if (typeof siteComments !== 'undefined') attendance.siteComments = siteComments;
       if (typeof delayReason !== 'undefined') {
         attendance.delayReason = delayReason || null;
       }
@@ -485,6 +486,7 @@ const isOutTimeCard =
         dailyLeaveType: isOutTimeCard
           ? (dailyLeaveType || null) // Use dailyLeaveType for outTimeCard
           : (isDailyOnly ? (dailyLeaveType || null) : null), // Use dailyLeaveType if only daily status
+         siteComments: siteComments || null, 
         leaveType: isLeaveCard ? leaveType : null,
         halfDayReason: isLeaveCard ? (halfDayReason || null) : null,
         location: address,
