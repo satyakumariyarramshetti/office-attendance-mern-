@@ -1,0 +1,265 @@
+/* Core Variables */
+:root {
+  --primary-blue: #2563eb;
+  --success-green: #10b981;
+  --danger-red: #ef4444;
+  --warning-amber: #f59e0b;
+  --text-dark: #0f172a;
+  --text-slate: #64748b;
+  --bg-soft: #f8fafc;
+  --border-ui: #e2e8f0;
+}
+
+.users-mgmt-page {
+  background-color: var(--bg-soft);
+  min-height: 100vh;
+  padding: 30px 20px;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.users-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Header Section */
+.page-header {
+  margin-bottom: 30px;
+}
+
+.header-content h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.header-content p {
+  font-size: 14px;
+  color: var(--text-slate);
+  margin-top: 6px;
+}
+
+/* Form Card Section */
+.form-card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid var(--border-ui);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  margin-bottom: 30px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 20px;
+}
+
+.user-form-grid {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.input-field {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-field label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-slate);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.input-field input {
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: 0.2s;
+}
+
+.input-field input:focus {
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.add-user-btn {
+  background-color: var(--primary-blue);
+  color: white;
+  border: none;
+  padding: 11px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-user-btn:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+/* Table Section */
+.table-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--border-ui);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  overflow: hidden;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.modern-users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.modern-users-table th {
+  background-color: #f1f5f9;
+  padding: 14px 20px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-slate);
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--border-ui);
+}
+
+.modern-users-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-ui);
+  vertical-align: middle;
+}
+
+.text-center { text-align: center; }
+
+/* User Details */
+.user-identity {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-weight: 700;
+  color: var(--text-dark);
+  font-size: 15px;
+}
+
+.user-email {
+  font-size: 13px;
+  color: var(--text-slate);
+  margin-top: 2px;
+}
+
+/* Password Code Tag */
+.password-tag {
+  background: #f1f5f9;
+  color: #334155;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  border: 1px solid #e2e8f0;
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.status-badge.live {
+  background-color: #ecfdf5;
+  color: #059669;
+  border: 1px solid #d1fae5;
+}
+
+.status-badge.off {
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+/* --- FIXING ACTION BUTTONS SIDE BY SIDE --- */
+.table-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center; /* Center the buttons group */
+}
+
+.btn-action {
+  padding: 7px 15px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  min-width: 75px;
+  transition: 0.2s;
+}
+
+/* Delete Button Style */
+.btn-delete {
+  background-color: #fef2f2;
+  color: var(--danger-red);
+  border: 1px solid #fee2e2;
+}
+
+.btn-delete:hover {
+  background-color: #fee2e2;
+}
+
+/* Logout Button Style */
+.btn-logout {
+  background-color: #fffbeb;
+  color: var(--warning-amber);
+  border: 1px solid #fef3c7;
+}
+
+.btn-logout:hover {
+  background-color: #fef3c7;
+}
+
+/* Empty State */
+.no-data {
+  text-align: center;
+  padding: 40px !important;
+  color: var(--text-slate);
+  font-style: italic;
+}
+
+/* Responsive Table Adjustments */
+@media (max-width: 850px) {
+  .user-form-grid {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .add-user-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .modern-users-table {
+    min-width: 800px; /* Forces scroll on mobile instead of squishing */
+  }
+}

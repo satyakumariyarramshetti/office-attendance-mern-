@@ -508,6 +508,7 @@ setFormData({
   permissionType: '',
   hours: '',
   dailyLeaveType: '',
+  siteComments: '',
   leaveType: '',
   location: '',
   delayReason: ''   // <--- VERY IMPORTANT FIX

@@ -53,22 +53,64 @@ th {
     top: 0;
     z-index: 10; /* Ensures header is above the scrolling content */
 }
-
-.action-buttons button {
-    margin-right: 0.5rem;
-    padding: 0.4rem 0.8rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+/* Action Buttons Container - Buttons పక్కపక్కన రావడానికి */
+.action-buttons {
+  display: flex;
+  gap: 8px; /* బటన్స్ మధ్య గ్యాప్ */
+  justify-content: center;
+  align-items: center;
 }
 
+/* Common Button Style */
+.edit-btn, .remove-btn {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 75px;
+}
+
+/* Edit Button - Modern Amber/Orange look */
 .edit-btn {
-    background-color: #ffc107;
+  background-color: #fff7ed; /* Light orange tint */
+  color: #c2410c;           /* Deep orange text */
+  border: 1px solid #fdba74;
 }
 
+.edit-btn:hover {
+  background-color: #f68504;
+  color: white;
+  box-shadow: 0 2px 8px rgba(246, 133, 4, 0.3);
+}
+
+/* Remove Button - Modern Soft Red look */
 .remove-btn {
-    background-color: #dc3545;
-    color: white;
+  background-color: #fef2f2; /* Light red tint */
+  color: #b91c1c;           /* Deep red text */
+  border: 1px solid #fecaca;
+}
+
+.remove-btn:hover {
+  background-color: #d82638;
+  color: white;
+  box-shadow: 0 2px 8px rgba(216, 38, 56, 0.3);
+}
+
+/* Table Row Hover effect - Row మీదకి వెళ్తే హైలైట్ అవ్వడానికి */
+tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Table Action Column width adjust */
+th:last-child, td:last-child {
+  min-width: 180px; /* Buttons పట్టడానికి కొంచెం స్పేస్ */
+  text-align: center;
 }
 
 /* ===== UPDATED MODAL STYLES (for a more compact look) ===== */
@@ -182,6 +224,7 @@ th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #ddd; }
 th { background-color: #f4f6f8; }
 
 /* Action buttons */
+/* 
 .action-buttons button {
   margin-right: 0.5rem;
   padding: 0.4rem 0.8rem;
@@ -190,7 +233,7 @@ th { background-color: #f4f6f8; }
   cursor: pointer;
 }
 .edit-btn { background-color: #f68504; }
-.remove-btn { background-color: #d82638; color: white; }
+.remove-btn { background-color: #d82638; color: white; } */
 
 /* Modal */
 .modal-backdrop {

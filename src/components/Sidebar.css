@@ -1,180 +1,212 @@
+:root {
+  --sidebar-bg: #1e293b; /* Slate 800 - Modern Dark */
+  --sidebar-hover: #334155;
+  --sidebar-active: #3b82f6; /* Modern Blue */
+  --sidebar-text: #94a3b8;
+  --sidebar-text-active: #ffffff;
+}
+
 .sidebar {
-  width: 220px;
-  background-color: #172a38;
-  color: white;
-  padding: 30px 20px 20px 20px;
+  width: 250px;
+  background-color: var(--sidebar-bg);
   height: 100vh;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  user-select: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
-  transition: all 0.3s ease-in-out;
-  @media (min-width: 1025px) {
-    
-  
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-  
+  transition: width 0.3s ease;
 }
 
-
-}
-
-/* User info */
-.user-info {
+/* Brand Section */
+.sidebar-brand {
+  padding: 25px 20px;
   display: flex;
   align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #33354a;
+  gap: 12px;
 }
 
-.user-icon {
-  font-size: 50px;
+.brand-icon {
+  background: var(--sidebar-active);
   color: white;
-  margin-right: 15px;
-  flex-shrink: 0;
+  width: 35px;
+  height: 35px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.brand-name {
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+}
+
+/* User Profile Section */
+.user-profile {
+  padding: 15px 20px;
+  margin: 0 10px 20px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-img-wrapper {
+  position: relative;
+}
+
+.profile-icon {
+  font-size: 40px;
+  color: var(--sidebar-text);
+}
+
+.status-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  background: #10b981; /* Green dot */
+  border-radius: 50%;
+  border: 2px solid var(--sidebar-bg);
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-label {
+  font-size: 10px;
+  color: var(--sidebar-text);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .user-name {
-  font-size: 1.3rem;
-  font-weight: 700;
   color: white;
-  letter-spacing: 0.05em;
+  font-weight: 600;
+  font-size: 14px;
 }
 
-.sidebar-divider {
-  border: none;
-  border-top: 1px solid #33354a;
-  margin: 0 0 20px 0;
+/* Menu Items */
+.sidebar-menu {
+  padding: 0 10px 20px 10px;
+}
+
+.menu-group-label {
+  font-size: 10px;
+  color: #475569;
+  font-weight: 700;
+  margin: 20px 0 10px 15px;
+  letter-spacing: 1.5px;
 }
 
 .menu-item {
-  margin: 15px 0;
-  cursor: pointer;
   display: flex;
   align-items: center;
-  font-size: 1.05rem;
-  color: white;
-  padding: 10px 15px;
-  border-radius: 8px;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  padding: 12px 15px;
+  margin: 4px 0;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--sidebar-text);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .menu-icon {
   margin-right: 12px;
-  font-size: 20px;
-  flex-shrink: 0;
-  color: white;
+  font-size: 18px;
+  transition: transform 0.2s;
 }
 
 .menu-item:hover {
-  background-color: #2a2a44;
-  color: #00bcd4;
+  background-color: var(--sidebar-hover);
+  color: white;
 }
 
 .menu-item:hover .menu-icon {
-  color: #00bcd4;
+  transform: translateX(3px);
 }
 
 .menu-item.active {
-  font-weight: bold;
-  color: #00bcd4;
-  background-color: #262a52;
+  background-color: rgba(59, 130, 246, 0.15); /* Soft blue bg */
+  color: var(--sidebar-active);
+  font-weight: 600;
+}
+
+/* Indicator line for active item */
+.menu-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 4px;
+  height: 20px;
+  background-color: var(--sidebar-active);
+  border-radius: 0 4px 4px 0;
 }
 
 .menu-item.active .menu-icon {
-  color: #00bcd4;
+  color: var(--sidebar-active);
 }
 
-/* Scrollbar styling (optional) */
+/* Scrollbar Customization */
 .sidebar::-webkit-scrollbar {
-  width: 8px;
+  width: 5px;
 }
-.sidebar::-webkit-scrollbar-track {
-  background: #151523;
-}
+
 .sidebar::-webkit-scrollbar-thumb {
-  background-color: #00bcd4;
+  background: #334155;
   border-radius: 10px;
-  border: 2px solid transparent;
 }
 
-/* ===== Responsive Mobile View ===== */
-/* ===== Responsive Styles ===== */
-
-/* Phones (max-width: 768px) */
+/* Responsive Mobile View (Bottom Bar) */
 @media (max-width: 1024px) {
   .sidebar {
     width: 100%;
-    height: auto;
+    height: 70px;
     flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    align-items: center;
-    padding: 12px 10px;
-    position: fixed;
     bottom: 0;
     top: auto;
-    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.2);
-    overflow-y: visible;
-    z-index: 1000;
+    padding: 0;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid #334155;
+    overflow-y: hidden;
   }
 
-  .user-info {
+  .sidebar-brand, .user-profile, .menu-group-label, .menu-item span {
     display: none;
   }
 
   .menu-item {
-    flex: 1 1 30%;
-    margin: 6px 4px;
-    justify-content: center;
-    text-align: center;
-    font-size: 0.85rem;
-    padding: 8px;
+    margin: 0;
+    padding: 15px;
+    border-radius: 0;
   }
 
-  .menu-icon {
-    margin: 0 6px 0 0;
-    font-size: 16px;
-  }
-
-  .sidebar-divider {
+  .menu-item.active::before {
     display: none;
   }
-}
-
-/* Tablets (769px to 1024px) */
-
-@media (min-width: 1025px) {
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 220px;
-    height: 100vh;
-    padding: 30px 20px 20px 20px;
-    flex-direction: column;
-    overflow-y: auto;
-    box-shadow: none;
-  }
-
-  .user-info {
-    display: flex;
-  }
-
-  .menu-item {
-    font-size: 1.05rem;
-    padding: 10px 15px;
-    justify-content: flex-start;
-    text-align: left;
+  
+  .menu-item.active {
+    background: transparent;
+    border-top: 3px solid var(--sidebar-active);
   }
 
   .menu-icon {
-    font-size: 20px;
-    margin-right: 12px;
+    margin: 0;
+    font-size: 22px;
   }
 }

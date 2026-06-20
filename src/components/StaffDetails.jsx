@@ -1,9 +1,8 @@
-import React, { useState, useEffect,useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "./StaffDetails.css";
 import AddStaffModal from "./AddStaffModal";
 import EditStaffModal from "./EditStaffModal";
 import * as XLSX from "xlsx";
-
 
 const departments = [
   "All",
@@ -21,55 +20,24 @@ const StaffDetails = () => {
   const [selectedDept, setSelectedDept] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false); // 🆕 Track delete loading
+  const [isDeleting, setIsDeleting] = useState({});
   const [editModal, setEditModal] = useState(false);
-const [selectedStaff, setSelectedStaff] = useState(null);
-  // ✅ Fetch all staff from backend
-
-  const handleExportStaff = () => {
-  // choose which data to export (filtered or all)
-  const dataToExport = filteredStaff.length ? filteredStaff : staff;
-
-  // map to plain objects with desired columns
-  const rows = dataToExport.map(s => ({
-    ID: s.id,
-    Name: s.name,
-    Designation: s.designation,
-    Department: s.department,
-    Identification: s.identification || "",
-    Email: s.email || "",
-    Phone: s.phone || "",
-   "DOB": s.dob ? new Date(s.dob).toLocaleDateString() : "",           
-    "Onboarding Date": s.onboardingDate ? new Date(s.onboardingDate).toLocaleDateString() : "", 
-  }));
-
-  const worksheet = XLSX.utils.json_to_sheet(rows);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Staff");
-
-  XLSX.writeFile(workbook, "staff-details.xlsx");
-};
-
- 
+  const [selectedStaff, setSelectedStaff] = useState(null);
 
   const fetchStaff = useCallback(async () => {
-  try {
-    const res = await fetch(`${API_BASE}/api/staffs`);
-    const data = await res.json();
-    setStaff(data);
-  } catch (err) {
-    console.error("Error fetching staff:", err);
-  }
-}, [API_BASE]);
+    try {
+      const res = await fetch(`${API_BASE}/api/staffs`);
+      const data = await res.json();
+      setStaff(data);
+    } catch (err) {
+      console.error("Error fetching staff:", err);
+    }
+  }, [API_BASE]);
 
-  // ✅ initial load
   useEffect(() => {
     fetchStaff();
-  }, [API_BASE,fetchStaff]);
+  }, [fetchStaff]);
 
-
-
-  // ✅ Reactive filtering
   useEffect(() => {
     let filtered = selectedDept === "All"
       ? staff
@@ -81,198 +49,190 @@ const [selectedStaff, setSelectedStaff] = useState(null);
         item.id.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-
     setFilteredStaff(filtered);
   }, [selectedDept, staff, searchTerm]);
 
-  const handleFilter = dept => setSelectedDept(dept);
+  const handleFilter = (dept) => setSelectedDept(dept);
 
- const handleAddStaff = async (newStaff) => {
-  try {
-console.log("Sending to backend:", JSON.stringify(newStaff, null, 2));
+  const handleExportStaff = () => {
+    const dataToExport = filteredStaff.length ? filteredStaff : staff;
+    const rows = dataToExport.map(s => ({
+      ID: s.id,
+      Name: s.name,
+      Designation: s.designation,
+      Department: s.department,
+      Identification: s.identification || "",
+      Email: s.email || "",
+      Phone: s.phone || "",
+      "DOB": s.dob ? new Date(s.dob).toLocaleDateString('en-GB') : "",
+      "Onboarding Date": s.onboardingDate ? new Date(s.onboardingDate).toLocaleDateString('en-GB') : "",
+    }));
 
-    const response = await fetch(`${API_BASE}/api/staffs`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newStaff),
-    });
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Staff");
+    XLSX.writeFile(workbook, "staff-details.xlsx");
+  };
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      alert(`Failed to add staff: ${errorText}`);
-      return;
+  const handleAddStaff = async (newStaff) => {
+    try {
+      const response = await fetch(`${API_BASE}/api/staffs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newStaff),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        alert(`Failed to add staff: ${errorText}`);
+        return;
+      }
+      const data = await response.json();
+      alert(data.message || "Staff added successfully!");
+      fetchStaff();
+      setShowModal(false);
+    } catch (err) {
+      console.error("Failed to add staff:", err);
+      alert("Error while adding staff.");
     }
+  };
 
-    const data = await response.json(); // ✅ parse JSON
-    alert(data.message || "Staff added successfully!");
-    await fetchStaff(); // ✅ Wait for updated data
-  } catch (err) {
-    console.error("Failed to add staff:", err);
-    alert("Error while adding staff.");
-  }
-};
-const handleUpdateStaff = async (updatedStaff) => {
-  try {
-    const response = await fetch(`${API_BASE}/api/staffs/${updatedStaff._id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updatedStaff),
-    });
+  const handleUpdateStaff = async (updatedStaff) => {
+    try {
+      const response = await fetch(`${API_BASE}/api/staffs/${updatedStaff._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedStaff),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Update failed");
+      alert(data.message);
+      fetchStaff();
+      setEditModal(false);
+    } catch (err) {
+      console.error("Error updating staff:", err);
+      alert("Failed to update staff.");
+    }
+  };
 
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Update failed");
-
-    alert(data.message);
-    await fetchStaff();
-    setEditModal(false);
-  } catch (err) {
-    console.error("Error updating staff:", err);
-    alert("Failed to update staff.");
-  }
-};
-
-
-
-  // 🗑️ Remove handler with loading state
- const handleRemove = async (id) => {
-  if (!window.confirm("Are you sure you want to remove this staff member?")) return;
-
-  setIsDeleting((prev) => ({ ...prev, [id]: true }));
-
-  try {
-    const response = await fetch(`${API_BASE}/api/staffs/${id}`, {
-      method: "DELETE",
-    });
-
-    const message = await response.text();
-    alert(message);
-    fetchStaff();
-  } catch (err) {
-    console.error("Failed to remove staff:", err);
-    alert("Failed to remove staff member.");
-  } finally {
-    setIsDeleting((prev) => ({ ...prev, [id]: false }));
-  }
-};
-
+  const handleRemove = async (id) => {
+    if (!window.confirm("Are you sure you want to remove this staff member?")) return;
+    setIsDeleting((prev) => ({ ...prev, [id]: true }));
+    try {
+      const response = await fetch(`${API_BASE}/api/staffs/${id}`, {
+        method: "DELETE",
+      });
+      const message = await response.text();
+      alert(message);
+      fetchStaff();
+    } catch (err) {
+      console.error("Failed to remove staff:", err);
+      alert("Failed to remove staff member.");
+    } finally {
+      setIsDeleting((prev) => ({ ...prev, [id]: false }));
+    }
+  };
 
   return (
     <div className="staff-details-container">
-      <h2>Staff Details</h2>
+      <header className="staff-header">
+        <div className="header-info">
+          <h1>Staff Directory</h1>
+          <p>Manage and view all staff members details efficiently.</p>
+        </div>
+        <div className="header-actions">
+          <button onClick={handleExportStaff} className="btn btn-secondary">
+            <span className="icon">📤</span> Export
+          </button>
+          <button onClick={() => setShowModal(true)} className="btn btn-primary">
+            <span className="icon">➕</span> Add Staff
+          </button>
+        </div>
+      </header>
 
-      {/* 🔘 Department Buttons */}
-     <div className="dept-buttons">
-  {departments.map(dept => (
-    <button
-      key={dept}
-      onClick={() => handleFilter(dept)}
-      className={selectedDept === dept ? "active" : ""}
-    >
-      {dept}
-    </button>
-  ))}
+      <div className="toolbar-section">
+        <nav className="dept-filter-tabs">
+          {departments.map(dept => (
+            <button
+              key={dept}
+              onClick={() => handleFilter(dept)}
+              className={selectedDept === dept ? "tab active" : "tab"}
+            >
+              {dept}
+            </button>
+          ))}
+        </nav>
+        <div className="search-box">
+          <input
+            type="text"
+            className="modern-search"
+            placeholder="Find by name or employee ID..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
 
-  <button onClick={handleExportStaff} className="add-staff-btn">
-    Export Staff
-  </button>
+      <div className="staff-table-card">
+        <div className="table-responsive">
+          <table className="modern-table">
+            <thead>
+              <tr>
+                <th> Employee ID</th>
+                <th>Employee Name</th>
+                <th>Designation</th>
+                <th>Department</th>
+                <th>Contact Information</th>
+                <th>Important Dates</th>
+                <th className="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredStaff.length > 0 ? (
+                filteredStaff.map(member => (
+                  <tr key={member._id || member.id}>
+                    <td className="id-cell">{member.id}</td>
+                    <td>
+                      <div className="name-cell">
+                        <span className="full-name">{member.name}</span>
+                        <span className="sub-text">ID: {member.identification || "N/A"}</span>
+                      </div>
+                    </td>
+                    <td>{member.designation}</td>
+                    <td><span className={`badge dept-${member.department?.toLowerCase().replace(/\s+/g, '-') || 'default'}`}>{member.department}</span></td>
+                    <td>
+                      <div className="contact-cell">
+                        <span className="email-text">{member.email || "—"}</span>
+                        <span className="phone-text">{member.phone || "—"}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="date-cell">
+                        <span>DOB: {member.dob ? new Date(member.dob).toLocaleDateString('en-GB') : "—"}</span>
+                        <span>Joined: {member.onboardingDate ? new Date(member.onboardingDate).toLocaleDateString('en-GB') : "—"}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="action-group">
+                        <button onClick={() => { setSelectedStaff(member); setEditModal(true); }} className="action-btn edit" title="Edit Staff">✏️</button>
+                        <button onClick={() => handleRemove(member._id)} disabled={!!isDeleting[member._id]} className="action-btn delete" title="Remove Staff">
+                          {isDeleting[member._id] ? "..." : "🗑️"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="empty-row">No staff found matches your search criteria.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-  <button onClick={() => setShowModal(true)} className="add-staff-btn">
-    Add Staff
-  </button>
-</div>
-
-
-      {/* 🔍 Search Bar */}
-      <input
-        type="text"
-        className="search-input"
-        placeholder="Search by ID or Name"
-        value={searchTerm}
-        onChange={e => setSearchTerm(e.target.value)}
-      />
-
-   {/* 📊 Staff Table */}
-<div className="staff-table-container">
-  <table className="staff-table">
-    <thead>
-  <tr>
-    <th>ID</th>
-    <th>Name</th>
-    <th>Identification</th>
-    <th>Designation</th>
-    <th>Department</th>
-    <th>Email</th>    
-    <th>Phone</th>
-    <th>DOB</th>            
-    <th>Onboarding</th>      
-    <th>Reports To</th>
-    <th>Actions</th>
-  </tr>
-</thead>
-
-   <tbody>
-  {filteredStaff.map(member => (
-    <tr key={member._id || member.id}>
-      <td data-label="ID">{member.id}</td>
-      <td data-label="Name">{member.name}</td>
-       <td data-label="Identification">{member.identification || "—"}</td>
-      <td data-label="Designation">{member.designation}</td>
-      <td data-label="Department">{member.department}</td>
-      <td data-label="Email">{member.email || "—"}</td>
-      <td data-label="Phone">{member.phone || "—"}</td> 
-
- <td data-label="DOB">
-        {member.dob ? new Date(member.dob).toLocaleDateString('en-GB') : "—"}
-      </td>
-      <td data-label="Onboarding">
-        {member.onboardingDate ? new Date(member.onboardingDate).toLocaleDateString('en-GB') : "—"}
-      </td>
-
-
-      <td data-label="Reports To">{member.reportsTo || "—"}</td>
-
-      <td data-label="Actions">
-  <button
-    onClick={() => {
-      setSelectedStaff(member);
-      setEditModal(true);
-    }}
-    className="edit-btn"
-  >
-    Edit
-  </button>
-
-  <button
-    onClick={() => handleRemove(member._id)}
-    disabled={!!isDeleting[member._id]}
-    className="remove-btn"
-  >
-    {isDeleting ? "Removing..." : "Remove"}
-  </button>
-</td>
-
-    </tr>
-  ))}
-</tbody>
-
-  </table>
-</div>
-
-
-       {showModal && (
-        <AddStaffModal
-          onClose={() => setShowModal(false)}
-          onAdd={handleAddStaff}
-        />
-      )}
-
-      {editModal && (
-        <EditStaffModal
-          staffData={selectedStaff}
-          onClose={() => setEditModal(false)}
-          onUpdate={handleUpdateStaff}
-        />
-      )}
+      {showModal && <AddStaffModal onClose={() => setShowModal(false)} onAdd={handleAddStaff} />}
+      {editModal && <EditStaffModal staffData={selectedStaff} onClose={() => setEditModal(false)} onUpdate={handleUpdateStaff} />}
     </div>
   );
 };

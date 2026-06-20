@@ -21,7 +21,7 @@ const { sendLeaveStatusEmail } = require("./utils/mailer");
 // Routes
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const staffRoutes = require('./routes/staffRoutes');
-const payslipRoutes = require('./routes/payslipRoutes');
+// const payslipRoutes = require('./routes/payslipRoutes');
 const leaveBalanceRoutes = require('./routes/leaveBalanceRoutes');
 const leaveRequestsRoutes = require('./routes/leaveRequestsRoutes');
 const userRoutes = require('./routes/userRoutes'); // ఈ లైన్ యాడ్ చేయండి
@@ -42,7 +42,7 @@ app.get('/health', (req, res) => res.status(200).send('OK'));
 // API routes
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/staffs', staffRoutes);
-app.use('/api/payslip', payslipRoutes);
+// app.use('/api/payslip', payslipRoutes);
 app.use('/api/leave-balance', leaveBalanceRoutes);
 app.use('/api/leave-requests', leaveRequestsRoutes);
 app.use('/api/users', userRoutes); // ఈ లైన్ యాడ్ చేయండి

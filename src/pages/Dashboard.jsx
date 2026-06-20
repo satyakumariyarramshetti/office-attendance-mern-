@@ -5,7 +5,7 @@ import Header from '../components/Header';
 import StaffDetails from '../components/StaffDetails';
 import TodayAttendance from '../components/TodayAttendance';
 import AttendanceSheet from '../components/AttendanceSheet';
-import Payslip from '../components/Payslip';
+// import Payslip from '../components/Payslip';
 import LeaveRecord from '../components/LeaveRecord';
 import LeaveBalance from '../components/LeaveBalance';
 // --- NEW: Import the MonthlyDetails component ---
@@ -35,7 +35,7 @@ const Dashboard = () => {
           {section === 'sheet' && <AttendanceSheet />}
           {section === 'leaveRecord' && <LeaveRecord />}
           {section === 'leaveBalance' && <LeaveBalance />}
-          {section === 'payslip' && <Payslip/>}
+          {/* {section === 'payslip' && <Payslip/>} */}
           {/* --- NEW: Add conditional rendering for the new section --- */}
           {section === 'monthly' && <MonthlyDetails />} 
           {section === 'users' && <UsersManagement />}
