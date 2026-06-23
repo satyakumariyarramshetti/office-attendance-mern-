@@ -14,7 +14,8 @@ const AddStaffModal = ({ onClose, onAdd }) => {
     reportsTo: "",
     dob: "",            
     onboardingDate: "",
-    identification: ""  
+    identification: ""  ,
+    status: "Active Employee"
   });
 
   const handleChange = e => {

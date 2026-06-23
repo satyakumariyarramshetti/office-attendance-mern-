@@ -89,6 +89,16 @@ const EditStaffModal = ({ staffData, onClose, onUpdate }) => {
                   onChange={handleChange} 
                 />
               </div>
+
+             
+<div className="form-group">
+  <label>Employee Management</label>
+  <select name="status" value={form.status || "Active Employee"} onChange={handleChange}>
+    <option value="Active Employee">Active Employee</option>
+    <option value="Inactive employee">Inactive employee</option>
+  </select>
+</div>
+
             </div>
 
           </div>

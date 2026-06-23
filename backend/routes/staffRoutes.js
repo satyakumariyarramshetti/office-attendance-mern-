@@ -73,6 +73,7 @@ router.delete('/:id', async (req, res) => {
 
 // POST: fetch staff name and email by exact full staff ID
 // POST: fetch staff name and email by exact full staff ID
+// POST: fetch staff name and email by exact full staff ID
 router.post('/getById', async (req, res) => {
   const id = String(req.body.id || '').trim();
   if (!id) {
@@ -80,16 +81,19 @@ router.post('/getById', async (req, res) => {
   }
   try {
     const staff = await Staff.findOne({ id });
-   if (staff) {
-  res.json({
-    id: staff.id,
-    name: staff.name,
-    email: staff.email,
-    reportsTo: staff.reportsTo // <-- Add this line!
-  });
-}
+    if (staff) {
+      // 🔴 ఈ కొత్త చెక్ యాడ్ చేయండి
+      if (staff.status === "Inactive employee") {
+        return res.status(403).json({ error: 'Access Denied: Your account is Inactive. Attendance not allowed.' });
+      }
 
-    else {
+      res.json({
+        id: staff.id,
+        name: staff.name,
+        email: staff.email,
+        reportsTo: staff.reportsTo
+      });
+    } else {
       res.status(404).json({ error: 'Staff not found' });
     }
   } catch (error) {
@@ -107,23 +111,22 @@ router.get('/search/:partialId', async (req, res) => {
   if (!partialId || partialId.length !== 3) {
     return res.status(400).json({ error: 'Partial ID must be exactly 3 characters' });
   }
-  try {
-    const staffList = await Staff.find();
 
-    // Find staff where numeric substring matching last 3 digits equals partialId
+  try {
+    // 🔴 కేవలం Active లో ఉన్న వారిని మాత్రమే వెతకాలి
+    const staffList = await Staff.find({ status: { $ne: "Inactive employee" } });
+
     const foundStaff = staffList.find(staff => {
-      // Extract digits only, ignore non-digits
-      const digitsOnly = staff.id.replace(/\D/g, ''); // e.g. 'PS-0003' -> '0003'
+      const digitsOnly = staff.id.replace(/\D/g, ''); 
       return digitsOnly.endsWith(partialId);
     });
 
     if (!foundStaff) {
-      return res.status(404).json({ error: 'Staff not found' });
+      return res.status(404).json({ error: 'Active Staff not found' });
     }
 
     res.json({ id: foundStaff.id, name: foundStaff.name });
   } catch (err) {
-    console.error('Error searching by partial ID:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -132,11 +135,11 @@ router.put('/:id', async (req, res) => {
   try {
 const { identification } = req.body; 
 
-    // 1. ఒకవేళ identification మార్చాలని చూస్తే, అది వేరే ఎవరికైనా ఉందేమో చెక్ చేయండి
+    
     if (identification) {
       const existingStaff = await Staff.findOne({ 
         identification: identification, 
-        _id: { $ne: req.params.id } // ప్రస్తుత స్టాఫ్ కాకుండా వేరే వాళ్ళకి ఉందేమో చూస్తుంది
+        _id: { $ne: req.params.id } 
       });
 
       if (existingStaff) {
@@ -160,10 +163,6 @@ const { identification } = req.body;
     res.status(500).json({ error: "Error updating staff" });
   }
 });
-
-
-
-
 
 
 module.exports = router;

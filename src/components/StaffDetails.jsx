@@ -17,6 +17,7 @@ const StaffDetails = () => {
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
   const [staff, setStaff] = useState([]);
   const [filteredStaff, setFilteredStaff] = useState([]);
+  const [viewMode, setViewMode] = useState("Active Employee");
   const [selectedDept, setSelectedDept] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -38,19 +39,25 @@ const StaffDetails = () => {
     fetchStaff();
   }, [fetchStaff]);
 
-  useEffect(() => {
-    let filtered = selectedDept === "All"
-      ? staff
-      : staff.filter(item => item.department === selectedDept);
+ // Step 2: Status బట్టి ఫిల్టర్ చేయడం
+useEffect(() => {
+  // ముందుగా Active/Inactive బట్టి ఫిల్టర్
+  let filtered = staff.filter(item => (item.status || "Active Employee") === viewMode);
 
-    if (searchTerm.trim()) {
-      filtered = filtered.filter(item =>
-        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.id.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    setFilteredStaff(filtered);
-  }, [selectedDept, staff, searchTerm]);
+  // తర్వాత డిపార్ట్‌మెంట్ ఫిల్టర్
+  if (selectedDept !== "All") {
+    filtered = filtered.filter(item => item.department === selectedDept);
+  }
+
+  // తర్వాత సెర్చ్ ఫిల్టర్
+  if (searchTerm.trim()) {
+    filtered = filtered.filter(item =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.id.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
+  setFilteredStaff(filtered);
+}, [selectedDept, staff, searchTerm, viewMode]);
 
   const handleFilter = (dept) => setSelectedDept(dept);
 
@@ -61,6 +68,7 @@ const StaffDetails = () => {
       Name: s.name,
       Designation: s.designation,
       Department: s.department,
+      Status: s.status || "Active Employee",
       Identification: s.identification || "",
       Email: s.email || "",
       Phone: s.phone || "",
@@ -71,7 +79,7 @@ const StaffDetails = () => {
     const worksheet = XLSX.utils.json_to_sheet(rows);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Staff");
-    XLSX.writeFile(workbook, "staff-details.xlsx");
+XLSX.writeFile(workbook, `staff-details-${viewMode}.xlsx`); 
   };
 
   const handleAddStaff = async (newStaff) => {
@@ -149,6 +157,23 @@ const StaffDetails = () => {
         </div>
       </header>
 
+  
+<div className="status-toggle-bar">
+  <button 
+    className={`status-tab ${viewMode === "Active Employee" ? "active" : ""}`}
+    onClick={() => setViewMode("Active Employee")}
+  >
+    Active Members ({staff.filter(s => (s.status || "Active Employee") === "Active Employee").length})
+  </button>
+  <button 
+    className={`status-tab inactive ${viewMode === "Inactive employee" ? "active" : ""}`}
+    onClick={() => setViewMode("Inactive employee")}
+  >
+    Inactive Members ({staff.filter(s => s.status === "Inactive employee").length})
+  </button>
+</div>
+
+
       <div className="toolbar-section">
         <nav className="dept-filter-tabs">
           {departments.map(dept => (
@@ -183,6 +208,7 @@ const StaffDetails = () => {
                 <th>Department</th>
                 <th>Contact Information</th>
                 <th>Important Dates</th>
+                <th>Employee Management</th>
                 <th className="text-center">Actions</th>
               </tr>
             </thead>
@@ -211,6 +237,18 @@ const StaffDetails = () => {
                         <span>Joined: {member.onboardingDate ? new Date(member.onboardingDate).toLocaleDateString('en-GB') : "—"}</span>
                       </div>
                     </td>
+
+                     <td>
+      <select 
+        className="status-select"
+        value={member.status || "Active Employee"}
+        onChange={(e) => handleUpdateStaff({ ...member, status: e.target.value })}
+      >
+        <option value="Active Employee">Active Employee</option>
+        <option value="Inactive employee">Inactive employee</option>
+      </select>
+    </td>
+
                     <td>
                       <div className="action-group">
                         <button onClick={() => { setSelectedStaff(member); setEditModal(true); }} className="action-btn edit" title="Edit Staff">✏️</button>
@@ -223,7 +261,7 @@ const StaffDetails = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="empty-row">No staff found matches your search criteria.</td>
+                  <td colSpan="8" className="empty-row">No staff found matches your search criteria.</td>
                 </tr>
               )}
             </tbody>

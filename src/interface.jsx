@@ -141,7 +141,7 @@ const getPrevDate = (dateString) => {
     setMessage('');
     let staffName = '';
 
-    try {
+  try {
       const staffRes = await fetch(`${API_BASE}/api/staffs/getById`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -151,12 +151,24 @@ const getPrevDate = (dateString) => {
       if (staffRes.ok) {
         const staffData = await staffRes.json();
         staffName = staffData.name || '';
-      } else if (staffRes.status === 404) {
+      } 
+      // 🔴 ఈ else if బ్లాక్ యాడ్ చేయండి (Inactive కేస్ కోసం)
+      else if (staffRes.status === 403) {
+        const errorData = await staffRes.json();
+        setStaffNotFound(true); 
+        setMessage(`🚫 ${errorData.error}`); // బ్యాకెండ్ నుండి వచ్చే ఎర్రర్ చూపిస్తుంది
+        setFormData(prev => ({ ...prev, name: '', id: '' })); 
+        return;
+      } 
+      else if (staffRes.status === 404) {
         setStaffNotFound(true); setMessage('⚠️ Staff ID not found.'); setFormData(prev => ({ ...prev, name: '', id: '' })); return;
       }
     } catch (error) {
       console.error('Error fetching staff:', error); setStaffNotFound(true); return;
     }
+
+
+
 
     try {
       const res = await fetch(`${API_BASE}/api/attendance/getByIdDate`, {

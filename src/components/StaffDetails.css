@@ -201,3 +201,54 @@
     .toolbar-section { flex-direction: column; gap: 15px; align-items: stretch; }
     .modern-search { width: 100%; }
 }
+
+
+
+.status-select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #dce0e4;
+  font-size: 13px;
+  background-color: #fff;
+  cursor: pointer;
+  outline: none;
+  font-weight: 500;
+}
+
+.status-select:focus {
+  border-color: #2563eb;
+}
+
+.status-select[value="Active Employee"] { color: #059669; }
+.status-select[value="Inactive employee"] { color: #dc2626; }
+
+
+/* Step 5: ట్యాబ్స్ అందంగా కనిపించడానికి */
+.status-toggle-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.status-tab {
+  padding: 10px 25px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background: white;
+  font-weight: 600;
+  cursor: pointer;
+  color: #64748b;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.status-tab.active {
+  border-color: #2563eb;
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.status-tab.inactive.active {
+  border-color: #dc2626;
+  color: #dc2626;
+  background: #fef2f2;
+}
