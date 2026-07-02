@@ -95,9 +95,8 @@ const Interface = () => {
   const [delayInfoMessage, setDelayInfoMessage] = useState('');
   const [outPermissionInfoMessage, setOutPermissionInfoMessage] = useState('');
   const [halfDayReason, setHalfDayReason] = useState('');   // reason for First/Second Half
-
-
-
+  const [isInTimeLocked, setIsInTimeLocked] = useState(false);
+  const [isOutTimeLocked, setIsOutTimeLocked] = useState(false);
 
 
 
@@ -178,11 +177,29 @@ const getPrevDate = (dateString) => {
       });
 
       let attendanceData = {};
+      
       if (res.ok) {
         attendanceData = await res.json();
+
+        
+        if (attendanceData.inTime) {
+          setIsInTimeLocked(true);
+        } else {
+          setIsInTimeLocked(false);
+        }
+
+
+        if (attendanceData.outTime) {
+  setIsOutTimeLocked(true);
+} else {
+  setIsOutTimeLocked(false);
+}
+
         if (!attendanceData.lunchOut || !attendanceData.lunchIn) setLunchSubmitEnabled(true);
         else { setLunchSubmitEnabled(false); setMessage('🥗 Lunch In & Out already submitted.'); }
-      } else {
+     } else {
+        setIsInTimeLocked(false);
+        setIsOutTimeLocked(false); 
         setLunchSubmitEnabled(true);
       }
       
@@ -220,6 +237,8 @@ const getPrevDate = (dateString) => {
       setFormData(prev => ({...prev, id: fullId, name: staffName}));
     }
   }, [API_BASE]);
+
+  
 
   // --- useEffects (no changes needed here) ---
   useEffect(() => {
@@ -523,10 +542,12 @@ setFormData({
   siteComments: '',
   leaveType: '',
   location: '',
-  delayReason: ''   // <--- VERY IMPORTANT FIX
+  delayReason: ''   
 });
       setInTimeMethod('');
       setStaffNotFound(false); setMessage(''); setLunchSubmitEnabled(false); setActiveSideCard(null);
+      setIsInTimeLocked(false); 
+      setIsOutTimeLocked(false);
     } else {
       alert(result.error || 'Submission failed!');
     }
@@ -742,6 +763,8 @@ const handleLeaveSubmit = async (e) => {
     className="form-control"
     value={formData.inTime}
     onChange={handleChange}
+    readOnly={isInTimeLocked} // <--- ఈ లైన్ యాడ్ చేయండి
+    style={isInTimeLocked ? { backgroundColor: '#e9ecef', cursor: 'not-allowed' } : {}} // ఆప్షనల్: గ్రే కలర్ కోసం
   />
 </div>
 
@@ -823,7 +846,18 @@ const handleLeaveSubmit = async (e) => {
               <form className="d-flex flex-column h-100" onSubmit={(e) => handleSubmit(e, 'outTime')}>
                 <StaffIdInput inputId="idOutTime" value={idInputs.outTime} onChange={(e) => handleIdChange(e, 'outTime')} staffNotFound={staffNotFound} />
                 <div className="form-group mb-2"><label>Date</label><input type="date" className="form-control" value={formData.date} readOnly /></div>
-                <div className="form-group mb-2"><label>Out Time</label><input type="time" id="outTime" className="form-control" value={formData.outTime} onChange={handleChange} /></div>
+                <div className="form-group mb-2">
+  <label>Out Time</label>
+  <input 
+    type="time" 
+    id="outTime" 
+    className="form-control" 
+    value={formData.outTime} 
+    onChange={handleChange}
+    readOnly={isOutTimeLocked} 
+    style={isOutTimeLocked ? { backgroundColor: '#e9ecef', cursor: 'not-allowed' } : {}} 
+  />
+</div>
                 <div className="form-group mb-3">
   <label htmlFor="dailyLeaveType">Permission Type</label>
   <select
@@ -831,6 +865,7 @@ const handleLeaveSubmit = async (e) => {
     className="form-control"
     value={formData.dailyLeaveType}
     onChange={handleChange}
+    disabled={isOutTimeLocked}
   >
     <option value="">Select Permission</option>
     <option value="Second 50% Leave">Second 50% Leave</option>
@@ -864,7 +899,15 @@ const handleLeaveSubmit = async (e) => {
 </div>
 
                 {outTimeMessage.text && (<div className={`time-message mb-3 ${outTimeMessage.type === 'success' ? 'text-success' : 'text-danger'}`}>{outTimeMessage.text}</div>)}
-                <div className="mt-auto"><button className="btn btn-primary btn-block" type="submit" disabled={staffNotFound || !formData.id}>Submit</button></div>
+               <div className="mt-auto">
+  <button 
+    className="btn btn-primary btn-block" 
+    type="submit" 
+    disabled={staffNotFound || !formData.id || isOutTimeLocked} 
+  >
+    Submit
+  </button>
+</div>
               </form>
             </div>
           </div>
