@@ -745,7 +745,7 @@ const handleLeaveSubmit = async (e) => {
           {/* In Time Card */}
           <div className="col-lg-3 col-md-6 mb-4">
             <div className="card custom-card h-100">
-              <h5 className="card-title">Intime Details <div><FaClock className="text-primary fs-4 mt-1" /></div></h5>
+              <h5 className="card-title">InTime Details <div><FaClock className="text-primary fs-4 mt-1" /></div></h5>
               <form id="inTimeForm" className="d-flex flex-column h-100" onSubmit={(e) => handleSubmit(e, 'inTime')}>
                 <StaffIdInput inputId="idInTime" value={idInputs.inTime} onChange={(e) => handleIdChange(e, 'inTime')} staffNotFound={staffNotFound} />
                 <div className="form-group mb-2"><label>Name</label><input type="text" className="form-control" value={formData.name} readOnly /></div>
