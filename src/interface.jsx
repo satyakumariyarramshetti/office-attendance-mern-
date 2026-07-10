@@ -98,7 +98,11 @@ const Interface = () => {
   const [halfDayReason, setHalfDayReason] = useState('');   // reason for First/Second Half
   const [isInTimeLocked, setIsInTimeLocked] = useState(false);
   const [isOutTimeLocked, setIsOutTimeLocked] = useState(false);
-  const [missingActivities, setMissingActivities] = useState([]);
+
+ const [missingActivities, setMissingActivities] = useState([]);
+const [allMissingActivities, setAllMissingActivities] = useState([]);
+const [showMissingFull, setShowMissingFull] = useState(false);
+const [missingTotalCount, setMissingTotalCount] = useState(0);
 
 
   // --- HELPER FUNCTIONS ---
@@ -141,9 +145,24 @@ const getPrevDate = (dateString) => {
           `${API_BASE}/api/activity-reminder/missing-activities?employeeId=${employeeId}`
         );
 
-        const data = await res.json();
+       const data = await res.json();
 
-        setMissingActivities(data.data || []);
+
+// only recent 3 days for UI
+setMissingActivities(
+    data.recentMissingDays || []
+);
+
+
+// complete list for View Full
+setAllMissingActivities(
+    data.data || []
+);
+
+
+setMissingTotalCount(
+    data.totalMissingDays || 0
+);
 
     }
     catch(err){
@@ -576,6 +595,10 @@ setFormData({
       setStaffNotFound(false); setMessage(''); setLunchSubmitEnabled(false); setActiveSideCard(null);
       setIsInTimeLocked(false); 
       setIsOutTimeLocked(false);
+      setMissingActivities([]);
+setAllMissingActivities([]);
+setMissingTotalCount(0);
+setShowMissingFull(false);
     } else {
       alert(result.error || 'Submission failed!');
     }
@@ -844,22 +867,59 @@ const handleLeaveSubmit = async (e) => {
   </div>
 )}
 
-{missingActivities.length > 0 && (
-  <div className="activity-alert">
+{missingTotalCount > 0 && (
 
-    <b>
-      ⚠️ Alert: Activity Sheet Pending for the Below Dates.
-    </b>
+<div className="activity-alert">
 
-    <ul>
-      {missingActivities.map((item, index) => (
-        <li key={index}>
-          {item.missingActivityDate}
-        </li>
-      ))}
-    </ul>
+<b>
+⚠️ Activity Sheet Pending
+</b>
 
-  </div>
+
+<p>
+Total Missing Days : {missingTotalCount}
+</p>
+
+
+<ul>
+
+{
+missingActivities.map((item,index)=>(
+
+<li key={index}>
+{item.missingActivityDate}
+</li>
+
+))
+
+}
+
+</ul>
+
+
+
+{missingTotalCount > 3 && (
+
+<button
+
+type="button"
+
+className="btn btn-sm btn-outline-primary"
+
+onClick={()=>setShowMissingFull(true)}
+
+>
+
+View Full
+
+</button>
+
+)}
+
+
+
+</div>
+
 )}
 
 
@@ -1063,6 +1123,82 @@ const handleLeaveSubmit = async (e) => {
           </div>
         </div>
       </div>
+      {showMissingFull && (
+
+<div
+style={{
+position:"fixed",
+top:0,
+left:0,
+right:0,
+bottom:0,
+background:"rgba(0,0,0,0.5)",
+display:"flex",
+alignItems:"center",
+justifyContent:"center",
+zIndex:9999
+}}
+>
+
+
+<div
+style={{
+background:"#fff",
+padding:"20px",
+borderRadius:"10px",
+width:"400px",
+maxHeight:"80vh",
+overflowY:"auto"
+}}
+>
+
+
+<h5>
+Complete Missing Activity Dates
+</h5>
+
+
+<p>
+Total : {missingTotalCount} Days
+</p>
+
+
+<ul>
+
+{
+allMissingActivities.map((item,index)=>(
+
+<li key={index}>
+{item.missingActivityDate}
+</li>
+
+))
+}
+
+</ul>
+
+
+
+<button
+
+className="btn btn-danger"
+
+onClick={()=>setShowMissingFull(false)}
+
+>
+
+Close
+
+</button>
+
+
+
+</div>
+
+
+</div>
+
+)}
     </div>
   );
 };

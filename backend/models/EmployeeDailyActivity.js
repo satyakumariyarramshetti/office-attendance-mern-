@@ -30,6 +30,11 @@ const employeeDailyActivitySchema = new mongoose.Schema({
 
 });
 
+employeeDailyActivitySchema.index({
+    employeeId:1,
+    date:-1
+});
+
 
 module.exports = projectDB.model(
     "employeedailyactivities",
