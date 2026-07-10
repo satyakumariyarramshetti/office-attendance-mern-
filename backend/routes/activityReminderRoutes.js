@@ -7,175 +7,191 @@ const Staff = require("../models/Staff");
 
 router.get("/missing-activities", async (req,res)=>{
 
-    try{
+try{
 
-        const { employeeId } = req.query;
+const { employeeId } = req.query;
 
-        const staff = await Staff.findOne({
+
+const staff = await Staff.findOne({
     id: employeeId
-});
+}).lean();
 
 
 if(!staff){
 
-    return res.status(404).json({
-        message:"Employee not found"
-    });
+return res.status(404).json({
+message:"Employee not found"
+});
 
 }
 
 
-// Activity not required employees skip
+
 if(staff.activityRequired === false){
 
-    return res.json({
-
-        employeeId,
-
-        name: staff.name,
-
-        activityRequired:false,
-
-        checkedDates:[],
-
-        totalMissingDays:0,
-
-        data:[]
-
-    });
+return res.json({
+employeeId,
+name:staff.name,
+activityRequired:false,
+data:[]
+});
 
 }
 
 
-        // Generate last 4 date strings matching Attendance format
-        const last4Dates = [];
 
-        for(let i=1; i<=4; i++){
+// last 4 dates
 
-            const date = new Date();
-            date.setDate(date.getDate() - i);
+const last4Dates=[];
 
 
-           const formattedDate =
-    date.getFullYear() +
-    "-" +
-    String(date.getMonth()+1).padStart(2,'0') +
-    "-" +
-    String(date.getDate()).padStart(2,'0');
+for(let i=1;i<=4;i++){
+
+const d=new Date();
+
+d.setDate(d.getDate()-i);
 
 
-            last4Dates.push(formattedDate);
+last4Dates.push(
+`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`
+);
 
-        }
+}
 
 
 
+// Attendance fetch
 
+const attendanceRecords =
+await Attendance.find({
 
-        // Attendance collection (String date)
-        const attendanceRecords = await Attendance.find({
+id:employeeId,
 
-            id: employeeId,
+inTime:{
+$exists:true,
+$ne:""
+},
 
-            inTime:{
-                $exists:true,
-                $ne:""
-            },
+date:{
+$in:last4Dates
+}
 
-            date:{
-                $in:last4Dates
-            }
-
-        });
-
-
-
-        const missingActivities=[];
+})
+.lean();
 
 
 
-        for(const attendance of attendanceRecords){
+if(attendanceRecords.length===0){
+
+return res.json({
+employeeId,
+data:[]
+});
+
+}
 
 
-            const [year, month, day] = attendance.date.split("-");
+
+// Date range for activity query
+
+const startDate =
+new Date();
+
+startDate.setDate(startDate.getDate()-4);
+
+startDate.setHours(0,0,0,0);
 
 
-const attendanceDate = new Date(
-    year,
-    month-1,
-    day
+
+const endDate =
+new Date();
+
+endDate.setHours(23,59,59,999);
+
+
+
+// Fetch ALL activities once
+
+const activities =
+await EmployeeDailyActivity.find({
+
+employeeId:employeeId.toUpperCase(),
+
+date:{
+$gte:startDate,
+$lte:endDate
+}
+
+})
+.select("date")
+.lean();
+
+
+
+// Convert dates to string map
+
+const activityDates =
+new Set(
+activities.map(a =>
+a.date.toISOString().split("T")[0]
+)
 );
 
 
-const startOfDay = new Date(attendanceDate);
-startOfDay.setHours(0,0,0,0);
+
+const missingActivities=[];
 
 
-const endOfDay = new Date(attendanceDate);
-endOfDay.setHours(23,59,59,999);
+attendanceRecords.forEach(att=>{
 
 
-            // Activity collection (Date type)
-            const activityExists =
-                await EmployeeDailyActivity.findOne({
-
-                    employeeId: employeeId.toUpperCase(),
-
-                    date:{
-                        $gte:startOfDay,
-                        $lte:endOfDay
-                    }
-
-                });
+if(!activityDates.has(att.date)){
 
 
+missingActivities.push({
 
-            if(!activityExists){
+employeeId:att.id,
 
-                missingActivities.push({
+name:att.name,
 
-                    employeeId: attendance.id,
+missingActivityDate:att.date,
 
-                    name: attendance.name,
-
-                    missingActivityDate: attendance.date,
-
-                    message:
-                    "You were present on this day but activity sheet was not filled"
-
-                });
-
-            }
-
-        }
-
-
-
-        res.json({
-
-            employeeId,
-
-            checkedDates:last4Dates,
-
-            totalMissingDays:missingActivities.length,
-
-            data:missingActivities
-
-        });
-
-
-
-    }catch(error){
-
-        console.log(error);
-
-        res.status(500).json({
-            message:error.message
-        });
-
-    }
+message:
+"You were present on this day but activity sheet was not filled"
 
 });
 
 
+}
+
+
+});
+
+
+
+res.json({
+
+employeeId,
+
+totalMissingDays:
+missingActivities.length,
+
+data:missingActivities
+
+});
+
+
+
+}
+catch(error){
+
+console.log(error);
+
+res.status(500).json({
+message:error.message
+});
+
+}
+
+});
 module.exports = router;
