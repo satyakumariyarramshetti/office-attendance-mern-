@@ -2,11 +2,26 @@ import React, { useState } from "react";
 import "./EditStaffModal.css";
 
 const EditStaffModal = ({ staffData, onClose, onUpdate }) => {
-  const [form, setForm] = useState({ ...staffData });
+const [form, setForm] = useState({
+  ...staffData,
+  activityRequired:
+    staffData.activityRequired !== undefined
+    ? staffData.activityRequired
+    : true
+});
+ const handleChange = (e) => {
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+ const {name,value}=e.target;
+
+ setForm({
+   ...form,
+   [name]:
+    name==="activityRequired"
+    ? value==="true"
+    : value
+ });
+
+};
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -89,6 +104,24 @@ const EditStaffModal = ({ staffData, onClose, onUpdate }) => {
                   onChange={handleChange} 
                 />
               </div>
+
+              <div className="form-group">
+
+<label>Activity Sheet Required</label>
+
+<select
+  name="activityRequired"
+  value={form.activityRequired}
+  onChange={handleChange}
+>
+
+<option value={true}>Yes</option>
+
+<option value={false}>No</option>
+
+</select>
+
+</div>
 
              
 <div className="form-group">

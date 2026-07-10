@@ -35,6 +35,7 @@ const StaffIdInput = ({ inputId, value, onChange, staffNotFound }) => (
 );
 
 
+
 // ✅ Helper function: convert "HH:MM" → total minutes
 const timeToMinutes = (time) => {
   if (!time) return 0;
@@ -97,7 +98,8 @@ const Interface = () => {
   const [halfDayReason, setHalfDayReason] = useState('');   // reason for First/Second Half
   const [isInTimeLocked, setIsInTimeLocked] = useState(false);
   const [isOutTimeLocked, setIsOutTimeLocked] = useState(false);
-
+  const [missingActivities, setMissingActivities] = useState([]);
+  const [checkingActivity, setCheckingActivity] = useState(false);
 
 
   // --- HELPER FUNCTIONS ---
@@ -232,12 +234,51 @@ const getPrevDate = (dateString) => {
   delayReason: attendanceData.delayReason || prev.delayReason || '',
 
       }));
+
+      checkMissingActivities(fullId);
+
     } catch (err) {
       console.error('Error fetching attendance:', err);
       setFormData(prev => ({...prev, id: fullId, name: staffName}));
     }
   }, [API_BASE]);
 
+
+const checkMissingActivities = async (employeeId)=>{
+
+    if(!employeeId) return;
+
+    try{
+
+        setCheckingActivity(true);
+
+        const res = await fetch(
+          `${API_BASE}/api/activity-reminder/missing-activities?employeeId=${employeeId}`
+        );
+
+        const data = await res.json();
+
+
+        setMissingActivities(data.data || []);
+
+
+    }catch(err){
+
+        console.log(
+          "Missing activity error",
+          err
+        );
+
+        setMissingActivities([]);
+
+    }
+    finally{
+
+        setCheckingActivity(false);
+
+    }
+
+};
   
 
   // --- useEffects (no changes needed here) ---
@@ -813,6 +854,24 @@ const handleLeaveSubmit = async (e) => {
         {delayInfoMessage}
       </div>
     )}
+  </div>
+)}
+
+{missingActivities.length > 0 && (
+  <div className="activity-alert">
+
+    <b>
+      ⚠️ Alert: Activity Sheet Pending for the Below Dates.
+    </b>
+
+    <ul>
+      {missingActivities.map((item, index) => (
+        <li key={index}>
+          {item.missingActivityDate}
+        </li>
+      ))}
+    </ul>
+
   </div>
 )}
 

@@ -1,3 +1,4 @@
+//backend/server.js
 require('dotenv').config();
 
 // Log environment variables
@@ -13,6 +14,7 @@ const express = require('express');
 const dns = require("dns");
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 const mongoose = require('mongoose');
+require("./config/newDatabase");
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { sendLeaveStatusEmail } = require("./utils/mailer");
@@ -20,6 +22,7 @@ const { sendLeaveStatusEmail } = require("./utils/mailer");
 
 // Routes
 const attendanceRoutes = require('./routes/attendanceRoutes');
+const activityReminderRoutes = require("./routes/activityReminderRoutes");
 const staffRoutes = require('./routes/staffRoutes');
 // const payslipRoutes = require('./routes/payslipRoutes');
 const leaveBalanceRoutes = require('./routes/leaveBalanceRoutes');
@@ -46,7 +49,10 @@ app.use('/api/staffs', staffRoutes);
 app.use('/api/leave-balance', leaveBalanceRoutes);
 app.use('/api/leave-requests', leaveRequestsRoutes);
 app.use('/api/users', userRoutes); // ఈ లైన్ యాడ్ చేయండి
-
+app.use(
+ "/api/activity-reminder",
+ activityReminderRoutes
+);
 
 // Put this after your API routes (before DB connect)
 app.get("/test-mail", async (req, res) => {

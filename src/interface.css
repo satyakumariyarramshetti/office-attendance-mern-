@@ -741,3 +741,43 @@ select.form-control {
   color: black;                /* Black text */
   border: 1px solid #007bff;    /* Keep blue border */
 }
+
+.activity-alert {
+  margin-top: 15px;
+  padding: 12px 15px;
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-left: 5px solid #ff9800;
+  color: #664d03;
+  border-radius: 8px;
+  font-size: 14px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.activity-alert b {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.activity-alert ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.activity-alert li {
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

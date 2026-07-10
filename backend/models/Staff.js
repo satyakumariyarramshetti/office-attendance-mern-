@@ -11,7 +11,13 @@ const staffSchema = new mongoose.Schema({
   reportsTo: { type: String }, 
   dob: { type: Date },            
   onboardingDate: { type: Date },  
-  status: { type: String, default: "Active Employee" } 
+  status: { type: String, default: "Active Employee" } ,
+   // NEW FIELD
+  activityRequired: {
+    type: Boolean,
+    default: true
+  }
+
 });
 
 
