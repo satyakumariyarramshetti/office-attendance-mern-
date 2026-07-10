@@ -99,7 +99,6 @@ const Interface = () => {
   const [isInTimeLocked, setIsInTimeLocked] = useState(false);
   const [isOutTimeLocked, setIsOutTimeLocked] = useState(false);
   const [missingActivities, setMissingActivities] = useState([]);
-  const [checkingActivity, setCheckingActivity] = useState(false);
 
 
   // --- HELPER FUNCTIONS ---
@@ -131,6 +130,31 @@ const getPrevDate = (dateString) => {
     const minutes = totalMinutes % 60;
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
   };
+
+  const checkMissingActivities = useCallback(async(employeeId)=>{
+
+    if(!employeeId) return;
+
+    try{
+
+        const res = await fetch(
+          `${API_BASE}/api/activity-reminder/missing-activities?employeeId=${employeeId}`
+        );
+
+        const data = await res.json();
+
+        setMissingActivities(data.data || []);
+
+    }
+    catch(err){
+
+        console.log(err);
+        setMissingActivities([]);
+
+    }
+
+},[API_BASE]);  
+
 
   // --- CORE DATA FETCHING LOGIC ---
   const fetchStaffAndAttendance = useCallback(async (numericId, date, context) => {
@@ -241,45 +265,8 @@ const getPrevDate = (dateString) => {
       console.error('Error fetching attendance:', err);
       setFormData(prev => ({...prev, id: fullId, name: staffName}));
     }
-  }, [API_BASE]);
+}, [API_BASE, checkMissingActivities]);
 
-
-const checkMissingActivities = async (employeeId)=>{
-
-    if(!employeeId) return;
-
-    try{
-
-        setCheckingActivity(true);
-
-        const res = await fetch(
-          `${API_BASE}/api/activity-reminder/missing-activities?employeeId=${employeeId}`
-        );
-
-        const data = await res.json();
-
-
-        setMissingActivities(data.data || []);
-
-
-    }catch(err){
-
-        console.log(
-          "Missing activity error",
-          err
-        );
-
-        setMissingActivities([]);
-
-    }
-    finally{
-
-        setCheckingActivity(false);
-
-    }
-
-};
-  
 
   // --- useEffects (no changes needed here) ---
   useEffect(() => {
