@@ -35,6 +35,10 @@ employeeDailyActivitySchema.index({
     date:-1
 });
 
+employeeDailyActivitySchema.index({
+    date:1
+});
+
 
 module.exports = projectDB.model(
     "employeedailyactivities",

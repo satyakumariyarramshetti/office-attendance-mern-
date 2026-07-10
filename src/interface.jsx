@@ -278,7 +278,13 @@ setMissingTotalCount(
 
       }));
 
-      checkMissingActivities(fullId);
+      if(
+ context==="inTime" ||
+ context==="lunch" ||
+ context==="outTime"
+){
+    checkMissingActivities(fullId);
+}
 
     } catch (err) {
       console.error('Error fetching attendance:', err);

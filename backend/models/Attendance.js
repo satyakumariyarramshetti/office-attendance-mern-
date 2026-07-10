@@ -29,6 +29,12 @@ const AttendanceSchema = new mongoose.Schema({
 
 AttendanceSchema.index({ id: 1, date: 1 }, { unique: true });
 
+AttendanceSchema.index({
+    id: 1,
+    date: -1,
+    inTime: 1
+});
+
 
 AttendanceSchema.index(
   { id: 1, leaveType: 1, date: -1 }, 
