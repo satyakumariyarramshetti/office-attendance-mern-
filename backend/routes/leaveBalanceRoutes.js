@@ -172,6 +172,12 @@ router.post('/my-leave-balance', async (req, res) => {
             return res.status(404).json({ message: 'Invalid Identification code.' });
         }
 
+        if (staff.status === "Inactive employee") {
+      return res.status(403).json({ 
+        message: "Access Denied: Your account is Inactive. You cannot view your leave balance." 
+      });
+    }
+
         // 2. Staff దొరికితే, అతని 'id' (PS-0003) ని ఉపయోగించి LeaveBalance వెతకాలి
         const balance = await LeaveBalance.findOne({ employeeId: staff.id });
 

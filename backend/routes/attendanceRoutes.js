@@ -763,6 +763,10 @@ router.post('/my-attendance', async (req, res) => {
       return res.status(404).json({ error: 'Invalid Identification code. Please check again.' });
     }
 
+    if (staff.status === "Inactive employee") {
+      return res.status(403).json({ error: 'Access Denied: Your account is Inactive. You cannot view the attendance sheet.' });
+    }
+    
     const employeeId = staff.id; // ఆ స్టాఫ్ యొక్క అసలు ID (PS-0003 etc.)
 
     // 2. ఆ ID కి సంబంధించిన అటెండెన్స్ తీసుకురావాలి

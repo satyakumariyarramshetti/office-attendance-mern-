@@ -35,15 +35,18 @@ const MonthlyLeaveSummary = () => {
         grouped[key].push(rec);
       });
 
-      setGroupedData(grouped);
-    } catch (err) {
-      alert("Invalid Identification Code");
-      setGroupedData({});
-      setStaffInfo(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+       setGroupedData(grouped);
+  } catch (err) {
+    // మార్పు ఇక్కడ: బ్యాకెండ్ పంపే మెసేజ్ ని చూపిస్తాము (Access Denied వంటివి)
+    const errorMsg = err.response?.data?.error || err.response?.data?.message || "Invalid Identification Code";
+    alert(errorMsg); 
+    
+    setGroupedData({});
+    setStaffInfo(null);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="summary-page-container">
