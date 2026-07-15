@@ -601,10 +601,12 @@ router.get('/today', async (req, res) => {
     const mmdd = todayDate.substring(4); // "-MM-DD"
     const cutoffTime = "09:15";
 
-    const allStaff = await Staff.find();
+    // ఇక్కడ మార్పు చేసాము: కేవలం Active స్టాఫ్‌ను మాత్రమే తీసుకుంటున్నాం
+    const allStaff = await Staff.find({ status: { $ne: "Inactive employee" } });
+    
     const todaysAttendance = await Attendance.find({ date: todayDate });
-
     const presentIds = new Set(todaysAttendance.map(a => a.id));
+
 
     let presents = todaysAttendance.map(att => ({
       id: att.id,
@@ -617,6 +619,7 @@ router.get('/today', async (req, res) => {
       permissionType: att.permissionType,
       hours: att.hours,
       leaveType: att.leaveType,
+      delayReason: att.delayReason
     }));
 
     // ---- AUTO HOLIDAY LOGIC FOR TODAY ----
@@ -632,6 +635,7 @@ if (match) {
           name: st.name,
           department: st.department,
           designation: st.designation,
+          status: st.status,
           leaveType:match.name
         }));
     } else {
@@ -643,6 +647,7 @@ if (match) {
           name: st.name,
           department: st.department,
           designation: st.designation,
+          status: st.status
         }));
     }
 

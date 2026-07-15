@@ -12,59 +12,73 @@ const TodayAttendance = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchTodayAttendance = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(`${API_BASE}/api/attendance/today`);
-        if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
-        const data = await response.json();
+  // TodayAttendance.js లోని ఈ ఫంక్షన్‌ను అప్‌డేట్ చేయండి
 
-        setPresentees(data.presents || []);
-        setLateComers(data.lateComers || []);
-        setAbsentees(data.absents || []);
-      } catch (err) {
-        setError("Failed to load attendance data. Please try again.");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+const fetchTodayAttendance = async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    const response = await fetch(`${API_BASE}/api/attendance/today`);
+    if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
+    const data = await response.json();
 
+    setPresentees(data.presents || []);
+    setLateComers(data.lateComers || []);
+
+    // మార్పు ఇక్కడ: Absentees లిస్ట్‌లో Inactive వాళ్ళు ఎవరైనా వస్తే వారిని తీసివేస్తాం
+    const filteredAbsentees = (data.absents || []).filter(
+      (emp) => emp.status !== "Inactive employee"
+    );
+    setAbsentees(filteredAbsentees);
+
+  } catch (err) {
+    setError("Failed to load attendance data. Please try again.");
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
     fetchTodayAttendance();
   }, [API_BASE]);
 
-  const renderTable = (data, title, type) => (
-    <div className="detail-view-container animate-slide-up">
-      <div className="detail-header">
-        <h3 className={`text-${type}`}>{title}</h3>
-        <span className="badge-count">{data.length} Staff Members</span>
-      </div>
+ const renderTable = (data, title, type) => (
+  <div className="detail-view-container animate-slide-up">
+    <div className="detail-header">
+      <h3 className={`text-${type}`}>{title}</h3>
+      <span className="badge-count">{data.length} Staff Members</span>
+    </div>
       
-      {/* Scrollable Table Wrapper */}
-      <div className="attendance-scroll-area">
-        <table className="compact-modern-table">
-          <thead>
-            <tr>
-              <th style={{ width: '120px' }}>Employee ID</th>
-              <th>Staff Name</th>
-              {data[0]?.inTime && <th style={{ width: '150px' }}>In Time</th>}
-            </tr>
-          </thead>
+     <div className="attendance-scroll-area">
+      <table className="compact-modern-table">
+        <thead>
+          <tr>
+            <th style={{ width: '120px' }}>Employee ID</th>
+            <th>Staff Name</th>
+            {data[0]?.inTime && <th style={{ width: '200px' }}>In Time</th>}
+          </tr>
+        </thead>
           <tbody>
-            {data.length > 0 ? (
-              data.map((emp) => (
-                <tr key={emp.id}>
-                  <td className="font-bold text-muted">{emp.id}</td>
-                  <td className="font-medium">{emp.name}</td>
-                  {emp.inTime && (
-                    <td className="time-cell">
-                      <span>{emp.inTime}</span>
-                    </td>
-                  )}
-                </tr>
-              ))
-            ) : (
+          {data.length > 0 ? (
+            data.map((emp) => (
+              <tr key={emp.id}>
+                <td className="font-bold text-muted">{emp.id}</td>
+                <td className="font-medium">{emp.name}</td>
+                {emp.inTime && (
+                  <td className="time-cell">
+                    <span>
+                      {emp.inTime} 
+                      {/* 09:15 దాటినప్పుడు మరియు Delay Reason ఉన్నప్పుడు మాత్రమే బ్రాకెట్‌లో చూపిస్తుంది */}
+                      {emp.inTime > "09:15" && emp.delayReason && (
+                        <span style={{ fontSize: '0.85em', color: '#666', marginLeft: '5px' }}>
+                          ({emp.delayReason})
+                        </span>
+                      )}
+                    </span>
+                  </td>
+                )}
+              </tr>
+            ))
+          ) : (
               <tr>
                 <td colSpan="3" className="empty-msg">No records found for today.</td>
               </tr>
@@ -119,7 +133,7 @@ const TodayAttendance = () => {
             </button>
           </div>
           <div className="card-content">
-            <label>Late Comers</label>
+            <label>Delayed Arrivals</label>
             <div className="value">{lateComers.length}</div>
           </div>
         </div>
