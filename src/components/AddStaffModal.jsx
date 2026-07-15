@@ -15,12 +15,23 @@ const AddStaffModal = ({ onClose, onAdd }) => {
     dob: "",            
     onboardingDate: "",
     identification: ""  ,
-    status: "Active Employee"
+    status: "Active Employee",
+    activityRequired: true
   });
 
-  const handleChange = e => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+ const handleChange = e => {
+
+  const { name, value } = e.target;
+
+  setFormData({
+    ...formData,
+    [name]:
+      name === "activityRequired"
+      ? value === "true"
+      : value
+  });
+
+};
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -94,6 +105,20 @@ const AddStaffModal = ({ onClose, onAdd }) => {
               </div>
             </div>
           </div>
+
+          <div className="form-group">
+  <label>Activity Sheet Required</label>
+
+  <select
+    name="activityRequired"
+    value={formData.activityRequired}
+    onChange={handleChange}
+  >
+    <option value={true}>Yes</option>
+    <option value={false}>No</option>
+  </select>
+
+</div>
 
           <div className="modal-buttons">
             <button type="submit" className="add-btn">Add Staff</button>

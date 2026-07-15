@@ -35,6 +35,7 @@ const StaffIdInput = ({ inputId, value, onChange, staffNotFound }) => (
 );
 
 
+
 // ✅ Helper function: convert "HH:MM" → total minutes
 const timeToMinutes = (time) => {
   if (!time) return 0;
@@ -98,6 +99,10 @@ const Interface = () => {
   const [isInTimeLocked, setIsInTimeLocked] = useState(false);
   const [isOutTimeLocked, setIsOutTimeLocked] = useState(false);
 
+ const [missingActivities, setMissingActivities] = useState([]);
+const [allMissingActivities, setAllMissingActivities] = useState([]);
+const [showMissingFull, setShowMissingFull] = useState(false);
+const [missingTotalCount, setMissingTotalCount] = useState(0);
 
 
   // --- HELPER FUNCTIONS ---
@@ -129,6 +134,46 @@ const getPrevDate = (dateString) => {
     const minutes = totalMinutes % 60;
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
   };
+
+  const checkMissingActivities = useCallback(async(employeeId)=>{
+
+    if(!employeeId) return;
+
+    try{
+
+        const res = await fetch(
+          `${API_BASE}/api/activity-reminder/missing-activities?employeeId=${employeeId}`
+        );
+
+       const data = await res.json();
+
+
+// only recent 3 days for UI
+setMissingActivities(
+    data.recentMissingDays || []
+);
+
+
+// complete list for View Full
+setAllMissingActivities(
+    data.data || []
+);
+
+
+setMissingTotalCount(
+    data.totalMissingDays || 0
+);
+
+    }
+    catch(err){
+
+        console.log(err);
+        setMissingActivities([]);
+
+    }
+
+},[API_BASE]);  
+
 
   // --- CORE DATA FETCHING LOGIC ---
   const fetchStaffAndAttendance = useCallback(async (numericId, date, context) => {
@@ -232,13 +277,21 @@ const getPrevDate = (dateString) => {
   delayReason: attendanceData.delayReason || prev.delayReason || '',
 
       }));
+
+      if(
+ context==="inTime" ||
+ context==="lunch" ||
+ context==="outTime"
+){
+    checkMissingActivities(fullId);
+}
+
     } catch (err) {
       console.error('Error fetching attendance:', err);
       setFormData(prev => ({...prev, id: fullId, name: staffName}));
     }
-  }, [API_BASE]);
+}, [API_BASE, checkMissingActivities]);
 
-  
 
   // --- useEffects (no changes needed here) ---
   useEffect(() => {
@@ -548,6 +601,10 @@ setFormData({
       setStaffNotFound(false); setMessage(''); setLunchSubmitEnabled(false); setActiveSideCard(null);
       setIsInTimeLocked(false); 
       setIsOutTimeLocked(false);
+      setMissingActivities([]);
+setAllMissingActivities([]);
+setMissingTotalCount(0);
+setShowMissingFull(false);
     } else {
       alert(result.error || 'Submission failed!');
     }
@@ -745,7 +802,7 @@ const handleLeaveSubmit = async (e) => {
           {/* In Time Card */}
           <div className="col-lg-3 col-md-6 mb-4">
             <div className="card custom-card h-100">
-              <h5 className="card-title">Intime Details <div><FaClock className="text-primary fs-4 mt-1" /></div></h5>
+              <h5 className="card-title">InTime Details <div><FaClock className="text-primary fs-4 mt-1" /></div></h5>
               <form id="inTimeForm" className="d-flex flex-column h-100" onSubmit={(e) => handleSubmit(e, 'inTime')}>
                 <StaffIdInput inputId="idInTime" value={idInputs.inTime} onChange={(e) => handleIdChange(e, 'inTime')} staffNotFound={staffNotFound} />
                 <div className="form-group mb-2"><label>Name</label><input type="text" className="form-control" value={formData.name} readOnly /></div>
@@ -814,6 +871,61 @@ const handleLeaveSubmit = async (e) => {
       </div>
     )}
   </div>
+)}
+
+{missingTotalCount > 0 && (
+
+<div className="activity-alert">
+
+<b>
+⚠️ Activity Sheet Pending
+</b>
+
+
+<p>
+Total Missing Days : {missingTotalCount}
+</p>
+
+
+<ul>
+
+{
+missingActivities.map((item,index)=>(
+
+<li key={index}>
+{item.missingActivityDate}
+</li>
+
+))
+
+}
+
+</ul>
+
+
+
+{missingTotalCount > 3 && (
+
+<button
+
+type="button"
+
+className="btn btn-sm btn-outline-primary"
+
+onClick={()=>setShowMissingFull(true)}
+
+>
+
+View Full
+
+</button>
+
+)}
+
+
+
+</div>
+
 )}
 
 
@@ -1017,6 +1129,82 @@ const handleLeaveSubmit = async (e) => {
           </div>
         </div>
       </div>
+      {showMissingFull && (
+
+<div
+style={{
+position:"fixed",
+top:0,
+left:0,
+right:0,
+bottom:0,
+background:"rgba(0,0,0,0.5)",
+display:"flex",
+alignItems:"center",
+justifyContent:"center",
+zIndex:9999
+}}
+>
+
+
+<div
+style={{
+background:"#fff",
+padding:"20px",
+borderRadius:"10px",
+width:"400px",
+maxHeight:"80vh",
+overflowY:"auto"
+}}
+>
+
+
+<h5>
+Complete Missing Activity Dates
+</h5>
+
+
+<p>
+Total : {missingTotalCount} Days
+</p>
+
+
+<ul>
+
+{
+allMissingActivities.map((item,index)=>(
+
+<li key={index}>
+{item.missingActivityDate}
+</li>
+
+))
+}
+
+</ul>
+
+
+
+<button
+
+className="btn btn-danger"
+
+onClick={()=>setShowMissingFull(false)}
+
+>
+
+Close
+
+</button>
+
+
+
+</div>
+
+
+</div>
+
+)}
     </div>
   );
 };
