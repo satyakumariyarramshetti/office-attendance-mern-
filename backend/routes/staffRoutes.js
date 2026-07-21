@@ -206,7 +206,7 @@ router.put("/:id", async (req, res) => {
     staff.reportsTo = req.body.reportsTo;
     staff.status = req.body.status;
     staff.activityRequired = req.body.activityRequired;
-
+    staff.inactivationDate = req.body.inactivationDate;
     if (req.body.dob) {
       staff.dob = req.body.dob;
     }

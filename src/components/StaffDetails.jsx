@@ -24,6 +24,9 @@ const StaffDetails = () => {
   const [isDeleting, setIsDeleting] = useState({});
   const [editModal, setEditModal] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState(null);
+  const [showDateForm, setShowDateForm] = useState(false);
+const [tempStaffData, setTempStaffData] = useState(null);
+const [selectedInactivateDate, setSelectedInactivateDate] = useState("");
 
   const fetchStaff = useCallback(async () => {
     try {
@@ -74,7 +77,8 @@ useEffect(() => {
       Phone: s.phone || "",
       "DOB": s.dob ? new Date(s.dob).toLocaleDateString('en-GB') : "",
       "Onboarding Date": s.onboardingDate ? new Date(s.onboardingDate).toLocaleDateString('en-GB') : "",
-    }));
+     "Exit Date": s.inactivationDate ? new Date(s.inactivationDate).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) : "N/A"
+  }));
 
     const worksheet = XLSX.utils.json_to_sheet(rows);
     const workbook = XLSX.utils.book_new();
@@ -139,6 +143,26 @@ XLSX.writeFile(workbook, `staff-details-${viewMode}.xlsx`);
       setIsDeleting((prev) => ({ ...prev, [id]: false }));
     }
   };
+
+  const handleInactivateConfirm = async () => {
+  if (!selectedInactivateDate) {
+    alert("Please select the inactivation date.");
+    return;
+  }
+
+  const updatedStaff = {
+    ...tempStaffData,
+    status: "Inactive employee",
+    inactivationDate: selectedInactivateDate // ఇది backend కి వెళ్తుంది
+  };
+
+  await handleUpdateStaff(updatedStaff);
+  
+  // ఫార్మ్ క్లోజ్ చేసి డేటా క్లియర్ చేయి
+  setShowDateForm(false);
+  setTempStaffData(null);
+  setSelectedInactivateDate("");
+};
 
   return (
     <div className="staff-details-container">
@@ -231,23 +255,42 @@ XLSX.writeFile(workbook, `staff-details-${viewMode}.xlsx`);
                         <span className="phone-text">{member.phone || "—"}</span>
                       </div>
                     </td>
-                    <td>
-                      <div className="date-cell">
-                        <span>DOB: {member.dob ? new Date(member.dob).toLocaleDateString('en-GB') : "—"}</span>
-                        <span>Joined: {member.onboardingDate ? new Date(member.onboardingDate).toLocaleDateString('en-GB') : "—"}</span>
-                      </div>
-                    </td>
+                   <td>
+  <div className="date-cell">
+    <span>DOB: {member.dob ? new Date(member.dob).toLocaleDateString('en-GB') : "—"}</span>
+    <span>Joined: {member.onboardingDate ? new Date(member.onboardingDate).toLocaleDateString('en-GB') : "—"}</span>
+    
+    {/* ఇన్యాక్టివ్ అయితే Exit Date ని చూపించు */}
+    {member.status === "Inactive employee" && member.inactivationDate && (
+      <span style={{ color: "#d9534f", fontWeight: "600", marginTop: "4px" }}>
+        Exit: {new Date(member.inactivationDate).toLocaleDateString('en-GB', {
+          month: 'short',
+          year: 'numeric'
+        })}
+      </span>
+    )}
+  </div>
+</td>
 
-                     <td>
-      <select 
-        className="status-select"
-        value={member.status || "Active Employee"}
-        onChange={(e) => handleUpdateStaff({ ...member, status: e.target.value })}
-      >
-        <option value="Active Employee">Active Employee</option>
-        <option value="Inactive employee">Inactive employee</option>
-      </select>
-    </td>
+                    <td>
+  <select 
+    className="status-select"
+    value={member.status || "Active Employee"}
+    onChange={(e) => {
+      const newStatus = e.target.value;
+      if (newStatus === "Inactive employee") {
+        setTempStaffData(member); 
+        setShowDateForm(true);    
+      } else {
+        // Active కి మారిస్తే డైరెక్ట్ గా అప్డేట్ చేయి (డేట్ ని క్లియర్ చేస్తూ)
+        handleUpdateStaff({ ...member, status: newStatus, inactivationDate: null });
+      }
+    }}
+  >
+    <option value="Active Employee">Active Employee</option>
+    <option value="Inactive employee">Inactive employee</option>
+  </select>
+</td>
 
                     <td>
                       <div className="action-group">
@@ -271,6 +314,44 @@ XLSX.writeFile(workbook, `staff-details-${viewMode}.xlsx`);
 
       {showModal && <AddStaffModal onClose={() => setShowModal(false)} onAdd={handleAddStaff} />}
       {editModal && <EditStaffModal staffData={selectedStaff} onClose={() => setEditModal(false)} onUpdate={handleUpdateStaff} />}
+
+        {/* Inactivation Date Selection Form */}
+{showDateForm && (
+  <div className="modal-backdrop">
+    <div className="modal-content" style={{ maxWidth: "400px", padding: "25px" }}>
+      <h3 style={{ marginBottom: "15px" }}>Select Inactivation Date</h3>
+      <p>Employee: <strong>{tempStaffData?.name}</strong></p>
+      
+      <div className="form-group" style={{ marginTop: "15px" }}>
+        <label>Month & Year</label>
+        <input 
+          type="month" 
+          className="form-control"
+          value={selectedInactivateDate}
+          onChange={(e) => setSelectedInactivateDate(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="modal-buttons" style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
+        <button 
+          onClick={handleInactivateConfirm} 
+          className="add-btn" 
+          style={{ backgroundColor: "#d9534f" }}
+        >
+          Confirm Inactivate
+        </button>
+        <button 
+          onClick={() => setShowDateForm(false)} 
+          className="cancel-btn"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
