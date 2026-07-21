@@ -43,8 +43,17 @@ router.get('/seed', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const newStaff = new Staff(req.body);
-    await newStaff.save();
+const newStaff = new Staff({
+  ...req.body,
+
+  designationHistory: [
+    {
+      designation: req.body.designation,
+      from: new Date(req.body.designationFrom + "-01")
+    }
+  ]
+});
+  await newStaff.save();
     res.json({ message: "✅ Staff added successfully!" });
   } catch (error) {
     console.error("❌ Error adding staff:", error);
@@ -131,38 +140,101 @@ router.get('/search/:partialId', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
-const { identification } = req.body; 
+    const { identification, designation, designationFrom } = req.body;
 
-    
+    // ============================
+    // Check duplicate Identification
+    // ============================
     if (identification) {
-      const existingStaff = await Staff.findOne({ 
-        identification: identification, 
-        _id: { $ne: req.params.id } 
-      });
+      const existingStaff = await Staff.findOne({
+        identification,
+        _id: { $ne: req.params.id }
+      }).select("_id");
 
       if (existingStaff) {
-        return res.status(400).json({ error: "Identification already exists for another staff member." });
+        return res.status(400).json({
+          error: "Identification already exists for another staff member."
+        });
       }
     }
 
-    const updatedStaff = await Staff.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    // ============================
+    // Get Current Staff
+    // ============================
+    const staff = await Staff.findById(req.params.id);
 
-    if (!updatedStaff) return res.status(404).json({ error: "Staff not found" });
-    res.json({ message: "✅ Staff updated successfully!", updatedStaff });
+    if (!staff) {
+      return res.status(404).json({
+        error: "Staff not found"
+      });
+    }
+
+    // ============================
+    // Ensure History Array Exists
+    // ============================
+    if (!Array.isArray(staff.designationHistory)) {
+      staff.designationHistory = [];
+    }
+
+    // ============================
+    // Add History ONLY if changed
+    // ============================
+    if (
+      designation &&
+      designation.trim() !== staff.designation
+    ) {
+      staff.designationHistory.push({
+        designation,
+        from: designationFrom
+          ? new Date(`${designationFrom}-01`)
+          : new Date()
+      });
+
+      staff.designation = designation;
+    }
+
+    // ============================
+    // Update Remaining Fields
+    // ============================
+    staff.name = req.body.name;
+    staff.department = req.body.department;
+    staff.email = req.body.email;
+    staff.phone = req.body.phone;
+    staff.identification = identification;
+    staff.reportsTo = req.body.reportsTo;
+    staff.status = req.body.status;
+    staff.activityRequired = req.body.activityRequired;
+
+    if (req.body.dob) {
+      staff.dob = req.body.dob;
+    }
+
+    if (req.body.onboardingDate) {
+      staff.onboardingDate = req.body.onboardingDate;
+    }
+
+    await staff.save();
+
+    res.json({
+      message: "✅ Staff updated successfully!",
+      updatedStaff: staff
+    });
 
   } catch (error) {
     console.error("Update Error:", error);
+
     if (error.code === 11000) {
-      return res.status(400).json({ error: "Duplicate error: ID or Identification already exists." });
+      return res.status(400).json({
+        error: "Duplicate error: ID or Identification already exists."
+      });
     }
-    res.status(500).json({ error: "Error updating staff" });
+
+    res.status(500).json({
+      error: "Error updating staff"
+    });
   }
 });
-
 
 module.exports = router;

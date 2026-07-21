@@ -53,6 +53,57 @@ const [form, setForm] = useState({
               </div>
 
               <div className="form-group">
+    <label>Designation Effective From</label>
+
+  <input
+    type="month"
+    name="designationFrom"
+    value={form.designationFrom || ""}
+    onChange={handleChange}
+  />
+</div>
+
+<div className="designation-history">
+
+<h4>Designation History</h4>
+
+{staffData.designationHistory?.length ? (
+
+  [...staffData.designationHistory]
+    .sort((a, b) => new Date(b.from) - new Date(a.from))
+    .map((item, index) => (
+
+      <div className="history-item" key={index}>
+
+        <div className="history-designation">
+          {item.designation}
+        </div>
+
+        <div className="history-date">
+          From :
+          {" "}
+          {new Date(item.from).toLocaleDateString(
+            "en-GB",
+            {
+              month: "short",
+              year: "numeric"
+            }
+          )}
+        </div>
+
+      </div>
+
+    ))
+
+) : (
+
+<p>No Designation History</p>
+
+)}
+
+</div>
+
+              <div className="form-group">
                 <label>Department</label>
                 <input name="department" value={form.department} onChange={handleChange} />
               </div>

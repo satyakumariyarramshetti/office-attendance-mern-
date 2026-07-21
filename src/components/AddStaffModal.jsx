@@ -8,6 +8,7 @@ const AddStaffModal = ({ onClose, onAdd }) => {
     id: "",
     name: "",
     designation: "",
+    designationFrom: "",
     department: "",
     email: "",     
     phone: "",
@@ -62,6 +63,18 @@ const AddStaffModal = ({ onClose, onAdd }) => {
                 <label>Designation</label>
                 <input name="designation" placeholder="Designation" onChange={handleChange} required />
               </div>
+
+              <div className="form-group">
+  <label>Designation From</label>
+
+  <input
+    type="month"
+    name="designationFrom"
+    value={formData.designationFrom}
+    onChange={handleChange}
+    required
+  />
+</div>
 
               <div className="form-group">
                 <label>Phone Number</label>

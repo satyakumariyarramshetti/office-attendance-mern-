@@ -6,6 +6,19 @@ const staffSchema = new mongoose.Schema({
    identification: { type: String, required: true, unique: true },
   department: { type: String },
   designation: { type: String, required: true },
+  designationHistory: [
+    {
+      designation: {
+        type: String,
+        required: true
+      },
+      from: {
+        type: Date,
+        required: true
+      }
+    }
+  ],
+
   email: { type: String, required: true },
   phone: { type: String },
   reportsTo: { type: String }, 
