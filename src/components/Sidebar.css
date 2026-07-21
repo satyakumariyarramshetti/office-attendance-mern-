@@ -1,8 +1,8 @@
 :root {
-  --sidebar-bg: #1e293b; /* Slate 800 - Modern Dark */
+  --sidebar-bg: #060f1e; /* Slate 800 - Modern Dark */
   --sidebar-hover: #334155;
   --sidebar-active: #3b82f6; /* Modern Blue */
-  --sidebar-text: #94a3b8;
+  --sidebar-text: #eff2f7;
   --sidebar-text-active: #ffffff;
 }
 
@@ -87,13 +87,14 @@
 
 .user-label {
   font-size: 10px;
-  color: var(--sidebar-text);
+  color: white;
   text-transform: uppercase;
   letter-spacing: 1px;
+   font-weight: 600;
 }
 
 .user-name {
-  color: white;
+  color:white !important;
   font-weight: 600;
   font-size: 14px;
 }
@@ -105,7 +106,7 @@
 
 .menu-group-label {
   font-size: 10px;
-  color: #475569;
+  color: #fbfcfd;
   font-weight: 700;
   margin: 20px 0 10px 15px;
   letter-spacing: 1.5px;
