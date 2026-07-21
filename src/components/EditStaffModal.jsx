@@ -62,45 +62,31 @@ const [form, setForm] = useState({
     onChange={handleChange}
   />
 </div>
-
+{/* --- ఈ కింద ఉన్న విధంగా మార్చండి --- */}
 <div className="designation-history">
-
-<h4>Designation History</h4>
-
-{staffData.designationHistory?.length ? (
-
-  [...staffData.designationHistory]
-    .sort((a, b) => new Date(b.from) - new Date(a.from))
-    .map((item, index) => (
-
-      <div className="history-item" key={index}>
-
-        <div className="history-designation">
-          {item.designation}
-        </div>
-
-        <div className="history-date">
-          From :
-          {" "}
-          {new Date(item.from).toLocaleDateString(
-            "en-GB",
-            {
-              month: "short",
-              year: "numeric"
-            }
-          )}
-        </div>
-
-      </div>
-
-    ))
-
-) : (
-
-<p>No Designation History</p>
-
-)}
-
+  <h4>Designation History</h4>
+  
+  {/* ఇక్కడ కొత్త div యాడ్ చేస్తున్నాము */}
+  <div className="history-list-container"> 
+    {staffData.designationHistory?.length ? (
+      [...staffData.designationHistory]
+        .sort((a, b) => new Date(b.from) - new Date(a.from))
+        .map((item, index) => (
+          <div className="history-item" key={index}>
+            <div className="history-designation">{item.designation}</div>
+            <div className="history-date">
+              From :{" "}
+              {new Date(item.from).toLocaleDateString("en-GB", {
+                month: "short",
+                year: "numeric",
+              })}
+            </div>
+          </div>
+        ))
+    ) : (
+      <p className="history-empty">No Designation History</p>
+    )}
+  </div>
 </div>
 
               <div className="form-group">
