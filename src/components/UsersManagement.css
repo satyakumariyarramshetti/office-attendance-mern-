@@ -150,7 +150,6 @@
 }
 
 .text-center { text-align: center; }
-
 /* User Details */
 .user-identity {
   display: flex;
@@ -159,16 +158,16 @@
 
 .user-name {
   font-weight: 700;
-  color: var(--text-dark);
+  color: #000000 !important; /* 👈 ఇక్కడ కలర్‌ని పక్కా బ్లాక్ కి మార్చాను */
   font-size: 15px;
+  text-transform: uppercase; /* పేర్లు అన్నీ క్యాపిటల్ లెటర్స్‌లో క్లియర్‌గా రావడానికి */
 }
 
 .user-email {
   font-size: 13px;
-  color: var(--text-slate);
+  color: #475569; /* ఇమెయిల్ ని కొంచెం డార్క్ గ్రే లో ఉంచాను */
   margin-top: 2px;
 }
-
 /* Password Code Tag */
 .password-tag {
   background: #f1f5f9;
@@ -247,6 +246,40 @@
   padding: 40px !important;
   color: var(--text-slate);
   font-style: italic;
+}
+
+
+/* --- Search Toolbar Styling --- */
+.list-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 0 5px;
+}
+
+.list-toolbar .section-title {
+  margin-bottom: 0; /* Align with search box */
+}
+
+.search-box input {
+  padding: 8px 15px;
+  width: 280px;
+  border: 1px solid var(--border-ui);
+  border-radius: 8px;
+  font-size: 13.5px;
+  outline: none;
+  transition: 0.2s;
+}
+
+.search-box input:focus {
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Table Card fixes */
+.table-card {
+  margin-top: 5px;
 }
 
 /* Responsive Table Adjustments */

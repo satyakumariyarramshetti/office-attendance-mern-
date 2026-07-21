@@ -3,10 +3,10 @@ import "./UsersManagement.css";
 
 const UsersManagement = () => {
   const [users, setUsers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState(""); // 🔍 కొత్త స్టేట్
   const [form, setForm] = useState({ username: '', email: '', password: '' });
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
-  // ✅ Fetch all users from backend
   const fetchUsers = useCallback(() => {
     fetch(`${API_BASE}/api/users/all`)
       .then(res => res.json())
@@ -18,7 +18,12 @@ const UsersManagement = () => {
     fetchUsers(); 
   }, [fetchUsers]); 
 
-  // ✅ Add New User
+  // ✅ Search/Filter Logic
+  const filteredUsers = users.filter(u => 
+    u.username.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    u.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const handleAdd = async () => {
     if(!form.username || !form.email || !form.password) { 
         alert("Please fill all fields!"); 
@@ -43,7 +48,6 @@ const UsersManagement = () => {
     }
   };
 
-  // ✅ Force Logout User
   const handleLogoutUser = async (userId) => {
     if(window.confirm("Force logout this user?")) {
       try {
@@ -65,7 +69,6 @@ const UsersManagement = () => {
     }
   };
 
-  // ✅ Delete User
   const handleDeleteUser = async (id) => {
     if(window.confirm("Are you sure you want to delete this user permanently?")) {
       try {
@@ -90,7 +93,6 @@ const UsersManagement = () => {
           </div>
         </header>
 
-        {/* --- Create User Form Section --- */}
         <section className="form-section">
           <div className="form-card">
             <h2 className="section-title">Create New User</h2>
@@ -131,7 +133,19 @@ const UsersManagement = () => {
           </div>
         </section>
 
-        {/* --- Users List Section --- */}
+        {/* --- Search Section --- */}
+        <div className="list-toolbar">
+           <h2 className="section-title">User Directory</h2>
+           <div className="search-box">
+             <input 
+               type="text" 
+               placeholder="Search by name or email..." 
+               value={searchTerm}
+               onChange={(e) => setSearchTerm(e.target.value)}
+             />
+           </div>
+        </div>
+
         <section className="list-section">
           <div className="table-card">
             <div className="table-responsive">
@@ -145,8 +159,8 @@ const UsersManagement = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.length > 0 ? (
-                    users.map(u => (
+                  {filteredUsers.length > 0 ? (
+                    filteredUsers.map(u => (
                       <tr key={u._id}>
                         <td>
                           <div className="user-identity">
@@ -178,7 +192,7 @@ const UsersManagement = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="4" className="no-data">No active users found. Create one above.</td>
+                      <td colSpan="4" className="no-data">No users found matching "{searchTerm}"</td>
                     </tr>
                   )}
                 </tbody>
