@@ -169,6 +169,17 @@ const [form, setForm] = useState({
   </select>
 </div>
 
+{form.status === "Inactive employee" && (
+  <div className="form-group">
+    <label>Inactivation Date (Exit Date)</label>
+    <input 
+      type="date" 
+      name="inactivationDate" 
+      value={form.inactivationDate ? form.inactivationDate.split('T')[0] : ""} 
+      onChange={handleChange} 
+    />
+  </div>
+)}
             </div>
 
           </div>
