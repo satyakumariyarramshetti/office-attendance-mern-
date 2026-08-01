@@ -319,30 +319,46 @@ th { background-color: #f4f6f8; }
 
 /* ===== PRIVILEGE LEAVE MODAL (BIG TABLE) ===== */
 .pl-modal {
-  width: 90vw;              /* Screen lo almost full width */
-  max-width: 1200px;        /* Desktop lo big table */
-  padding: 1.5rem;
+  width: 95vw;              
+  max-width: 1300px;        
+  padding: 1.2rem;
 }
 
 /* Table container inside PL modal */
 .pl-modal .table-container {
   max-height: 450px;
-  overflow: auto;
+  overflow-y: auto;        
+  overflow-x: hidden;      
 }
 
 /* PL table text clarity */
 .pl-modal table th,
 .pl-modal table td {
-  padding: 0.9rem 1rem;
-  font-size: 0.95rem;
-  white-space: nowrap;     /* Columns break avvakunda */
+  padding: 8px 6px;        
+  font-size: 0.82rem;       
+  white-space: normal;      
+  word-wrap: break-word;    
+  line-height: 1.2;
+  text-align: center;
 }
 
-/* Header highlight */
 .pl-modal table th {
-  font-weight: 600;
+  font-weight: 700;
+  background-color: #f8fafc;
+  vertical-align: middle;
 }
 
 .pl-modal .table-container {
   overflow-x: auto;
+}
+
+
+.pl-modal table td div {
+  font-size: 0.75rem;
+  border-bottom: 1px dashed #eee;
+  padding: 2px 0;
+}
+
+.pl-modal table td div:last-child {
+  border-bottom: none;
 }
