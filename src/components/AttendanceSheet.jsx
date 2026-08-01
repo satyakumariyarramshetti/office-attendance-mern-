@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import './AttendanceSheet.css';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import * as XLSX from "xlsx";
 
 const AttendanceSheet = () => {
@@ -18,6 +19,8 @@ const AttendanceSheet = () => {
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [showModal, setShowModal] = useState(false);
+  const [holidayData, setHolidayData] = useState({ date: '', name: '' });
 
   // --- Auth Check ---
   useEffect(() => {
@@ -40,6 +43,24 @@ const AttendanceSheet = () => {
         setLoading(false);
       });
   }, [API_BASE]);
+
+  const handleAddHoliday = async () => {
+    if (!holidayData.date || !holidayData.name) {
+      alert("Please fill both date and name");
+      return;
+    }
+    try {
+      await axios.post(`${API_BASE}/api/attendance/holidays/import`, holidayData);
+      alert("Festival Holiday Added!");
+      setShowModal(false);
+      setHolidayData({ date: '', name: '' });
+      // Refresh list
+      window.location.reload(); 
+    } catch (err) {
+      alert(err.response?.data?.error || "Error adding holiday");
+    }
+  };
+
 
   // --- Logic Helpers ---
   const formatDate = (dateString) => {
@@ -163,7 +184,40 @@ const AttendanceSheet = () => {
 
   return (
     <div className="container admin-container mt-4">
-      <h2 className="admin-title">Attendance Sheet</h2>
+     <div className="d-flex justify-content-between align-items-center mb-3">
+        <h2 className="admin-title">Attendance Sheet</h2>
+        {/* --- ADD HOLIDAY BUTTON --- */}
+        <button className="btn btn-danger" onClick={() => setShowModal(true)}>
+          + Add Festival Holiday
+        </button>
+      </div>
+
+
+ {/* --- HOLIDAY MODAL --- */}
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="holiday-modal">
+            <h4>Add Festival Holiday</h4>
+            <div className="mb-3">
+              <label>Holiday Date</label>
+              <input type="date" className="form-control" 
+                value={holidayData.date} 
+                onChange={e => setHolidayData({...holidayData, date: e.target.value})} />
+            </div>
+            <div className="mb-3">
+              <label>Holiday Name</label>
+              <input type="text" className="form-control" placeholder="e.g. Diwali"
+                value={holidayData.name} 
+                onChange={e => setHolidayData({...holidayData, name: e.target.value})} />
+            </div>
+            <div className="d-flex justify-content-end gap-2">
+              <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={handleAddHoliday}>Save Holiday</button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* --- Filter Toolbar --- */}
       <div className="attendance-toolbar">
@@ -241,6 +295,7 @@ const AttendanceSheet = () => {
                   const lunchH = calculateTimeDifference(record.lunchOut, record.lunchIn);
                   const workH = calculateNetWorkingHours(record.inTime, record.outTime, record.lunchOut, record.lunchIn);
                   const grossH = computeGrossHours(lunchH, workH);
+                  const isHoliday = !!record.holidayName;
 
                   return (
                     <tr key={idx} className={record.isLOP ? 'lop-leave-row' : ''}>
@@ -248,20 +303,29 @@ const AttendanceSheet = () => {
                       <td>{record.name}</td>
                       <td>{formatDate(record.date)}</td>
                       <td>{record.day}</td>
-                      <td>{record.inTime || '—'}</td>
-                      <td>{record.systemInTime || '—'}</td>
+
+                      {/* Attendance fields check for holiday */}
+                      <td>{isHoliday ? '—' : (record.inTime || '—')}</td>
+                      <td>{isHoliday ? '—' : (record.systemInTime || '—')}</td>
                       <td>{record.delayReason || '—'}</td>
-                      <td>{record.lunchOut || '—'}</td>
-                      <td>{record.lunchIn || '—'}</td>
-                      <td>{record.outTime || '—'}</td>
-                      <td>{lunchH}</td>
-                      <td>{workH}</td>
-                      <td>{grossH}</td>
+                      <td>{isHoliday ? '—' : (record.lunchOut || '—')}</td>
+                      <td>{isHoliday ? '—' : (record.lunchIn || '—')}</td>
+                      <td>{isHoliday ? '—' : (record.outTime || '—')}</td>
+                      <td>{isHoliday ? '—' : lunchH}</td>
+                      <td>{isHoliday ? '—' : workH}</td>
+                      <td>{isHoliday ? '—' : grossH}</td>
+
+
                       <td>{record.dailyLeaveType || '—'}</td>
                       <td className="comment-cell">{record.siteComments || '—'}</td>
                       <td>{record.permissionType || '—'}</td>
                       <td>{record.hours || '—'}</td>
-                      <td>{getLeaveOrHoliday(record)}</td>
+
+
+                      <td className={isHoliday ? 'holiday-text' : ''}>
+                        {isHoliday ? `Holiday: ${record.holidayName}` : getLeaveOrHoliday(record)}
+                      </td>
+
                       <td>{record.location || 'N/A'}</td>
                     </tr>
                   );

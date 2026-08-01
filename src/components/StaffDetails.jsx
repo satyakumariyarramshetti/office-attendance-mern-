@@ -52,7 +52,7 @@ useEffect(() => {
     filtered = filtered.filter(item => item.department === selectedDept);
   }
 
-  // తర్వాత సెర్చ్ ఫిల్టర్
+ 
   if (searchTerm.trim()) {
     filtered = filtered.filter(item =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

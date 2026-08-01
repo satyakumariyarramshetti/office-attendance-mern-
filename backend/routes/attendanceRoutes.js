@@ -4,28 +4,28 @@ const router = express.Router();
 const axios = require('axios');
 const Attendance = require('../models/Attendance');
 const Staff = require('../models/Staff');
+const Holiday = require('../models/Holiday');
 const LeaveBalance = require('../models/LeaveBalance');
-// ---- COMPANY HOLIDAYS  month+day----
-const holidays = [
-  { date: "-01-26", name: "REPUBLIC DAY" },
-  { date: "-08-15", name: "INDEPENDENCE DAY" },
-  { date: "-10-02", name: "GANDHI JAYANTI" },
-
-  // Festival Holidays
-  { date: "-01-15", name: "PONGAL" },
-  { date: "-03-19", name: "UGADI" },
-  { date: "-09-14", name: "VINAYAKA CHAVITHI" },
-  { date: "-10-20", name: "DUSSEHRA" },
-  { date: "-12-25", name: "CHRISTMAS" }
-  
-  
-];
 
 
+const isFixedHoliday = (dateStr) => {
+  const mmdd = dateStr.substring(5); // Get MM-DD
+  const fixed = {
+    "01-26": "Republic Day",
+    "08-15": "Independence Day",
+    "10-02": "Gandhi Jayanti"
+  };
+  return fixed[mmdd] || null;
+};
 
-/* ------------------------------------------------------------------
-   Reverse geocoding helper (unchanged)
------------------------------------------------------------------- */
+
+const isSecondSaturday = (date) => {
+  if (date.getDay() !== 6) return false; // Not a Saturday
+  const day = date.getDate();
+  return day > 7 && day <= 14; // 2nd Saturday always falls between 8th and 14th
+};
+const isSunday = (date) => date.getDay() === 0;
+
 async function getAddressFromCoordinates(locationString) {
   if (!locationString) return null;
   try {
@@ -43,52 +43,10 @@ async function getAddressFromCoordinates(locationString) {
   }
 }
 
-// Half‑day deduction helper for Sick / Casual / Privilege
-// function deductHalfDayPriority(b, primaryType) {
-//   // b = LeaveBalance document
-//   // primaryType is one of: 'Sick', 'Casual', 'Privilege'
-
-//   const fields = {
-//     Sick: 'sickLeaves',
-//     Casual: 'casualLeaves',
-//     Privilege: 'privilegeLeaves',
-//   };
-
-//   const order = {
-//     Sick:      ['sickLeaves', 'casualLeaves', 'privilegeLeaves'],
-//     Casual:    ['casualLeaves', 'privilegeLeaves'],
-//     Privilege: ['privilegeLeaves', 'casualLeaves'],
-//   };
-
-//   for (const field of order[primaryType]) {
-//     if (b[field] > 0) {
-//       b[field] -= 0.5;
-//       return { isLOP: false };
-//     }
-//   }
-
-//   const primaryField = fields[primaryType];
-//   b[primaryField] -= 0.5;
-//   return { isLOP: true };
-// }
-
-// 🔥 Central LOP handler (NEW)
 function applyLOP(b, days) {
   b.lopLeaves = (b.lopLeaves || 0) - days;
 }
 
-/* ------------------------------------------------------------------
-   Leave balance update helper (kept intact)
-   NOTE: Called ONLY when a full-day leaveType is submitted.
------------------------------------------------------------------- */
-// ... (existing imports and holidays array)
-
-// ... (getAddressFromCoordinates and deductHalfDayPriority functions - keep as is)
-
-/* ------------------------------------------------------------------
-   Leave balance update helper (MODIFIED)
-   Returns: { success, message, isLOP, balances, deductedFrom }
------------------------------------------------------------------- */
 async function updateLeaveBalance(employeeId, leaveType, options = {}) {
   const { halfDayReason } = options;
 
@@ -515,74 +473,84 @@ const isOutTimeCard =
   }
 });
 
-// ... (Rest of attendanceRoutes.js - keep as is)
 
+// --- API to Add/Import Festival Holidays ---
+router.post('/holidays/import', async (req, res) => {
+  try {
+    const { date, name } = req.body; // Expecting { "date": "2026-03-19", "name": "Ugadi" }
+    const newHoliday = new Holiday({ date, name });
+    await newHoliday.save();
+    res.json({ message: "Holiday added successfully" });
+  } catch (err) {
+    res.status(400).json({ error: "Holiday for this date already exists or invalid data" });
+  }
+});
+
+// --- API to Get All Festival Holidays (For Admin to see/delete) ---
+router.get('/holidays/all', async (req, res) => {
+  const holidays = await Holiday.find().sort({ date: 1 });
+  res.json(holidays);
+});
 
 /* ------------------------------------------------------------------
-   Admin: get all attendance (unchanged)
+   ADMIN: GET ALL ATTENDANCE (WITH DYNAMIC CALENDAR & HOLIDAYS)
 ------------------------------------------------------------------ */
+
 router.get('/all', async (req, res) => {
   try {
-    const allStaff = await Staff.find();
-
+    const allStaff = await Staff.find({ status: { $ne: "Inactive employee" } });
     let records = await Attendance.find().sort({ date: -1 });
+    const Holiday = require('../models/Holiday'); 
+    const festivalHolidays = await Holiday.find();
 
     let recordMap = new Map();
-    records.forEach(r => {
-      recordMap.set(r.id + "_" + r.date, r);
-    });
+    records.forEach(r => recordMap.set(r.id + "_" + r.date, r));
 
-    let finalList = [];
+    let festMap = new Map();
+    festivalHolidays.forEach(h => festMap.set(h.date, h.name));
 
-    for (let staff of allStaff) {
-     for (let h of holidays) {
-  const year = new Date().getFullYear();
-  const holidayDate = `${year}${h.date}`;
+    let finalList = [...records];
 
+    // --- కేవలం ఈరోజు వరకు మాత్రమే రేంజ్ సెట్ చేయడం ---
+    const startDate = new Date(2024, 0, 1); // 2024 జనవరి 1 నుండి
+    const endDate = new Date(); // ఖచ్చితంగా ఈరోజు (Today) వరకు మాత్రమే
 
-        const key = staff.id + "_" + holidayDate;
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${yyyy}-${mm}-${dd}`;
+      
+      const dayName = d.toLocaleDateString("en-US", { weekday: "long" });
 
-        if (!recordMap.has(key)) {
+      let holidayName = isFixedHoliday(dateStr);
+      if (!holidayName && isSunday(d)) holidayName = "SUNDAY";
+      if (!holidayName && isSecondSaturday(d)) holidayName = "2nd SATURDAY";
+      if (!holidayName) holidayName = festMap.get(dateStr);
 
-          const day = new Date(holidayDate).toLocaleDateString("en-US", { weekday: "long" });
-
-          const newRec = {
-            id: staff.id,
-  name: staff.name,
-  date: holidayDate,
-  day,
-  holidayName: h.name,  // new field for holiday name
-  leaveType: null,
-            inTime: null,
-            outTime: null,
-            lunchIn: null,
-            lunchOut: null,
-            dailyLeaveType: null,
-            permissionType: null,
-            hours: null,
-            isLOP: false
-          };
-
-          finalList.push(newRec);
-        }
+      if (holidayName) {
+        allStaff.forEach(staff => {
+          const key = staff.id + "_" + dateStr;
+          if (!recordMap.has(key)) {
+            finalList.push({
+              id: staff.id,
+              name: staff.name,
+              date: dateStr,
+              day: dayName,
+              holidayName: holidayName,
+              isLOP: false,
+              inTime: null, outTime: null, lunchIn: null, lunchOut: null,
+              dailyLeaveType: null, permissionType: null, hours: null
+            });
+          } else {
+            const rec = recordMap.get(key);
+            rec.holidayName = holidayName;
+          }
+        });
       }
     }
 
-    records.forEach(r => {
-      // const dateObj = new Date(r.date);
-      // const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
-      // const dd = String(dateObj.getDate()).padStart(2, "0");
-
-      // const monthDay = `-${mm}-${dd}`;
-
-    
-
-
-      finalList.push(r);
-    });
-
     finalList.sort((a, b) => new Date(b.date) - new Date(a.date));
-
     res.json(finalList);
 
   } catch (error) {
@@ -590,80 +558,49 @@ router.get('/all', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch attendance records' });
   }
 });
-
-
 /* ------------------------------------------------------------------
-   Today's summary (unchanged except formatting)
+   Today's summary (Updated to use DB Holidays)
 ------------------------------------------------------------------ */
 router.get('/today', async (req, res) => {
   try {
-    const todayDate = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
-    const mmdd = todayDate.substring(4); // "-MM-DD"
+    const todayDate = new Date().toISOString().split('T')[0];
     const cutoffTime = "09:15";
 
-    // ఇక్కడ మార్పు చేసాము: కేవలం Active స్టాఫ్‌ను మాత్రమే తీసుకుంటున్నాం
     const allStaff = await Staff.find({ status: { $ne: "Inactive employee" } });
-    
     const todaysAttendance = await Attendance.find({ date: todayDate });
     const presentIds = new Set(todaysAttendance.map(a => a.id));
 
+    // కొత్త లాజిక్: ఈరోజు హాలిడేనా కాదా అని DB లో చెక్ చేయడం
+    const festivalHolidays = await Holiday.find();
+    const festMatch = festivalHolidays.find(h => h.date === todayDate);
+    const fixedName = isFixedHoliday(todayDate);
+    const d = new Date(todayDate);
+    
+    let currentHoliday = fixedName || (festMatch ? festMatch.name : null);
+    if (!currentHoliday && isSunday(d)) currentHoliday = "SUNDAY";
+    if (!currentHoliday && isSecondSaturday(d)) currentHoliday = "2nd SATURDAY";
 
     let presents = todaysAttendance.map(att => ({
-      id: att.id,
-      name: att.name,
-      inTime: att.inTime,
-      day: att.day,
-      lunchIn: att.lunchIn,
-      lunchOut: att.lunchOut,
-      outTime: att.outTime,
-      permissionType: att.permissionType,
-      hours: att.hours,
-      leaveType: att.leaveType,
-      delayReason: att.delayReason
+      id: att.id, name: att.name, inTime: att.inTime, day: att.day,
+      outTime: att.outTime, leaveType: att.leaveType, delayReason: att.delayReason
     }));
 
-    // ---- AUTO HOLIDAY LOGIC FOR TODAY ----
-    let absents = [];
-
-const match = holidays.find(h => h.date === mmdd);
-if (match) {
-      // Today is a public holiday → everyone gets holiday if not submitted
-      absents = allStaff
-        .filter(staff => !presentIds.has(staff.id))
-        .map(st => ({
-          id: st.id,
-          name: st.name,
-          department: st.department,
-          designation: st.designation,
-          status: st.status,
-          leaveType:match.name
-        }));
-    } else {
-      // Today is a normal working day → normal absents
-      absents = allStaff
-        .filter(staff => !presentIds.has(staff.id))
-        .map(st => ({
-          id: st.id,
-          name: st.name,
-          department: st.department,
-          designation: st.designation,
-          status: st.status
-        }));
-    }
+    let absents = allStaff
+      .filter(staff => !presentIds.has(staff.id))
+      .map(st => ({
+        id: st.id, name: st.name, department: st.department, status: st.status,
+        leaveType: currentHoliday || null // హాలిడే ఉంటే ఆ పేరు చూపిస్తుంది
+      }));
 
     const lateComers = presents.filter(att => att.inTime && att.inTime > cutoffTime);
 
     res.json({
-      count: {
-        presents: presents.length,
-        absents: absents.length,
-        lateComers: lateComers.length,
-      },
+      count: { presents: presents.length, absents: absents.length, lateComers: lateComers.length },
       presents, absents, lateComers,
+      isHolidayToday: !!currentHoliday,
+      holidayName: currentHoliday
     });
-
   } catch (err) {
-    console.error("Error fetching today's attendance:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -688,130 +625,100 @@ router.post('/getByIdDate', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
 /* ------------------------------------------------------------------
-   Get all attendance for a specific ID (unchanged)
+   Get all attendance for a specific ID (Updated to use DB Holidays)
 ------------------------------------------------------------------ */
 router.get('/:id', async (req, res) => {
   const employeeId = req.params.id;
-
   try {
     const staff = await Staff.findOne({ id: employeeId });
-    if (!staff) {
-      return res.status(404).json({ message: 'Employee ID not found.' });
-    }
+    if (!staff) return res.status(404).json({ message: 'Employee ID not found.' });
 
-    const attendance = await Attendance.find({ id: employeeId }).sort({ date: 1 });
-
-    // ---- AUTO INSERT HOLIDAYS INTO RESPONSE (NOT DATABASE) ----
-    const generatedRecords = [];
+    const attendance = await Attendance.find({ id: employeeId });
+    const festivalHolidays = await Holiday.find();
     const recordedDates = new Set(attendance.map(a => a.date));
-const today = new Date().setHours(0,0,0,0);
-holidays.forEach(h => {
-  const year = new Date().getFullYear();
-  const holidayDate = `${year}${h.date}`;
-  const holidayTime = new Date(holidayDate).setHours(0,0,0,0);
+    const generatedRecords = [];
+    const today = new Date();
+    const startDate = new Date(2024, 0, 1);
 
-  if (holidayTime > today) return;  // Don't include future holidays
+    for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split('T')[0];
+      if (recordedDates.has(dateStr)) continue;
 
-  if (!recordedDates.has(holidayDate)) {
-    generatedRecords.push({
-      id: employeeId,
-      name: staff.name,
-      date: holidayDate,
-      day: new Date(holidayDate).toLocaleDateString('en-US', { weekday: 'long' }),
-      holidayName: h.name,   // use holidayName here
-      leaveType: null,
-          inTime: null,
-          outTime: null,
-          lunchIn: null,
-          lunchOut: null,
-          hours: null,
-          permissionType: null,
-          dailyLeaveType: null,
-          isLOP: false
+      let hName = isFixedHoliday(dateStr) || (isSunday(d) ? "SUNDAY" : null) || (isSecondSaturday(d) ? "2nd SATURDAY" : null);
+      const fest = festivalHolidays.find(fh => fh.date === dateStr);
+      if (fest) hName = fest.name;
+
+      if (hName) {
+        generatedRecords.push({
+          id: employeeId, name: staff.name, date: dateStr,
+          day: d.toLocaleDateString('en-US', { weekday: 'long' }),
+          holidayName: hName, isLOP: false
         });
       }
-    });
-
-   const finalRecords = [...attendance, ...generatedRecords]
-  .sort((a, b) => new Date(b.date) - new Date(a.date)); // ← DESCENDING
-
-
-    res.json(finalRecords);
-
+    }
+    res.json([...attendance, ...generatedRecords].sort((a, b) => new Date(b.date) - new Date(a.date)));
   } catch (err) {
-    console.error("Error fetching attendance by ID:", err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-
-// 🔍 POST: Fetch attendance by Identification (Password)
+/* ------------------------------------------------------------------
+   Identification (Password) Attendance (Updated to use DB Holidays)
+------------------------------------------------------------------ */
 router.post('/my-attendance', async (req, res) => {
   const { identification } = req.body;
-
-  if (!identification) {
-    return res.status(400).json({ error: 'Identification is required' });
-  }
-
   try {
-    // 1. Identification ద్వారా స్టాఫ్ ని వెతకాలి
     const staff = await Staff.findOne({ identification: identification.trim() });
+    if (!staff || staff.status === "Inactive employee") return res.status(403).json({ error: 'Access Denied' });
     
-    if (!staff) {
-      return res.status(404).json({ error: 'Invalid Identification code. Please check again.' });
-    }
-
-    if (staff.status === "Inactive employee") {
-      return res.status(403).json({ error: 'Access Denied: Your account is Inactive. You cannot view the attendance sheet.' });
-    }
+    const employeeId = staff.id;
+    const attendance = await Attendance.find({ id: employeeId });
+    const festivalHolidays = await Holiday.find();
     
-    const employeeId = staff.id; // ఆ స్టాఫ్ యొక్క అసలు ID (PS-0003 etc.)
-
-    // 2. ఆ ID కి సంబంధించిన అటెండెన్స్ తీసుకురావాలి
-    const attendance = await Attendance.find({ id: employeeId }).sort({ date: 1 });
-
-    // ---- AUTO INSERT HOLIDAYS LOGIC (మీ పాత కోడ్ లాగే) ----
-    const generatedRecords = [];
     const recordedDates = new Set(attendance.map(a => a.date));
-    const today = new Date().setHours(0, 0, 0, 0);
+    const generatedRecords = [];
+    const today = new Date();
+    const startDate = new Date(2024, 0, 1);
 
-    // holidays array మీ ఫైల్ పైన ఉంది కదా, దాన్ని వాడుకుంటున్నాం
-    holidays.forEach(h => {
-      const year = new Date().getFullYear();
-      const holidayDate = `${year}${h.date}`;
-      const holidayTime = new Date(holidayDate).setHours(0, 0, 0, 0);
+    // లూప్ తిప్పడం
+    for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
+      // డేట్ ని పక్కాగా YYYY-MM-DD ఫార్మాట్ లోకి మార్చడం
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${yyyy}-${mm}-${dd}`;
+      
+      if (recordedDates.has(dateStr)) continue;
 
-      if (holidayTime <= today && !recordedDates.has(holidayDate)) {
+      // డే కనుక్కోవడం
+      const dayName = d.toLocaleDateString("en-US", { weekday: "long" });
+
+      let hName = isFixedHoliday(dateStr);
+      if (!hName && isSunday(d)) hName = "SUNDAY";
+      if (!hName && isSecondSaturday(d)) hName = "2nd SATURDAY";
+      
+      const fest = festivalHolidays.find(fh => fh.date === dateStr);
+      if (fest) hName = fest.name;
+
+      if (hName) {
         generatedRecords.push({
           id: employeeId,
           name: staff.name,
-          date: holidayDate,
-          day: new Date(holidayDate).toLocaleDateString('en-US', { weekday: 'long' }),
-          holidayName: h.name,
-          leaveType: null,
-          inTime: null,
-          outTime: null,
+          date: dateStr,
+          day: dayName,
+          holidayName: hName,
           isLOP: false
         });
       }
-    });
+    }
 
-    const finalRecords = [...attendance, ...generatedRecords]
-      .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    // రిజల్ట్ పంపేటప్పుడు పేరు కూడా పంపుతున్నాం
+    const finalRecords = [...attendance, ...generatedRecords].sort((a, b) => new Date(b.date) - new Date(a.date));
     res.json({ records: finalRecords, staffName: staff.name, staffId: staff.id });
-
   } catch (err) {
-    console.error("Error fetching attendance by Identification:", err);
     res.status(500).json({ error: 'Server error' });
   }
 });
-
-
-
 /* ------------------------------------------------------------------
    Privilege Leave Accrual Helpers - FIXED VERSION
 ------------------------------------------------------------------ */
@@ -1058,6 +965,10 @@ router.get('/monthly-summary/:id', async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
+
+
+
 
 
 module.exports = router;

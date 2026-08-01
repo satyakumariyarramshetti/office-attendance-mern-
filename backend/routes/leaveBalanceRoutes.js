@@ -178,7 +178,6 @@ router.post('/my-leave-balance', async (req, res) => {
       });
     }
 
-        // 2. Staff దొరికితే, అతని 'id' (PS-0003) ని ఉపయోగించి LeaveBalance వెతకాలి
         const balance = await LeaveBalance.findOne({ employeeId: staff.id });
 
         if (!balance) {

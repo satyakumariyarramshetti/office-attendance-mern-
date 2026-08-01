@@ -141,37 +141,46 @@ const UserAttendance = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredRecords.map((record, index) => {
-                    const inM = timeToMins(record.inTime);
-                    const outM = timeToMins(record.outTime);
-                    const lOutM = timeToMins(record.lunchOut);
-                    const lInM = timeToMins(record.lunchIn);
+                
+{filteredRecords.map((record, index) => {
+  const inM = timeToMins(record.inTime);
+  const outM = timeToMins(record.outTime);
+  const lOutM = timeToMins(record.lunchOut);
+  const lInM = timeToMins(record.lunchIn);
 
-                    let gross = (inM && outM) ? outM - inM : null;
-                    let lunch = (lOutM && lInM) ? lInM - lOutM : 0;
-                    let net = (gross !== null) ? gross - lunch : null;
+  let gross = (inM && outM) ? outM - inM : null;
+  let lunch = (lOutM && lInM) ? lInM - lOutM : 0;
+  let net = (gross !== null) ? gross - lunch : null;
 
-                    const isLate = record.inTime && record.inTime > "09:15";
+  const isLate = record.inTime && record.inTime > "09:15";
+  const isHoliday = !!record.holidayName; 
 
-                    return (
-                      <tr key={index} className={isLate ? styles.lateRow : ''}>
-                        <td data-label="Date">{record.date} <br/> <small>{record.day}</small></td>
-                        <td data-label="In Time" className={isLate ? styles.lateText : ''}>
-                           {record.inTime || '—'}
-                        </td>
-                        <td data-label="Delay Reason">{record.delayReason || '—'}</td>
-                        <td data-label="Lunch Out">{record.lunchOut || '—'}</td>
-                        <td data-label="Lunch In">{record.lunchIn || '—'}</td>
-                        <td data-label="Out Time">{record.outTime || '—'}</td>
-                        <td data-label="Gross Hrs" className={styles.boldCol}>{formatMinsToHHMM(gross)}</td>
-                        <td data-label="Net Hrs" className={styles.boldCol}>{formatMinsToHHMM(net)}</td>
-                        <td data-label="Status">
-                          <span className={styles.statusBadge}>
-                            {record.leaveType || record.holidayName || (record.inTime ? 'Present' : 'Absent')}
-                          </span>
-                        </td>
-                        <td data-label="Permission">{record.permissionType ? `${record.permissionType} (${record.hours}h)` : '—'}</td>
-                      </tr>
+                 return (
+    <tr key={index} 
+      className={`${isLate ? styles.lateRow : ''} ${isHoliday ? styles.holidayRow : ''}`}
+    >
+      <td data-label="Date">{record.date} <br/> <small>{record.day}</small></td>
+      
+      <td data-label="In Time" className={isLate ? styles.lateText : ''}>
+         {(isHoliday && !record.inTime) ? '—' : (record.inTime || '—')}
+      </td>
+      
+      <td data-label="Delay Reason">{record.delayReason || '—'}</td>
+      <td data-label="Lunch Out">{(isHoliday && !record.lunchOut) ? '—' : (record.lunchOut || '—')}</td>
+      <td data-label="Lunch In">{(isHoliday && !record.lunchIn) ? '—' : (record.lunchIn || '—')}</td>
+      <td data-label="Out Time">{(isHoliday && !record.outTime) ? '—' : (record.outTime || '—')}</td>
+                      
+                       
+      <td data-label="Gross Hrs" className={styles.boldCol}>{isHoliday && !record.inTime ? '—' : formatMinsToHHMM(gross)}</td>
+      <td data-label="Net Hrs" className={styles.boldCol}>{isHoliday && !record.inTime ? '—' : formatMinsToHHMM(net)}</td>
+      
+      <td data-label="Status">
+        <span className={isHoliday ? styles.holidayBadge : styles.statusBadge}>
+          {record.holidayName ? `Holiday: ${record.holidayName}` : (record.leaveType || (record.inTime ? 'Present' : 'Absent'))}
+        </span>
+      </td>
+      <td data-label="Permission">{record.permissionType ? `${record.permissionType} (${record.hours}h)` : '—'}</td>
+                    </tr>
                     );
                   })}
                 </tbody>
