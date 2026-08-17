@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import './AttendanceSheet.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import * as XLSX from "xlsx";
+import XLSX from 'xlsx-js-style';
 
 const AttendanceSheet = () => {
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
@@ -146,39 +146,74 @@ const AttendanceSheet = () => {
     });
   }, [records, selectedMonth, selectedYear, selectedDate, searchTerm]);
 
-  // --- Export Logic ---
-  const getExportRows = () => filteredRecords.map(record => {
+const exportToExcel = () => {
+  // 1. డేటాను సార్ట్ చేయడం (1st to Last Date)
+  const sortedRecords = [...filteredRecords].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  const allRows = sortedRecords.map(record => {
     const lunchHours = calculateTimeDifference(record.lunchOut, record.lunchIn);
     const workingHours = calculateNetWorkingHours(record.inTime, record.outTime, record.lunchOut, record.lunchIn);
+    const isHoliday = !!record.holidayName;
+
     return {
       'ID': record.id,
       'Name': record.name,
       'Date': formatDate(record.date),
       'Day': record.day,
-      'In Time': record.inTime,
-      'System In Time': record.systemInTime || 'N/A',
+      'In Time': isHoliday ? '—' : (record.inTime || '—'),
+      'System In Time': isHoliday ? '—' : (record.systemInTime || 'N/A'),
       'Delay Reason': record.delayReason || '',
-      'Lunch Out': record.lunchOut,
-      'Lunch In': record.lunchIn,
-      'Out Time': record.outTime,
-      'Lunch Hours': lunchHours,
-      'Working Hours': workingHours,
-      'Gross Hours': computeGrossHours(lunchHours, workingHours),
+      'Lunch Out': isHoliday ? '—' : (record.lunchOut || '—'),
+      'Lunch In': isHoliday ? '—' : (record.lunchIn || '—'),
+      'Out Time': isHoliday ? '—' : (record.outTime || '—'),
+      'Lunch Hours': isHoliday ? '—' : lunchHours,
+      'Working Hours': isHoliday ? '—' : workingHours,
+      'Gross Hours': isHoliday ? '—' : computeGrossHours(lunchHours, workingHours),
       'Daily Leave Type': record.dailyLeaveType || 'N/A',
       'Site Comments': record.siteComments || '',
       'Permission': record.permissionType || 'N/A',
       'Hours': record.hours || 'N/A',
-      'Leave Type': getLeaveOrHoliday(record),
-      'Location': record.location || 'N/A'
+      'Leave Type': isHoliday ? `Holiday - ${record.holidayName}` : getLeaveOrHoliday(record)
     };
   });
 
-  const exportToExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(getExportRows());
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-    XLSX.writeFile(wb, `Attendance_Sheet_${selectedMonth}_${selectedYear}.xlsx`);
-  };
+  const wb = XLSX.utils.book_new();
+  const uniqueIds = [...new Set(allRows.map(row => row.ID))].sort(); // Tabs Order Wise
+
+  uniqueIds.forEach((empId) => {
+    const empData = allRows.filter(row => row.ID === empId);
+    const ws = XLSX.utils.json_to_sheet(empData);
+
+    // --- స్టైలింగ్ లాజిక్ (Borders & Alignment) ---
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    for (let R = range.s.r; R <= range.e.r; ++R) {
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
+        if (!ws[cell_address]) continue;
+
+        // సెల్ స్టైల్ సెట్ చేయడం
+        ws[cell_address].s = {
+          alignment: { horizontal: "center", vertical: "center", wrapText: true },
+          border: {
+            top: { style: "thin", color: { rgb: "000000" } },
+            bottom: { style: "thin", color: { rgb: "000000" } },
+            left: { style: "thin", color: { rgb: "000000" } },
+            right: { style: "thin", color: { rgb: "000000" } }
+          },
+          font: R === 0 ? { bold: true } : {} // మొదటి రో (Headers) ని బోల్డ్ చేయడం
+        };
+      }
+    }
+
+    // కాలమ్ వెడల్పు ఆటోమేటిక్‌గా అడ్జస్ట్ చేయడం
+    const colWidths = Object.keys(empData[0] || {}).map(key => ({ wch: 15 }));
+    ws['!cols'] = colWidths;
+
+    XLSX.utils.book_append_sheet(wb, ws, String(empId).slice(0, 31));
+  });
+
+  XLSX.writeFile(wb, `Attendance_Report_${selectedMonth}_${selectedYear}.xlsx`);
+};
 
   const allYears = Array.from(new Set(records.map(r => new Date(r.date).getFullYear()))).filter(Boolean).sort((a,b)=>b-a);
 
