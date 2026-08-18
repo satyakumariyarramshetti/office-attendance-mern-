@@ -1,783 +1,459 @@
-body, h1, h5, label {
-  margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-body {
-  background: linear-gradient(to bottom right, #101820, #1c1c2b);
+/* --- Root Variables --- */
+:root {
+    --bg-color: #f4f7fe;
+    --card-bg: #ffffff;
+    --primary-blue: #3b82f6;
+    --primary-orange: #f59e0b;
+    --primary-green: #10b981;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --radius-card: 28px;
+    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.04);
 }
 
-.main-wrapper {
-  min-height: 100vh;
+/* --- Global Reset --- */
+* {
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-dark);
 }
 
 .attendance-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 30px; /* Increased padding */
-  background-color: white; /* A slightly different dark blue */
-  color: rgb(13, 13, 13);
-  position: relative;
-}
-.company-logo {
-  height: 55px;
-  width: 55px;
-  object-fit: contain;
+    display: flex;
+    justify-content: space-between; /* ఇది లోగో గ్రూప్ ని ఎడమకి, బటన్స్ ని కుడికి ఉంచుతుంది */
+    align-items: center;
+    padding: 10px 40px;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
+.company-logo {
+    height: 100px; /* ఇక్కడ 42px నుండి 65px కి పెంచాము, దీనివల్ల లోగో స్పష్టంగా కనిపిస్తుంది */
+    width: auto;
+    object-fit: contain; /* లోగో క్వాలిటీ తగ్గకుండా చూస్తుంది */
+}
+
+/* --- Sparkling Header Title Effect --- */
 .header-title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.6rem;
-  font-weight: 600;
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    
+    /* గ్రేడియంట్ కలర్స్ - బ్లూ మరియు డార్క్ నేవీ మిక్స్ */
+    background: linear-gradient(
+        to right, 
+        #1e3252 20%, 
+        #0556d7 40%, 
+        #3102db 50%, 
+        #3b82f6 60%, 
+        #1e293b 80%
+    );
+    background-size: 200% auto;
+    
+    /* టెక్స్ట్ కి గ్రేడియంట్ అప్లై చేయడానికి */
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    
+    /* మెరుపు లాంటి ఎఫెక్ట్ కోసం యానిమేషన్ */
+    animation: shine 4s linear infinite;
+    
+    display: inline-block;
+    cursor: default;
+    text-shadow: 2px 2px 5px rgba(1, 23, 59, 0.1); /* లైట్ గ్లో */
+}
+
+/* --- దీనిని వెతికి అప్డేట్ చేయండి --- */
+@keyframes shine {
+    from {
+        background-position: 0% center; /* మొదలు సున్నా దగ్గర */
+    }
+    to {
+        background-position: -200% center; /* ఇక్కడ -200% (Negative) ఇస్తే దిశ మారుతుంది */
+    }
+}
+
+
+/* హోవర్ చేసినప్పుడు కొంచెం జూమ్ అయ్యే ఎఫెక్ట్ (Optional) */
+.header-title:hover {
+    transform: scale(1.02);
+    transition: transform 0.5s ease;
+}
+
+.logo-title-container {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* లోగో కి టైటిల్ కి మధ్య గ్యాప్ */
 }
 
 
 .header-links {
-  display: flex;
-  align-items: center;
-  gap: 15px; /* Adds space between the buttons */
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
-.header-links a {
-  color: black;
-  text-decoration: none;
-  font-weight: 500;
+.header-links .btn {
+    padding: 8px 18px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid var(--border-color);
 }
 
-.header-links a:hover {
-  color: #007bff; /* A standard blue, change to any color you like */
+.custom-blue-btn { background: var(--primary-blue) !important; color: white !important; border: none !important; }
+.btn-outline-light { background: #f8fafc; color: var(--text-muted) !important; }
+
+/* --- Container Adjustment --- */
+.container-fluid {
+    padding: 40px 60px !important;
 }
 
-
-.header-links .admin-login-link {
-  padding: 8px 15px;
-  border-radius: 5px;
-  transition: background-color 0.2s ease-in-out;
-}
-
-.header-links .admin-login-link:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-
-
-/* Make sure you have bootstrap or a similar CSS for this btn class */
-.btn.btn-outline-light {
-    border-color: #f8f9fa;
-    color: black;
-}
-
-.btn.btn-outline-light:hover {
-    background-color: #f8f9fa;
-    color: #007bff;
-}
-
-
-/* ---- Cards Layout ---- */
-.container {
-  padding-top: 2rem;
-  padding-bottom: 2rem;
-}
-
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-}
-
-.col-md-4 {
-  flex: 0 0 33.3333%;
-  max-width: 33.3333%;
-  padding-left: 12px;
-  padding-right: 12px;
-  margin-bottom: 24px;
-}
-
-@media (max-width: 991px) {
-  .col-md-4 {
-    flex: 0 0 100%;
-    max-width: 100%;
-  }
-}
-
+/* --- Main Input Cards Styling --- */
 .card.custom-card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
-  min-height: 520px;
-  height: 570px;
-  max-width: 410px;
-  margin: auto;
-  padding: 1.7rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden; 
+    background: var(--card-bg);
+    border-radius: var(--radius-card);
+    border: none !important;
+    box-shadow: var(--shadow-soft);
+    padding: 30px 25px;
+    height: 100%; /* Ensures all 3 input cards are same height */
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+    overflow: visible !important;
 }
 
-@media (max-width: 991px) {
-  .card.custom-card {
-    min-width: 100%;
-    height: auto;
-    margin-bottom: 28px;
-    max-width: 100vw;
-    overflow: hidden; 
-  }
+.card.custom-card:hover {
+    transform: translateY(-8px);
 }
-/* ---- End Cards ---- */
 
+/* Card Headers (Icon + Title Alignment) */
 .card-title {
-  font-size: 1.45rem;
-  font-weight: 600;
-  color: #172a38;
-  margin-bottom: 0.7rem;
-  text-align: center;
-  display: block;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 15px;
+    margin-bottom: 25px;
+    font-size: 1.2rem;
+    font-weight: 700;
 }
+
 .card-title div {
-  margin-top: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    order: -1;
 }
+
 .card-title svg {
-  font-size: 2.1rem;
+    width: 22px;
+    height: 22px;
+    color: white !important;
 }
 
-.card:hover{
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0,0,123,255,0.2);
-}
+/* Card Icon Colors */
+.col-lg-3:nth-child(1) .card-title div { background: var(--primary-blue); }
+.col-lg-3:nth-child(2) .card-title div { background: var(--primary-orange); }
+.col-lg-3:nth-child(3) .card-title div { background: var(--primary-green); }
 
+/* --- Form Fields Fix (Dropdown Clarity Fix) --- */
+.form-group { margin-bottom: 12px !important; }
 
-/* Form Styling */
-.form-group {
-  margin-bottom: 11px !important;
-}
 .form-group label {
-  font-weight: 500;
-  color: #444;
-  margin-bottom: 3px;
-}
-input.form-control
- {
-  font-size: 16px;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #ced4da;
-  transition: border-color 0.3s;
-}
-.form-control:focus {
-  border-color: #007bff;
-  outline: none;
-}
-select.form-control option[disabled] {
-  color: #333 !important;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    display: block;
 }
 
-.input-group-prepend .input-group-text {
-  background: #f5f6fa;
-  font-weight: bold;
-  border-radius: 8px 0 0 8px;
-  border: 1px solid #ced4da;
-  border-right: none;
+input.form-control, 
+select.form-control {
+    background-color: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px 15px;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    width: 100%;
+    min-height: 48px; /* Fixed height for consistency */
 }
 
+/* Dropdown (Select) Visibility Correction */
+select.form-control {
+    appearance: auto; /* Browser default arrow shows up, prevents cutoff */
+    -webkit-appearance: auto;
+    cursor: pointer;
+    line-height: 1.5;
+}
+
+input.form-control:focus, 
+select.form-control:focus {
+    background-color: #fff;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.08);
+    outline: none;
+}
+
+/* Staff ID Prepend style */
 .input-group-text {
-  min-width: 38px;
+    background: #f1f5f9;
+    border: 1px solid var(--border-color);
+    border-radius: 12px 0 0 12px;
+    font-weight: 700;
+    color: var(--text-muted);
 }
 
-/* Submit button always at card bottom */
-.d-flex.flex-column.h-100 {
-  flex: 1 1 0;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
+/* --- Submit Buttons Centering --- */
 .mt-auto {
-  margin-top: auto !important;
-  padding-bottom: 18px;
+    margin-top: auto !important;
+    display: flex;
+    justify-content: center;
 }
 
-.btn-primary {
-  background: linear-gradient(to right, #007bff, #0056d2);
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  transition: background 0.3s, transform 0.2s;
-  width: 100%;
-  display: block;
-  font-size: 1rem;
-}
-.btn-primary:hover {
-  background: linear-gradient(to right, #0056d2, #0041aa);
-  transform: scale(1.03);
-}
-
-/* Responsive Heading Font Sizes etc. */
-@media (max-width: 767px) {
-  .header-title { font-size: 1.1rem; }
-  .card-title { font-size: 1rem; }
-  .btn-primary { font-size: 0.97rem; }
+.btn-primary.btn-block {
+    width: 100%;
+    padding: 14px;
+    border-radius: 15px;
+    border: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
-/* Alerts and messages */
-.alert {
-  border-radius: 8px;
-  font-size: 0.96rem;
-  padding: 0.5rem 0.8rem;
-  margin-top: 0.5rem;
-}
+/* Submit Button Gradients */
+.col-lg-3:nth-child(1) .btn-primary { background: linear-gradient(135deg, #60a5fa, #2563eb); }
+.col-lg-3:nth-child(2) .btn-primary { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+.col-lg-3:nth-child(3) .btn-primary { background: linear-gradient(135deg, #34d399, #10b981); }
 
-.alert-warning {
-  background: #fff8e0;
-  color: #7d5904;
-  border: 1px solid #ffe08a;
+/* --- Side Column Sequence Height Fix (Right Side) --- */
+.h-100 { height: 100% !important; }
+
+.stubs-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100%; /* Occupies full column height */
 }
-.alert-info {
-  background: #e5f2fd;
-  color: #165087;
-  border: 1px solid #bae1ff;
-}
-/* Add this at the end of your interface.css file */
 
 .card-stub {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
-  min-height: 100px;
-  max-width: 410px;
-  margin: auto;
-  padding: 1.7rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+    flex: 1; /* Makes Permission and Leave cards exactly equal height */
+    background: white;
+    border-radius: var(--radius-card);
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-soft);
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.3s ease;
 }
 
-.card-stub:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 123, 0.2);
-}
+.card-stub:hover { transform: translateY(-5px); }
+
+/* Background Tints like Image 1 */
+.stubs-wrapper .card-stub:nth-child(1) { background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%); }
+.stubs-wrapper .card-stub:nth-child(2) { background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%); }
 
 .stub-icon {
-  font-size: 2.5rem;
-  color: #007bff;
-  margin-bottom: 10px;
+    width: 65px;
+    height: 65px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-bottom: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    font-size: 2.2rem;
 }
 
 .stub-title {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #172a38;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text-dark);
 }
 
-/* Make the container scrollable on smaller screens */
-@media (max-width: 767px) {
-  .main-wrapper {
-    overflow-y: auto;
-    max-height: 100vh;
-  }
+/* Manage Button style inside stubs */
+.card-stub::after {
+    content: 'Manage \203A';
+    margin-top: 15px;
+    background: white;
+    padding: 8px 20px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: 1px solid var(--border-color);
+    color: var(--primary-blue);
+}
+.stubs-wrapper .card-stub:nth-child(2)::after { color: var(--primary-green); }
 
-  .container {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-    overflow-y: auto;
-  }
-
-  body {
-    overflow-y: auto;
-  }
+/* --- Responsive Adjustments --- */
+@media (max-width: 1200px) {
+    .attendance-header { padding: 15px 25px; flex-direction: column; gap: 10px; height: auto; }
+    .header-title { position: static; transform: none; }
+    .container-fluid { padding: 25px !important; }
 }
 
-@media (max-width: 767px) {
-  /* Remove Bootstrap column padding so cards span edge-to-edge */
-  .container,
-  .row {
-    padding-left: 0;
-    padding-right: 0;
-  }
-  [class*="col-"] {
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  /* Make the card take full width */
-  .card.custom-card {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 0 20px 0; /* Remove auto-centering margin */
-    overflow: hidden; 
-  }
-
-  .form-group label,
-  .input-group-text,
-  input.form-control
-   {
-    font-size: 15px;
-  }
-
-input.form-control {
-  -webkit-user-select: text;
-  -moz-user-select: text;
-  -ms-user-select: text;
-  user-select: text;
-}
-
-  /* Style for select dropdown in the cards */
-select.form-control {
-  width: 100%;         /* full width of container */
-  padding: 0.5rem 1rem; /* consistent padding */
-  font-size: 1rem;
-  border: 2px solid #172a38;
-  border-radius: 5px;
-  box-sizing: border-box; /* include padding in width */
-  background-color: white;
-  appearance: none;     /* remove default arrow to allow styling */
-  cursor: pointer;
-}
-
-  .btn-primary {
-    font-size: 0.95rem;
-    padding: 0.7rem 1rem;
-  }
-}
-
-.d-flex.flex-column.h-100 {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.close-btn {
-  transition: color 0.3s ease;
-}
-
-.close-btn:hover {
-  color: #007bff;
-}
-
-/* --- STYLES FOR NEW PERMISSION/LEAVE COLUMN --- */
-
-.stubs-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 24px; /* Creates space between the two stub cards */
-}
-
-/* Modify existing card-stub for flex layout */
-.card-stub {
-  flex: 1; /* This is key - it makes both stubs take up equal height */
-  min-height: 0;
-  margin: 0 !important; /* Override any other margins */
-  width: 100%; /* Ensure it fills the column */
-  max-width: 100%;
-}
-
-
-/* ---------- Mobile View (max-width: 767px) ---------- */
-@media (max-width: 767px) {
-  html, body {
-    height: auto;
-    min-height: 100%;
-    position: relative;
-    overflow-x: hidden;
-    overflow-y: auto;
-  }
-
-  .main-wrapper {
-    padding-bottom: 20px;
-    overflow-y: auto;
-    max-height: 100vh;
-  }
-
-  .container {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-    overflow-y: auto;
-  }
-
-  .row {
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-  }
-
-  .col-md-4 {
-    flex: 0 0 100%;
-    max-width: 100%;
-    padding: 0 10px;
-    margin-bottom: 0;
-  }
-
-  .card.custom-card {
-    width: 100%;
-    min-width: auto;
-    max-width: 100%;
-    height: auto;
-    min-height: auto;
-    margin: 0 auto 20px auto;
-    padding: 1.2rem 1rem;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
-    overflow: hidden; 
-  }
-
-  .card-title {
-    font-size: 1.1rem;
-  }
-
-  .form-group label,
-  .input-group-text,
-  input.form-control,
-  select.form-control {
-    font-size: 15px;
-  }
-
-  .btn-primary {
-    font-size: 0.95rem;
-    padding: 0.65rem 1rem;
-  }
-
-  .alert {
-    font-size: 0.92rem;
-  }
-}
-
-
-
-
-
-/* ---------- Mobile & iPad Mini View (max-width: 768px) ---------- */
 @media (max-width: 768px) {
-  html, body {
-    height: auto;
-    min-height: 100%;
-    position: relative;
-    overflow-x: hidden;
-    overflow-y: auto;
-  }
-
-  .main-wrapper {
-    padding-bottom: 20px;
-    overflow-y: auto;
-    max-height: 100vh;
-  }
-
-  .container {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-    overflow-y: auto;
-  }
-
-  .row {
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-  }
-
-  .col-md-4 {
-    flex: 0 0 100%;
-    max-width: 100%;
-    padding: 0 10px;
-    margin-bottom: 0;
-  }
-
-  .card.custom-card {
-    width: 70%;
-    min-width: auto;
-    max-width: 100%;
-    height: auto;
-    min-height: auto;
-    margin: 0 auto 20px auto;
-    padding: 1.2rem 1rem;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
-    overflow: hidden; 
-  }
-
-  .card-title {
-    font-size: 1.1rem;
-  }
-
-  .form-group label,
-  .input-group-text,
-  input.form-control,
-  select.form-control {
-    font-size: 15px;
-  }
-
-  .btn-primary {
-    font-size: 0.95rem;
-    padding: 0.65rem 1rem;
-  }
-
-  .alert {
-    font-size: 0.92rem;
-  }
-}
- 
-@media screen and (max-width: 912px) and (orientation: portrait) {
-  body {
-    padding: 0;
-    margin: 0;
-    background-color: #f9f9f9; /* Optional: match app background */
-  }
-
-  .container {
-    padding: 0.5rem 0.5rem; /* Reduce side padding */
-    width: 100%;
-    max-width: 100%;
-  }
-
-  .row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 20px;
-    margin: 0;
-  }
-
-  .col-md-4 {
-    flex: 0 0 100%;
-    max-width: 100%;
-    padding: 0;
-  }
-
-.card.custom-card {
-  width: 90% !important;
-  max-width: 500px; /* Optional: max size */
-  margin: 0 auto 20px auto;
-  padding: 1rem;
-  border-radius: 12px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
-  overflow: hidden; 
+    .row { flex-direction: column; gap: 20px; }
+    .card.custom-card { min-height: auto; }
 }
 
-  .card-title {
-    font-size: 1.1rem;
-    text-align: center;
-  }
+/* ==========================================================================
+   Full Responsive Media Queries
+   ========================================================================== */
 
-  .btn-primary {
-    display: block;
-    width: 100%;
-  }
-
-  .alert {
-    font-size: 0.95rem;
-    padding: 0.5rem;
-  }
+/* 1. Large Desktops & Laptops (Max 1200px) */
+@media (max-width: 1200px) {
+    .container-fluid {
+        padding: 30px 40px !important;
+    }
+    .header-title {
+        font-size: 1.5rem;
+    }
 }
 
-/* --- NEW: Tablet View (e.g., iPad Landscape, Nest Hub) --- */
-@media (min-width: 769px) and (max-width: 1280px) {
-  .card.custom-card {
-    /* Decrease the height as requested */
-    height: auto;
-    min-height: 490px; /* Adjusted from 570px */
-    padding: 1.2rem 1.1rem; /* Adjust padding for a tighter fit */
-    overflow: hidden; 
-    
-  }
+/* 2. Tablets & Small Laptops (Max 992px) */
+@media (max-width: 992px) {
+    .attendance-header {
+        padding: 15px 30px;
+        flex-direction: column; /* లోగో ఒక లైన్ లో, బటన్స్ ఒక లైన్ లో వస్తాయి */
+        gap: 15px;
+    }
 
-  .card-title {
-    font-size: 1.25rem; /* Slightly smaller title */
-    margin-bottom: 0.6rem;
-  }
+    .logo-title-container {
+        justify-content: center;
+        width: 100%;
+    }
 
-   .form-group {
-    margin-bottom: 9px !important; /* Reduce space between form elements */
-  }
+    .header-links {
+        justify-content: center;
+        flex-wrap: wrap; /* బటన్స్ ఎక్కువ ఉంటే కింద లైన్ కి వస్తాయి */
+        width: 100%;
+    }
 
-  input.form-control, 
-  
-  select.form-control {
-    font-size: 15px;
-    padding: 10px; /* Make input fields slightly more compact */
-  }
+    .container-fluid {
+        padding: 20px 20px !important;
+    }
 
-  .mt-auto {
-    padding-bottom: 1rem; /* Bring the button up a little */
-  }
+    /* కార్డుల మధ్య గ్యాప్ */
+    .row > div {
+        margin-bottom: 20px;
+    }
 }
 
-
-
-
-/* Add this to your interface.css file */
-
-.time-message {
-  font-size: 0.85rem;
-  font-weight: 500;
-  padding: 8px;
-  border-radius: 4px;
-  text-align: center;
-  border: 1px solid transparent;
-}
-
-.time-message.text-success {
-    background-color: #e6f7e9;
-    color: #1a642d;
-    border-color: #c3e6cb;
-}
-
-.time-message.text-danger {
-    background-color: #f8d7da;
-    color: #721c24;
-    border-color: #f5c6cb;
-}
-
-
-/* ---------------- Responsive Header Styles ---------------- */
-
-/* General adjustments for better alignment on medium screens */
-@media (max-width: 1024px) {
-  .attendance-header {
-    flex-wrap: wrap;
-    justify-content: center;
-    text-align: center;
-    padding: 10px 15px;
-  }
-
-  .company-logo {
-    height: 45px;
-    width: 45px;
-    margin-bottom: 8px;
-  }
-
-  .header-title {
-    position: static;
-    transform: none;
-    margin-bottom: 10px;
-    font-size: 1.4rem;
-  }
-
-  .header-links {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-  }
-
-  .header-links a {
-    font-size: 0.95rem;
-  }
-}
-
-/* Tablet and large mobile view (≤768px) */
+/* 3. Mobile Devices - Large & Portrait (Max 768px) */
 @media (max-width: 768px) {
-  .attendance-header {
-    flex-direction: column;
-    align-items: center;
-    padding: 15px;
-    gap: 8px;
-  }
+    .company-logo {
+        height: 70px; /* చిన్న స్క్రీన్స్ లో లోగో సైజ్ తగ్గింపు */
+    }
 
-  .company-logo {
-    height: 40px;
-    width: 40px;
-  }
+    .header-title {
+        font-size: 1.3rem;
+        text-align: center;
+    }
 
-  .header-title {
-    position: static;
-    transform: none;
-    text-align: center;
-    margin: 5px 0;
-    font-size: 1.2rem;
-  }
+    .card.custom-card {
+        padding: 20px 15px;
+        min-height: auto !important; /* మొబైల్ లో సమాన ఎత్తు అవసరం లేదు */
+    }
 
-  .header-links {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-  }
+    .card-title {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+    }
 
-  .header-links a {
-    display: inline-block;
-    padding: 6px 10px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    background-color: #f8f9fa;
-    font-size: 0.9rem;
-  }
+    .stubs-wrapper {
+        flex-direction: row; /* మొబైల్ లో Permission, Leave పక్కపక్కన వస్తాయి */
+        gap: 10px;
+    }
 
-  .header-links a:hover {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-  }
+    .card-stub {
+        padding: 15px;
+    }
+
+    .stub-icon {
+        width: 45px;
+        height: 45px;
+        font-size: 1.5rem;
+    }
+
+    .stub-title {
+        font-size: 1rem;
+    }
 }
 
-/* Very small screens (≤480px) — stack vertically */
+/* 4. Small Mobile Phones (Max 480px) */
 @media (max-width: 480px) {
-  .header-links {
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    gap: 6px;
-  }
+    .attendance-header {
+        padding: 10px 15px;
+    }
 
-  .header-links a {
-    width: 90%;
-    text-align: center;
-    padding: 8px 0;
-    font-size: 0.88rem;
-  }
+    .logo-title-container {
+        gap: 10px;
+    }
+
+    .header-title {
+        font-size: 1.1rem;
+    }
+
+    .header-links .btn {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+    }
+
+    .container-fluid {
+        padding: 15px 10px !important;
+    }
+
+    .card-stub::after {
+        padding: 5px 10px;
+        font-size: 0.7rem;
+    }
+
+    /* ఇన్పుట్ ఫీల్డ్స్ మరియు బటన్స్ లోపల ప్యాడింగ్ తగ్గింపు */
+    input.form-control, 
+    select.form-control {
+        padding: 10px;
+        font-size: 0.85rem;
+        min-height: 40px;
+    }
+
+    .btn-primary.btn-block {
+        padding: 10px;
+        font-size: 0.85rem;
+    }
 }
 
-
-.custom-blue-btn {
-  background-color: #fcfc05;   /* Blue background */
-  color: white;                /* White text */
-  border: 1px solid #007bff;   /* Optional border for clean switch */
-  transition: 0.3s ease;
+/* 5. Horizontal Alignment Fix for Permission/Leave Stubs on Mobile */
+@media (max-width: 576px) {
+    .stubs-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* సగం సగం స్క్రీన్ ఆక్యుపై చేస్తాయి */
+    }
 }
 
-.custom-blue-btn:hover {
-  background-color: white;     /* White background */
-  color: black;                /* Black text */
-  border: 1px solid #007bff;    /* Keep blue border */
-}
-
-.activity-alert {
-  margin-top: 15px;
-  padding: 12px 15px;
-  background-color: #fff3cd;
-  border: 1px solid #ffc107;
-  border-left: 5px solid #ff9800;
-  color: #664d03;
-  border-radius: 8px;
-  font-size: 14px;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.activity-alert b {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 15px;
-}
-
-.activity-alert ul {
-  margin: 0;
-  padding-left: 20px;
-}
-
-.activity-alert li {
-  margin-bottom: 4px;
-  font-weight: 500;
-}
-
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
