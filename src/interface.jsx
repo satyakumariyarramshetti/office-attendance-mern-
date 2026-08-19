@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import './interface.css';
 import { Link } from 'react-router-dom';
-import { FaClock, FaUtensils, FaDoorOpen, FaFileAlt, FaBed } from 'react-icons/fa';
+// I added FaCalendarAlt here
+import { FaClock, FaUtensils, FaDoorOpen, FaFileAlt, FaCalendarAlt } from 'react-icons/fa';
 
 // Prefix for Staff ID
 const PS_PREFIX = 'PS-';
@@ -1024,7 +1025,7 @@ const Interface = () => {
               {activeSideCard === 'permission' ? (
                 <div className="card custom-card h-100" style={{ position: 'relative' }}>
                   <button className="close-btn" onClick={() => setActiveSideCard(null)} style={{ position: 'absolute', right: '15px', top: '15px', background: 'transparent', border: 'none', fontSize: '1.6rem' }} aria-label="Close Permission Card" type="button" >&times;</button>
-                  <h5 className="card-title">Permission Details <FaFileAlt className="text-info fs-4 mt-1" /></h5>
+                 <h5 className="card-title">Permission Details <div><FaFileAlt /></div></h5>
                   <form className="d-flex flex-column h-100" onSubmit={(e) => handleSubmit(e, 'permission')}>
                     <StaffIdInput inputId="idPermission" value={idInputs.permission} onChange={(e) => handleIdChange(e, 'permission')} staffNotFound={staffNotFound} />
                     <div className="form-group mb-2"><label>Name</label><input type="text" className="form-control" value={formData.name} readOnly /></div>
@@ -1053,7 +1054,7 @@ const Interface = () => {
               ) : activeSideCard === 'leave' ? (
                 <div className="card custom-card h-100" style={{ position: 'relative' }}>
                   <button className="close-btn" onClick={() => setActiveSideCard(null)} style={{ position: 'absolute', right: '15px', top: '15px', background: 'transparent', border: 'none', fontSize: '1.6rem' }} aria-label="Close Leave Card" type="button" >&times;</button>
-                  <h5 className="card-title">Leave Details <FaBed className="text-success fs-4 mt-1" /></h5>
+                 <h5 className="card-title">Leave Details <FaCalendarAlt className="text-success fs-4 mt-1" /></h5>
                   <form className="d-flex flex-column h-100" onSubmit={handleLeaveSubmit}>
                     <StaffIdInput inputId="idLeave" value={idInputs.leave} onChange={(e) => handleIdChange(e, 'leave')} staffNotFound={staffNotFound} />
                     <div className="form-group mb-2"><label>Name</label><input type="text" className="form-control" value={formData.name} readOnly /></div>
@@ -1116,8 +1117,14 @@ const Interface = () => {
                 </div>
               ) : (
                 <div className="stubs-wrapper h-100">
-                  <div className="card-stub" onClick={() => setActiveSideCard('permission')}><FaFileAlt className="stub-icon" /><span className="stub-title">Permission</span></div>
-                  <div className="card-stub" onClick={() => setActiveSideCard('leave')}><FaBed className="stub-icon" /><span className="stub-title">Leave</span></div>
+                 <div className="card-stub" onClick={() => setActiveSideCard('permission')}>
+    <div className="stub-icon"><FaFileAlt /></div>
+    <span className="stub-title">Permission</span>
+</div>
+                <div className="card-stub" onClick={() => setActiveSideCard('leave')}>
+    <div className="stub-icon"><FaCalendarAlt /></div>
+    <span className="stub-title">Leave</span>
+</div>
                 </div>
               )}
             </div>
