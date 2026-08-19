@@ -326,6 +326,83 @@ select.form-control:focus {
 }
 .stubs-wrapper .card-stub:nth-child(2)::after { color: var(--primary-green); }
 
+
+/* --- Activity Sheet Alert Styling --- */
+.activity-alert {
+    background-color: #fff8e1; /* తేలికపాటి పసుపు/orange బ్యాక్ గ్రౌండ్ */
+    border: 1.5px solid #ffe082;
+    border-radius: 18px;
+    padding: 15px;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s ease;
+}
+
+.activity-alert:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.06);
+}
+
+/* హెడర్ టెక్స్ట్ (⚠️ Activity Sheet Pending) */
+.activity-alert b {
+    color: #d84315; /* Warning Red/Orange color */
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+/* టోటల్ మిస్సింగ్ డేస్ టెక్స్ట్ */
+.activity-alert p {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #5d4037;
+    margin-bottom: 10px !important;
+}
+
+.activity-alert ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px 0;
+    display: flex;       
+    flex-direction: row; 
+    flex-wrap: wrap;     
+    gap: 6px;            
+    justify-content: flex-start;
+}
+
+.activity-alert li {
+    font-size: 0.72rem;  
+    color: #4e342e;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 4px 8px;    
+    border-radius: 6px;
+    border-left: 2.5px solid #ffb300;
+    white-space: nowrap; 
+    flex: 1;             
+    text-align: center;
+    min-width: 80px;     
+}
+
+
+.activity-alert .btn-outline-primary {
+    width: 100%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px;
+    border-radius: 10px;
+    background: white;
+    border: 1px solid var(--primary-blue);
+    color: var(--primary-blue);
+    transition: all 0.2s ease;
+}
+
+.activity-alert .btn-outline-primary:hover {
+    background: var(--primary-blue);
+    color: white;
+}
+
 /* --- Responsive Adjustments --- */
 @media (max-width: 1200px) {
     .attendance-header { padding: 15px 25px; flex-direction: column; gap: 10px; height: auto; }
