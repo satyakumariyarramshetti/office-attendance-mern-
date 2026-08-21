@@ -13,7 +13,7 @@ const adminEmails = {
   Ankita: "ankita.praxsol@gmail.com",
   Pradeep: "pradeep.praxsol@gmail.com	",
   Santosh: "santosh.praxsol@gmail.com	",
-  Ashmita: "ashmita.praxsol@gmail.com"
+  Ashmita: "govindalakshmirayudu2624@gmail.com"
   // Add real emails as needed
 };
 

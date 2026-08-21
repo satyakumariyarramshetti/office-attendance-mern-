@@ -6,7 +6,6 @@ console.log('SMTP_USER:', process.env.SMTP_USER ? 'Set' : 'Not Set');
 console.log('SMTP_PASS:', process.env.SMTP_PASS ? 'Set' : 'Not Set');
 console.log('ATLAS_URI:', process.env.ATLAS_URI ? 'Set' : 'Not Set');
 console.log('BREVO_API_KEY:', process.env.BREVO_API_KEY ? 'Set' : 'Not Set');
-console.log("BREVO KEY RAW:", process.env.BREVO_API_KEY);
 
 
 
