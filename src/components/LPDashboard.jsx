@@ -21,13 +21,13 @@ const LPDashboard = () => {
   const [enteredPassword, setEnteredPassword] = useState('');
   const [authError, setAuthError] = useState('');
   
-  const [activeTab, setActiveTab] = useState('all'); // Default is "all"
+  const [activeTab, setActiveTab] = useState('pending');
   const [leaveRows, setLeaveRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // New Filters
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
-  const [selectedMonth, setSelectedMonth] = useState(null); // null means show all months
+const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
 
   useEffect(() => {
     if (!authRole) return;
@@ -123,6 +123,13 @@ const LPDashboard = () => {
     }
   };
 
+  const currentYearNum = new Date().getFullYear();
+// ఉదాహరణకు: 2024 నుండి వచ్చే ఏడాది వరకు చూపించాలనుకుంటే
+const yearOptions = [];
+for (let y = 2024; y <= currentYearNum + 1; y++) {
+  yearOptions.push(y.toString());
+}
+
   return (
     <div className="lp-dashboard-bg">
       <div className="lp-dashboard-container">
@@ -131,12 +138,11 @@ const LPDashboard = () => {
           <div className="lp-controls">
              <div className="lp-control-item">
                 <label>Year:</label>
-                <select value={selectedYear} onChange={e => setSelectedYear(e.target.value)} className="lp-mini-select">
-                   <option value="2024">2024</option>
-                   <option value="2025">2025</option>
-                   <option value="2026">2026</option>
-                   <option value="2027">2027</option>
-                </select>
+              <select value={selectedYear} onChange={e => setSelectedYear(e.target.value)} className="lp-mini-select">
+  {yearOptions.map(year => (
+    <option key={year} value={year}>{year}</option>
+  ))}
+</select>
              </div>
              <div className="lp-control-item">
                 <label>Role:</label>
@@ -171,7 +177,8 @@ const LPDashboard = () => {
                 <button
                   key={tab}
                   className={`lp-btn ${tab}${activeTab === tab ? ' active' : ''}`}
-                  onClick={() => { setActiveTab(tab); setSelectedMonth(null); }}
+                 onClick={() => { setActiveTab(tab); }}
+
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)} Leaves
                 </button>

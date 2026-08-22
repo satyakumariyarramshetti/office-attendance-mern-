@@ -107,8 +107,8 @@
 .lp-table-heading { color: #2448ba; font-size: 1.1rem; margin-bottom: 12px; }
 .table-responsive { overflow-x: auto; }
 .lp-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-.lp-table th { background: #f0f5ff; color: #2448ba; padding: 12px; text-align: left; border-bottom: 2px solid #adc6ff; }
-.lp-table td { padding: 10px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+.lp-table th { background: #f0f5ff; color: #2448ba; padding: 12px; text-align: center; border-bottom: 2px solid #adc6ff; }
+.lp-table td { padding: 10px; border-bottom: 1px solid #f0f0f0; text-align: center;}
 
 .font-bold { font-weight: 600; color: #262626; }
 .text-small { font-size: 0.8rem; color: #8c8c8c; }
