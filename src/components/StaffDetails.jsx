@@ -53,12 +53,14 @@ useEffect(() => {
   }
 
  
-  if (searchTerm.trim()) {
-    filtered = filtered.filter(item =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.id.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }
+ if (searchTerm.trim()) {
+  const term = searchTerm.toLowerCase();
+  filtered = filtered.filter(item =>
+    item.name.toLowerCase().includes(term) ||
+    item.id.toLowerCase().includes(term) ||
+    (item.reportsTo && item.reportsTo.toLowerCase().includes(term)) // Add this line
+  );
+}
 
    filtered.sort((a, b) => {
     return a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' });
@@ -76,6 +78,7 @@ useEffect(() => {
       Name: s.name,
       Designation: s.designation,
       Department: s.department,
+      "Reports To": s.reportsTo || "—",
       Status: s.status || "Active Employee",
       Identification: s.identification || "",
       Email: s.email || "",
@@ -235,6 +238,7 @@ XLSX.writeFile(workbook, `staff-details-${viewMode}.xlsx`);
                 <th>Employee Name</th>
                 <th>Designation</th>
                 <th>Department</th>
+                <th>Reports To</th>
                 <th>Contact Information</th>
                 <th>Important Dates</th>
                 <th>Employee Management</th>
@@ -254,6 +258,8 @@ XLSX.writeFile(workbook, `staff-details-${viewMode}.xlsx`);
                     </td>
                     <td>{member.designation}</td>
                     <td><span className={`badge dept-${member.department?.toLowerCase().replace(/\s+/g, '-') || 'default'}`}>{member.department}</span></td>
+                        <td>{member.reportsTo || "—"}</td> 
+
                     <td>
                       <div className="contact-cell">
                         <span className="email-text">{member.email || "—"}</span>
@@ -307,8 +313,7 @@ XLSX.writeFile(workbook, `staff-details-${viewMode}.xlsx`);
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="empty-row">No staff found matches your search criteria.</td>
-                </tr>
+<td colSpan="9" className="empty-row">No staff found matches your search criteria.</td>                </tr>
               )}
             </tbody>
           </table>

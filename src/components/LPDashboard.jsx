@@ -4,12 +4,16 @@ import './LPDashboard.css';
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const admins = [
-  "Satya", "Mohan", "Rajesh", "Babu",
-  "Ankita", "Pradeep", "Santosh", "Ashmita"
+  "Satya", "Mohan", "Rajesh", "Ankita", "Pradeep"
 ];
+
 const rolePasswords = {
-  "Satya": "Approve123", "Mohan": "Piping123", "Rajesh": "Piping987", "Babu": "Product123",
-  "Ankita": "HR123", "Pradeep": "Business123", "Santosh": "Subcontract123", "Ashmita": "Project123", "hr": "Ankita123"
+  "Satya": "Approve123", 
+  "Mohan": "Piping123", 
+  "Rajesh": "Piping987", 
+  "Ankita": "HR123", 
+  "Pradeep": "Business123", 
+  "hr": "Ankita123"
 };
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
