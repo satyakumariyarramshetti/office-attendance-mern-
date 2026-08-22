@@ -160,13 +160,15 @@ const LPDashboard = () => {
         <div className="lp-top-bar">
           <h2 className="lp-dashboard-heading">Leave Plan Dashboard</h2>
           <div className="lp-search-container" style={{ flex: 1, margin: '0 20px', maxWidth: '400px' }}>
-   <input 
+  <input 
   type="text" 
+  id="lp-unique-search-field"    // Add a unique ID
+  name="lp-unique-search-field"  // Add a unique Name
   placeholder="Search ID, Name, Email, Reason..." 
   className="lp-search-input"
   value={searchQuery}
   onChange={(e) => setSearchQuery(e.target.value)}
-  autoComplete="off" // ఇది యాడ్ చేయండి
+  autoComplete="one-time-code"   // Change "off" to "one-time-code" (Stronger bypass)
   style={{
     width: '100%',
     padding: '8px 15px',
