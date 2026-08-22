@@ -20,26 +20,25 @@ const LPDashboard = () => {
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(true);
   const [enteredPassword, setEnteredPassword] = useState('');
   const [authError, setAuthError] = useState('');
-  
+
   const [activeTab, setActiveTab] = useState('pending');
   const [leaveRows, setLeaveRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Add this near your selectedYear/selectedMonth states
+  const [searchQuery, setSearchQuery] = useState('');
 
   // New Filters
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
-const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
 
   useEffect(() => {
     if (!authRole) return;
     const fetchLeaves = async () => {
       setLoading(true);
       try {
-        // "all" tab ki backend lo support lekapothe "pending" nundi fetch chestham (or backend route add cheyali)
-        // Manam filtering client side logic lo handle chesthunnam status batti.
-        const res = await fetch(`${API_BASE}/api/leave-requests/${activeTab === 'all' ? 'pending' : activeTab}`);
-        
-        // గమనిక: ఒకవేళ "all" కోసం ప్రత్యేక API లేకపోతే, అన్నీ కలిపి ఒకేసారి తెచ్చుకోవడం ఉత్తమం.
-        // ప్రస్తుతానికి మీ పాత endpoint ని వాడుతున్నాను.
+        // "all" అయితే మీ backend లోని "all/list" కి వెళ్తుంది, లేదంటే status కి వెళ్తుంది.
+        const endpoint = activeTab === 'all' ? 'all/list' : activeTab;
+        const res = await fetch(`${API_BASE}/api/leave-requests/${endpoint}`);
         const result = await res.json();
         if (result.success) {
           setLeaveRows(result.data);
@@ -60,16 +59,35 @@ const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const roleFiltered = useMemo(() => {
     return authRole === 'hr' ? leaveRows : leaveRows.filter(row => row.reportsTo === authRole);
   }, [leaveRows, authRole]);
-
-  // Logic 2: Final Display Rows (Filter by Year and Month selection)
   const displayedRows = useMemo(() => {
-    return roleFiltered.filter(row => {
+    // 1. Filter by Date (Year/Month)
+    let filtered = roleFiltered.filter(row => {
       const [, m, y] = row.date.split('-');
       const yearMatch = y === selectedYear;
-      const monthMatch = selectedMonth === null || parseInt(m,10) === (selectedMonth + 1);
+      const monthMatch = activeTab === 'all' || selectedMonth === null || parseInt(m, 10) === (selectedMonth + 1);
       return yearMatch && monthMatch;
     });
-  }, [roleFiltered, selectedYear, selectedMonth]);
+
+    // 2. ADD THIS: Global Search Filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(row =>
+        row.id?.toLowerCase().includes(query) ||
+        row.name?.toLowerCase().includes(query) ||
+        row.email?.toLowerCase().includes(query) ||
+        row.reportsTo?.toLowerCase().includes(query) ||
+        row.leaveReason?.toLowerCase().includes(query) ||
+        row.date?.toLowerCase().includes(query)
+      );
+    }
+
+    // 3. Keep your existing Sorting (Latest Date first)
+    return filtered.sort((a, b) => {
+      const [dayA, monthA, yearA] = a.date.split('-').map(Number);
+      const [dayB, monthB, yearB] = b.date.split('-').map(Number);
+      return new Date(yearB, monthB - 1, dayB) - new Date(yearA, monthA - 1, dayA);
+    });
+  }, [roleFiltered, selectedYear, selectedMonth, activeTab, searchQuery]); // Add searchQuery to dependency array
 
   // Logic 3: Monthly Statistics (Only for PENDING status as requested)
   const monthStats = useMemo(() => {
@@ -77,7 +95,7 @@ const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
     roleFiltered.forEach(row => {
       const [, m, y] = row.date.split('-');
       if (y === selectedYear && row.status === 'pending') {
-        stats[parseInt(m,10) - 1]++;
+        stats[parseInt(m, 10) - 1]++;
       }
     });
     return stats;
@@ -124,34 +142,53 @@ const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   };
 
   const currentYearNum = new Date().getFullYear();
-// ఉదాహరణకు: 2024 నుండి వచ్చే ఏడాది వరకు చూపించాలనుకుంటే
-const yearOptions = [];
-for (let y = 2024; y <= currentYearNum + 1; y++) {
-  yearOptions.push(y.toString());
-}
+  // ఉదాహరణకు: 2024 నుండి వచ్చే ఏడాది వరకు చూపించాలనుకుంటే
+  const yearOptions = [];
+  for (let y = 2024; y <= currentYearNum + 1; y++) {
+    yearOptions.push(y.toString());
+  }
 
   return (
     <div className="lp-dashboard-bg">
       <div className="lp-dashboard-container">
+
+
         <div className="lp-top-bar">
           <h2 className="lp-dashboard-heading">Leave Plan Dashboard</h2>
+          <div className="lp-search-container" style={{ flex: 1, margin: '0 20px', maxWidth: '400px' }}>
+    <input 
+      type="text" 
+      placeholder="Search ID, Name, Email, Reason..." 
+      className="lp-search-input"
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      style={{
+        width: '100%',
+        padding: '8px 15px',
+        borderRadius: '20px',
+        border: '1px solid #dcdfe6',
+        outline: 'none'
+      }}
+    />
+  </div>
+  
           <div className="lp-controls">
-             <div className="lp-control-item">
-                <label>Year:</label>
+            <div className="lp-control-item">
+              <label>Year:</label>
               <select value={selectedYear} onChange={e => setSelectedYear(e.target.value)} className="lp-mini-select">
-  {yearOptions.map(year => (
-    <option key={year} value={year}>{year}</option>
-  ))}
-</select>
-             </div>
-             <div className="lp-control-item">
-                <label>Role:</label>
-                <select className="lp-mini-select" value={authRole} onChange={e => handleRoleChange(e.target.value)}>
-                  <option value="" disabled>Select</option>
-                  {admins.map(admin => (<option key={admin} value={admin}>{admin}</option>))}
-                  <option value="hr">HR</option>
-                </select>
-             </div>
+                {yearOptions.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+            <div className="lp-control-item">
+              <label>Role:</label>
+              <select className="lp-mini-select" value={authRole} onChange={e => handleRoleChange(e.target.value)}>
+                <option value="" disabled>Select</option>
+                {admins.map(admin => (<option key={admin} value={admin}>{admin}</option>))}
+                <option value="hr">HR</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -159,16 +196,16 @@ for (let y = 2024; y <= currentYearNum + 1; y++) {
           <>
             {/* Month Cards Section */}
             <div className="lp-month-grid">
-               {months.map((m, idx) => (
-                 <div 
-                   key={m} 
-                   className={`lp-month-card ${selectedMonth === idx ? 'active' : ''} ${monthStats[idx] > 0 ? 'urgent' : ''}`}
-                   onClick={() => setSelectedMonth(selectedMonth === idx ? null : idx)}
-                 >
-                   <span className="month-name">{m}</span>
-                   <span className="month-count">{monthStats[idx]} Pending</span>
-                 </div>
-               ))}
+              {months.map((m, idx) => (
+                <div
+                  key={m}
+                  className={`lp-month-card ${selectedMonth === idx ? 'active' : ''} ${monthStats[idx] > 0 ? 'urgent' : ''}`}
+                  onClick={() => setSelectedMonth(selectedMonth === idx ? null : idx)}
+                >
+                  <span className="month-name">{m}</span>
+                  <span className="month-count">{monthStats[idx]} Pending</span>
+                </div>
+              ))}
             </div>
 
             {/* Status Tabs */}
@@ -177,8 +214,10 @@ for (let y = 2024; y <= currentYearNum + 1; y++) {
                 <button
                   key={tab}
                   className={`lp-btn ${tab}${activeTab === tab ? ' active' : ''}`}
-                 onClick={() => { setActiveTab(tab); }}
-
+                  onClick={() => {
+                    setActiveTab(tab);
+                    if (tab === 'all') setSelectedMonth(null); // All క్లిక్ చేసినప్పుడు Month ఫిల్టర్ తీసేస్తుంది
+                  }}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)} Leaves
                 </button>
@@ -190,7 +229,7 @@ for (let y = 2024; y <= currentYearNum + 1; y++) {
               <h3 className="lp-table-heading">
                 {selectedMonth !== null ? months[selectedMonth] : ''} {activeTab.toUpperCase()} Requests ({displayedRows.length})
               </h3>
-              
+
               <div className="table-responsive">
                 <table className="lp-table">
                   <thead>
@@ -239,10 +278,10 @@ for (let y = 2024; y <= currentYearNum + 1; y++) {
                                   <button className="lp-action-btn approve" onClick={() => handleAction(row, 'Approved')}>Approve Again</button>
                                 )}
                                 {row.status === 'pending' && (
-                                   <>
-                                     <button className="lp-action-btn approve" onClick={() => handleAction(row, 'Approved')}>Approve</button>
-                                     <button className="lp-action-btn reject" onClick={() => handleAction(row, 'Rejected')}>Reject</button>
-                                   </>
+                                  <>
+                                    <button className="lp-action-btn approve" onClick={() => handleAction(row, 'Approved')}>Approve</button>
+                                    <button className="lp-action-btn reject" onClick={() => handleAction(row, 'Rejected')}>Reject</button>
+                                  </>
                                 )}
                               </div>
                             )}
@@ -271,7 +310,7 @@ for (let y = 2024; y <= currentYearNum + 1; y++) {
             <input type="password" placeholder="Password" value={enteredPassword} onChange={e => setEnteredPassword(e.target.value)} />
             <div className="modal-btns">
               <button onClick={handlePasswordSubmit} className="btn-main">Login</button>
-              <button onClick={() => {setPendingRole(''); setEnteredPassword(''); setAuthError('');}} className="btn-cancel">Back</button>
+              <button onClick={() => { setPendingRole(''); setEnteredPassword(''); setAuthError(''); }} className="btn-cancel">Back</button>
             </div>
             {authError && <div className="error-msg">{authError}</div>}
           </div>

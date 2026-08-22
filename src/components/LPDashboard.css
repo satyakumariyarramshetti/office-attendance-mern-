@@ -148,3 +148,21 @@
 .btn-main { background: #2448ba; color: #fff; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; }
 .btn-cancel { background: #f0f0f0; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; }
 .error-msg { color: #f5222d; font-size: 0.8rem; margin-top: 10px; }
+
+
+.lp-search-input:focus {
+  border-color: #2448ba !important;
+  box-shadow: 0 0 5px rgba(36, 72, 186, 0.2);
+}
+
+/* Ensure the top bar looks good on smaller screens */
+@media (max-width: 768px) {
+  .lp-top-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .lp-search-container {
+    margin: 10px 0 !important;
+    max-width: 100% !important;
+  }
+}
