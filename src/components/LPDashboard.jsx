@@ -156,22 +156,23 @@ const LPDashboard = () => {
         <div className="lp-top-bar">
           <h2 className="lp-dashboard-heading">Leave Plan Dashboard</h2>
           <div className="lp-search-container" style={{ flex: 1, margin: '0 20px', maxWidth: '400px' }}>
-    <input 
-      type="text" 
-      placeholder="Search ID, Name, Email, Reason..." 
-      className="lp-search-input"
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      style={{
-        width: '100%',
-        padding: '8px 15px',
-        borderRadius: '20px',
-        border: '1px solid #dcdfe6',
-        outline: 'none'
-      }}
-    />
+   <input 
+  type="text" 
+  placeholder="Search ID, Name, Email, Reason..." 
+  className="lp-search-input"
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+  autoComplete="off" // ఇది యాడ్ చేయండి
+  style={{
+    width: '100%',
+    padding: '8px 15px',
+    borderRadius: '20px',
+    border: '1px solid #dcdfe6',
+    outline: 'none'
+  }}
+/>
   </div>
-  
+
           <div className="lp-controls">
             <div className="lp-control-item">
               <label>Year:</label>
