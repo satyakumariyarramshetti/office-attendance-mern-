@@ -236,3 +236,43 @@
     padding: 15px 10px 15px 15px; /* కుడివైపు కొంచెం ప్యాడింగ్ తగ్గించాము స్క్రోల్ బార్ కోసం */
     background: #fafafa;
 }
+
+
+.history-item-editable {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  background: #f9f9f9;
+  margin-bottom: 5px;
+  border-radius: 4px;
+}
+
+.history-designation {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.history-date {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.history-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.mini-btn {
+  border: none;
+  background: white;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.mini-btn.edit-btn:hover { background: #e3f2fd; }
+.mini-btn.delete-btn:hover { background: #ffebee; }

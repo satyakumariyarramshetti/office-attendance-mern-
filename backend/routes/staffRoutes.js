@@ -140,13 +140,27 @@ router.get('/search/:partialId', async (req, res) => {
   }
 });
 
+
 router.put("/:id", async (req, res) => {
   try {
-    const { identification, designation, designationFrom } = req.body;
+    const { 
+      identification, 
+      designation, 
+      designationFrom, 
+      designationHistory,
+      name,
+      department,
+      email,
+      phone,
+      reportsTo,
+      status,
+      activityRequired,
+      inactivationDate,
+      dob,
+      onboardingDate 
+    } = req.body;
 
-    // ============================
-    // Check duplicate Identification
-    // ============================
+    // 1. Identification Unique చెక్ (ID వేరే వాళ్లకి ఉందో లేదో చూడటానికి)
     if (identification) {
       const existingStaff = await Staff.findOne({
         identification,
@@ -160,61 +174,51 @@ router.put("/:id", async (req, res) => {
       }
     }
 
-    // ============================
-    // Get Current Staff
-    // ============================
+    // 2. Staff మెంబర్ ని డేటాబేస్ నుండి వెతకడం
     const staff = await Staff.findById(req.params.id);
+    if (!staff) return res.status(404).json({ error: "Staff not found" });
 
-    if (!staff) {
-      return res.status(404).json({
-        error: "Staff not found"
-      });
+    // 3. DESIGNATION HISTORY UPDATE (ముఖ్యమైన భాగం)
+    // Frontend నుండి అప్డేట్ అయిన హిస్టరీ (Deleted/Edited) వస్తే దాన్ని ముందుగా సేవ్ చేస్తాం
+    if (designationHistory) {
+      staff.designationHistory = designationHistory;
     }
 
-    // ============================
-    // Ensure History Array Exists
-    // ============================
-    if (!Array.isArray(staff.designationHistory)) {
-      staff.designationHistory = [];
+    // 4. ఒకవేళ మెయిన్ Designation ఫీల్డ్ లో పేరు మారిస్తే..
+    // ఆ కొత్త పేరు హిస్టరీలో యాడ్ అవ్వాలి (కానీ డూప్లికేట్ కాకుండా చెక్ చేస్తాం)
+    if (designation && designation.trim() !== staff.designation) {
+      
+      // ఒకవేళ ఈ మార్పు ఆల్రెడీ హిస్టరీలో మనం మాన్యువల్ గా చేసిన మార్పు కాకపోతేనే కొత్తది పుష్ చేస్తాం
+      const isAlreadyInHistory = staff.designationHistory.some(h => 
+        h.designation === designation && 
+        designationFrom && new Date(h.from).toISOString().startsWith(designationFrom)
+      );
+
+      if (!isAlreadyInHistory) {
+        staff.designationHistory.push({
+          designation: designation.trim(),
+          from: designationFrom ? new Date(`${designationFrom}-01`) : new Date()
+        });
+      }
+      
+      staff.designation = designation.trim();
     }
 
-    // ============================
-    // Add History ONLY if changed
-    // ============================
-    if (
-      designation &&
-      designation.trim() !== staff.designation
-    ) {
-      staff.designationHistory.push({
-        designation,
-        from: designationFrom
-          ? new Date(`${designationFrom}-01`)
-          : new Date()
-      });
-
-      staff.designation = designation;
-    }
-
-    // ============================
-    // Update Remaining Fields
-    // ============================
-    staff.name = req.body.name;
-    staff.department = req.body.department;
-    staff.email = req.body.email;
-    staff.phone = req.body.phone;
+    // 5. మిగతా సాధారణ ఫీల్డ్స్ అప్డేట్
+    staff.name = name;
+    staff.department = department;
+    staff.email = email;
+    staff.phone = phone;
     staff.identification = identification;
-    staff.reportsTo = req.body.reportsTo;
-    staff.status = req.body.status;
-    staff.activityRequired = req.body.activityRequired;
-    staff.inactivationDate = req.body.inactivationDate;
-    if (req.body.dob) {
-      staff.dob = req.body.dob;
-    }
+    staff.reportsTo = reportsTo;
+    staff.status = status;
+    staff.activityRequired = activityRequired;
+    staff.inactivationDate = inactivationDate;
+    
+    if (dob) staff.dob = dob;
+    if (onboardingDate) staff.onboardingDate = onboardingDate;
 
-    if (req.body.onboardingDate) {
-      staff.onboardingDate = req.body.onboardingDate;
-    }
-
+    // 6. సేవ్ చేయడం
     await staff.save();
 
     res.json({
@@ -224,17 +228,13 @@ router.put("/:id", async (req, res) => {
 
   } catch (error) {
     console.error("Update Error:", error);
-
     if (error.code === 11000) {
-      return res.status(400).json({
-        error: "Duplicate error: ID or Identification already exists."
-      });
+      return res.status(400).json({ error: "Duplicate error: ID or Identification already exists." });
     }
-
-    res.status(500).json({
-      error: "Error updating staff"
-    });
+    res.status(500).json({ error: "Error updating staff" });
   }
 });
+
+
 
 module.exports = router;
