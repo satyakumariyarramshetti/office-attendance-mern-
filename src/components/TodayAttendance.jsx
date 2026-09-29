@@ -10,34 +10,79 @@ const TodayAttendance = () => {
   const [absentees, setAbsentees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [celebrations, setCelebrations] = useState([]);
 
-  useEffect(() => {
-  // TodayAttendance.js లోని ఈ ఫంక్షన్‌ను అప్‌డేట్ చేయండి
+useEffect(() => {
+    const fetchTodayAttendance = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        
+        // 1. Attendance డేటా తెచ్చుకుందాం
+        const attendanceRes = await fetch(`${API_BASE}/api/attendance/today`);
+        if (!attendanceRes.ok) throw new Error(`Attendance fetch failed`);
+        const attendanceData = await attendanceRes.json();
+        
+        setPresentees(attendanceData.presents || []);
+        setLateComers(attendanceData.lateComers || []);
 
-const fetchTodayAttendance = async () => {
-  setLoading(true);
-  setError(null);
-  try {
-    const response = await fetch(`${API_BASE}/api/attendance/today`);
-    if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
-    const data = await response.json();
+        const filteredAbsentees = (attendanceData.absents || []).filter(
+          (emp) => emp.status && emp.status.toLowerCase() !== "inactive employee"
+        );
+        setAbsentees(filteredAbsentees);
 
-    setPresentees(data.presents || []);
-    setLateComers(data.lateComers || []);
+        // 👇 2. ఇక్కడే మనం 'staff' బదులు 'staffs' అని మార్చాము!
+        const STAFF_API_URL = `${API_BASE}/api/staffs`; 
+        
+        const staffRes = await fetch(STAFF_API_URL);
+        
+        let todaysCelebrations = [];
 
-    // మార్పు ఇక్కడ: Absentees లిస్ట్‌లో Inactive వాళ్ళు ఎవరైనా వస్తే వారిని తీసివేస్తాం
-    const filteredAbsentees = (data.absents || []).filter(
-      (emp) => emp.status !== "Inactive employee"
-    );
-    setAbsentees(filteredAbsentees);
+        if (staffRes.ok) {
+          const staffData = await staffRes.json();
+          const today = new Date();
+          const todayMonth = today.getMonth();
+          const todayDate = today.getDate();
+          const currentYear = today.getFullYear();
 
-  } catch (err) {
-    setError("Failed to load attendance data. Please try again.");
-    console.error(err);
-  } finally {
-    setLoading(false);
-  }
-};
+          staffData.forEach((emp) => {
+            // Inactive వాళ్ళని పక్కన పెట్టడానికి
+            const isInactive = emp.status && emp.status.toLowerCase() === "inactive employee";
+            
+            if (!isInactive) {
+              // బర్త్ డే చెక్
+              if (emp.dob) {
+                const dob = new Date(emp.dob);
+                if (dob.getMonth() === todayMonth && dob.getDate() === todayDate) {
+                  todaysCelebrations.push({ type: 'birthday', name: emp.name });
+                }
+              }
+              // యానివర్సరీ చెక్ 
+              if (emp.onboardingDate) {
+                const obDate = new Date(emp.onboardingDate);
+                if (obDate.getMonth() === todayMonth && obDate.getDate() === todayDate) {
+                  const years = currentYear - obDate.getFullYear();
+                  if (years > 0) {
+                    todaysCelebrations.push({ type: 'anniversary', name: emp.name, years });
+                  }
+                }
+              }
+            }
+          });
+        } else {
+          console.error("⚠️ Staff API Failed. URL:", STAFF_API_URL);
+        }
+
+        setCelebrations(todaysCelebrations);
+
+      } catch (err) {
+        setError("Failed to load attendance data. Please try again.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
     fetchTodayAttendance();
   }, [API_BASE]);
 
@@ -100,6 +145,18 @@ const fetchTodayAttendance = async () => {
 
   return (
     <div className="today-attendance-page">
+       {celebrations.length > 0 && (
+        <div className="celebration-banner">
+          {celebrations.map((cel, index) => (
+            <div key={index} className="celebration-item">
+              {cel.type === 'birthday' 
+                ? <span>🎂 Happy Birthday, <strong>{cel.name}</strong>! 🎈</span>
+                : <span>🎉 Happy <strong>{cel.years} Year</strong> Work Anniversary, <strong>{cel.name}</strong>! 🎊</span>
+              }
+            </div>
+          ))}
+        </div>
+      )}
       <header className="attendance-top-bar">
         <div className="title-area">
           <h1>Today's Overview</h1>

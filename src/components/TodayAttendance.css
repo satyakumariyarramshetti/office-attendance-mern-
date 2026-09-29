@@ -222,3 +222,44 @@
 @media (max-width: 768px) {
   .stats-compact-grid { grid-template-columns: 1fr; }
 }
+
+
+/* =========================================
+   🎈 CUTE CELEBRATION BANNER CSS
+   ========================================= */
+.celebration-banner {
+  background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+  background: linear-gradient(120deg, #b76dfd 0%, #2d95fd 100%); /* Cute Pastel Gradient */
+  border-radius: 12px;
+  padding: 12px 20px;
+  margin-bottom: 25px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(142, 197, 252, 0.3);
+  animation: popInBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.celebration-item {
+  font-size: 14px;
+  color: #4a235a; 
+  background: rgba(255, 255, 255, 0.8);
+  padding: 8px 16px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.celebration-item strong {
+  color: #d81b60; /* Highlight name/years in pinkish-red */
+  font-weight: 800;
+}
+
+@keyframes popInBounce {
+  0% { transform: scale(0.9) translateY(-10px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}

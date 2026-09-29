@@ -12,6 +12,7 @@ import LeaveBalance from '../components/LeaveBalance';
 import MonthlyDetails from '../components/MonthlyDetails'; 
 import './Dashboard.css';
 import UsersManagement from '../components/UsersManagement'; 
+import Wishflow from '../components/Wishflow';
 
 
 const Dashboard = () => {
@@ -39,7 +40,7 @@ const Dashboard = () => {
           {/* --- NEW: Add conditional rendering for the new section --- */}
           {section === 'monthly' && <MonthlyDetails />} 
           {section === 'users' && <UsersManagement />}
-
+           {section === 'wishflow' && <Wishflow />}
         </div>
       </div>
     </div>

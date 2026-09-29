@@ -1,7 +1,7 @@
 :root {
-  --sidebar-bg: #060f1e; /* Slate 800 - Modern Dark */
+  --sidebar-bg: #060f1e; 
   --sidebar-hover: #334155;
-  --sidebar-active: #3b82f6; /* Modern Blue */
+  --sidebar-active: #3b82f6; 
   --sidebar-text: #eff2f7;
   --sidebar-text-active: #ffffff;
 }
@@ -23,7 +23,7 @@
 
 /* Brand Section */
 .sidebar-brand {
-  padding: 25px 20px;
+  padding: 20px 20px 15px 20px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -51,8 +51,8 @@
 
 /* User Profile Section */
 .user-profile {
-  padding: 15px 20px;
-  margin: 0 10px 20px 10px;
+  padding: 12px 15px;
+  margin: 0 10px 15px 10px;
   background: rgba(255, 255, 255, 0.03);
   border-radius: 12px;
   display: flex;
@@ -65,7 +65,7 @@
 }
 
 .profile-icon {
-  font-size: 40px;
+  font-size: 35px; /* కొంచెం సైజ్ తగ్గించాను */
   color: var(--sidebar-text);
 }
 
@@ -75,7 +75,7 @@
   right: 2px;
   width: 10px;
   height: 10px;
-  background: #10b981; /* Green dot */
+  background: #10b981;
   border-radius: 50%;
   border: 2px solid var(--sidebar-bg);
 }
@@ -86,41 +86,41 @@
 }
 
 .user-label {
-  font-size: 10px;
+  font-size: 20px;
   color: white;
   text-transform: uppercase;
   letter-spacing: 1px;
-   font-weight: 600;
+  font-weight: 700;
 }
 
 .user-name {
-  color:white !important;
+  color: rgb(245, 245, 245) !important;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
 }
 
-/* Menu Items */
+/* Menu Items (Spacing తగ్గించాను Wishflow పైకి రావడానికి) */
 .sidebar-menu {
-  padding: 0 10px 20px 10px;
+  padding: 0 10px 15px 10px;
 }
 
 .menu-group-label {
   font-size: 10px;
-  color: #fbfcfd;
+  color: #f8f9fa; /* లేబుల్ కొంచెం డిమ్ చేశాను మోడ్రన్ లుక్ కోసం */
   font-weight: 700;
-  margin: 20px 0 10px 15px;
-  letter-spacing: 1.5px;
+  margin: 25px 0 8px 15px; /* మార్జిన్ తగ్గించాను */
+  letter-spacing: 1.2px;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-  padding: 12px 15px;
-  margin: 4px 0;
-  border-radius: 10px;
+  padding: 10px 15px; /* ప్యాడింగ్ తగ్గించాను */
+  margin: 2px 0; /* మార్జిన్ తగ్గించాను */
+  border-radius: 8px;
   cursor: pointer;
   color: var(--sidebar-text);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
   transition: all 0.2s ease;
   position: relative;
@@ -128,7 +128,7 @@
 
 .menu-icon {
   margin-right: 12px;
-  font-size: 18px;
+  font-size: 16px;
   transition: transform 0.2s;
 }
 
@@ -142,12 +142,11 @@
 }
 
 .menu-item.active {
-  background-color: rgba(59, 130, 246, 0.15); /* Soft blue bg */
+  background-color: rgba(59, 130, 246, 0.15);
   color: var(--sidebar-active);
   font-weight: 600;
 }
 
-/* Indicator line for active item */
 .menu-item.active::before {
   content: '';
   position: absolute;
@@ -162,39 +161,66 @@
   color: var(--sidebar-active);
 }
 
-/* Scrollbar Customization */
+/* Scrollbar */
 .sidebar::-webkit-scrollbar {
   width: 5px;
 }
-
 .sidebar::-webkit-scrollbar-thumb {
   background: #334155;
   border-radius: 10px;
 }
 
-/* Responsive Mobile View (Bottom Bar) */
+/* ========================================= */
+/* Responsive Mobile View (Bottom Menu Bar)  */
+/* ========================================= */
 @media (max-width: 1024px) {
   .sidebar {
     width: 100%;
-    height: 70px;
+    height: 65px; /* బాటమ్ బార్ హైట్ */
     flex-direction: row;
     bottom: 0;
     top: auto;
     padding: 0;
-    justify-content: space-around;
-    align-items: center;
     border-top: 1px solid #334155;
-    overflow-y: hidden;
+    overflow: hidden; /* ఇక్కడ దాచేసి లోపల స్క్రోల్ ఇస్తాం */
+    z-index: 9999;
   }
 
-  .sidebar-brand, .user-profile, .menu-group-label, .menu-item span {
-    display: none;
+  .sidebar-brand, 
+  .user-profile, 
+  .menu-group-label, 
+  .menu-item span {
+    display: none; /* టెక్స్ట్, ప్రొఫైల్స్ హైడ్ అవుతాయి */
+  }
+
+  /* ఇది ముఖ్యం: మొబైల్ లో ఐటమ్స్ అన్నీ వరుసగా రావడానికి */
+  .sidebar-menu {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    overflow-x: auto; /* ఐకాన్స్ ఎక్కువైతే లెఫ్ట్-రైట్ స్క్రోల్ అవ్వడానికి */
+    overflow-y: hidden;
+    align-items: center;
+    -webkit-overflow-scrolling: touch; 
+  }
+
+  /* మొబైల్ లో బాటమ్ బార్ స్క్రోల్ బార్ కనపడకుండా */
+  .sidebar-menu::-webkit-scrollbar {
+    display: none; 
   }
 
   .menu-item {
     margin: 0;
-    padding: 15px;
+    padding: 0 25px; /* ఐకాన్స్ కి అటు ఇటు గ్యాప్ */
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 0;
+    flex-shrink: 0; /* ఐకాన్స్ దగ్గరగా నలిగిపోకుండా */
   }
 
   .menu-item.active::before {
@@ -203,11 +229,11 @@
   
   .menu-item.active {
     background: transparent;
-    border-top: 3px solid var(--sidebar-active);
+    border-top: 3px solid var(--sidebar-active); /* యాక్టివ్ ఉన్నదానికి పైన గీత వస్తుంది */
   }
 
   .menu-icon {
     margin: 0;
-    font-size: 22px;
+    font-size: 22px; /* మొబైల్ లో ఐకాన్ సైజ్ */
   }
 }

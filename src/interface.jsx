@@ -777,7 +777,7 @@ const Interface = () => {
     <img src="https://tse4.mm.bing.net/th/id/OIP.kBa9Zzw_lXJ4D67y_kWZ5QHaG7?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Company Logo" className="company-logo" />
     <div className="header-title">
    <span style={{ marginRight: '8px' }}></span> 
-   Workforce Attendance Portal
+   Attendance Portal
 </div>
   </div>
 

@@ -8,7 +8,8 @@ import {
   FaFileAlt, 
   FaChartPie,
   FaCalendarAlt,
-  FaUserShield
+  FaUserShield,
+  FaMagic 
 } from 'react-icons/fa';
 import './Sidebar.css';
 
@@ -18,7 +19,7 @@ const Sidebar = ({ onSelect, selected }) => {
       {/* Brand / Logo Section */}
       <div className="sidebar-brand">
         <div className="brand-icon">PS</div>
-        <span className="brand-name">Praxsol Admin</span>
+        <span className="brand-name">DASHBOARD</span>
       </div>
 
       {/* User section */}
@@ -28,8 +29,7 @@ const Sidebar = ({ onSelect, selected }) => {
           <span className="status-dot"></span>
         </div>
         <div className="profile-info">
-          <span className="user-label">Logged in as</span>
-          <span className="user-name">Admin</span>
+          <span className="user-label">ADMIN</span>
         </div>
       </div>
 
@@ -96,14 +96,16 @@ const Sidebar = ({ onSelect, selected }) => {
           <FaChartPie className="menu-icon" /> 
           <span>Leave Balance</span>
         </div>
-
-        {/* <div
-          className={`menu-item ${selected === 'payslip' ? 'active' : ''}`}
-          onClick={() => onSelect('payslip')}
+        <div className="menu-group-label">EXTERNAL</div>
+        
+        <div
+          className={`menu-item ${selected === 'wishflow' ? 'active' : ''}`}
+          onClick={() => onSelect('wishflow')}
         >
-          <FaFileInvoiceDollar className="menu-icon" /> 
-          <span>PaySlip</span>
-        </div> */}
+          <FaMagic className="menu-icon" /> 
+          <span>Wish Flow</span>
+        </div>
+       
       </nav>
     </div>
   );
