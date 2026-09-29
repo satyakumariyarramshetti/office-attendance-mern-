@@ -844,8 +844,10 @@ const Interface = () => {
                     <option value="Office Work">Office Work</option>
                     <option value="First 50% Leave">First 50% Leave</option>
                     <option value="Deputation">Deputation</option>
-                    <option value="OT Reason">OT Reason</option>
-                  </select>
+                    {isOTElligible && (
+    <option value="OT Reason">OT Reason</option>
+  )}
+</select>
 
                   {isOTElligible && (
                     <small className="text-success">

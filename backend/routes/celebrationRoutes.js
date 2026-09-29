@@ -7,14 +7,14 @@ const Staff = require('../models/Staff');
 
 const defaultTemplates = {
   birthday:
-    "May this special day bring you lots of happiness, wonderful moments and endless smiles! 😊✨\n\n" +
-    "We hope the year ahead brings you continued success 🚀, personal growth 🌱, and many more reasons to celebrate 🥳.\n\n" +
-    "Keep smiling 😄, keep shining 🌟, have a fantastic birthday and a wonderful year ahead! 🎂🎈",
+    "May this special day bring you lots of happiness, wonderful moments and endless smiles!😊✨\n\n" +
+    "We hope the year ahead brings you continued success 🚀, personal growth, and many more reasons to celebrate.\n\n" +
+    "Keep smiling, keep shining , have a fantastic birthday and a wonderful year ahead!",
 
   anniversary:
-    "Over the past year(s), you have been a part of our journey 🚀, contributed to our goals 🎯, taken on challenges 💪, and added your own value to the team 🌟. And today is a great time to celebrate you and your journey with us! 😉🎉\n\n" +
-    "Here’s to the experiences, achievements 🏆, lessons 📚, and memories 📸 so far, and to many more exciting milestones ahead! 🥂✨\n\n" +
-    "Keep growing 🌱, keep achieving 🏅, and most importantly, keep enjoying the journey! 😃🎊"
+    "Over the past year(s), you have been a part of our journey 🚀, contributed to our goals, taken on challenges, and added your own value to the team 🌟. And today is a great time to celebrate you and your journey with us! 😉🎉\n\n" +
+    "Here’s to the experiences, achievements, lessons, and memories so far, and to many more exciting milestones ahead!✨\n\n" +
+    "Keep growing, keep achieving, and most importantly, keep enjoying the journey!"
 };
 
 // Initialize defaults, and keep "defaultMessageBody" in sync with the code above
