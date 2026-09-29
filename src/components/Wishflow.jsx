@@ -2,21 +2,55 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styles from './wishflow.module.css';
+      const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const Wishflow = () => {
+
   const [activeTab, setActiveTab] = useState('birthday'); // 'birthday' or 'anniversary'
   const [templates, setTemplates] = useState({ birthday: '', anniversary: '' });
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('');
+  const [previewHtml, setPreviewHtml] = useState('');
+  const [recipients, setRecipients] = useState([]);
 
   // Fetch templates on load
   useEffect(() => {
     fetchTemplates();
   }, []);
 
+  // Live preview: fetch rendered email HTML from backend (debounced)
+  useEffect(() => {
+    if (loading) return;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await axios.post( `${API_BASE}/api/celebrations/preview`, {
+          type: activeTab,
+          messageBody: templates[activeTab],
+        });
+        setPreviewHtml(res.data.html);
+      } catch (error) {
+  console.error('Error loading preview', error);
+  setPreviewHtml(`<p style="font-family:Arial;padding:20px;color:#b91c1c;">Preview does not load: ${error.message}. Please restart</p>`);
+}
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [activeTab, templates, loading]);
+
+  useEffect(() => {
+  const fetchRecipients = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/api/celebrations/recipients?days=7`);
+      setRecipients(res.data);
+    } catch (error) {
+      console.error('Error fetching recipients', error);
+    }
+  };
+  fetchRecipients();
+}, []);
+
   const fetchTemplates = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/celebrations');
+      const response = await axios.get(`${API_BASE}/api/celebrations`);
       const data = response.data;
       const bday = data.find(t => t.type === 'birthday')?.messageBody || '';
       const anniv = data.find(t => t.type === 'anniversary')?.messageBody || '';
@@ -34,7 +68,7 @@ const Wishflow = () => {
   const handleSave = async () => {
     setSaveStatus('Saving...');
     try {
-      await axios.put(`http://localhost:5000/api/celebrations/${activeTab}`, {
+      await axios.put(`{API_BASE}/api/celebrations/${activeTab}`, {
         messageBody: templates[activeTab]
       });
       setSaveStatus('Saved successfully!');
@@ -45,9 +79,9 @@ const Wishflow = () => {
   };
 
   const handleReset = async () => {
-    if(!window.confirm("Are you sure you want to reset to default?")) return;
+    if (!window.confirm("Are you sure you want to reset to default?")) return;
     try {
-      const response = await axios.post(`http://localhost:5000/api/celebrations/reset/${activeTab}`);
+      const response = await axios.post(`${API_BASE}/api/celebrations/reset/${activeTab}`);
       setTemplates({ ...templates, [activeTab]: response.data.template.messageBody });
     } catch (error) {
       console.error("Error resetting template", error);
@@ -70,17 +104,54 @@ const Wishflow = () => {
       </div>
 
       <div className={styles.mainGrid}>
-        
+
         {/* Left Column - Controls */}
         <div className={styles.leftColumn}>
-          
+
+{/* Upcoming Recipients */}
+<div className={styles.sectionCard}>
+  <h2 className={styles.sectionTitle}>Upcoming Recipients</h2>
+  <p className={styles.sectionSubtitle}>
+    Wishes are sent automatically every day at 9:00 AM (IST) to these employees.
+  </p>
+
+  {recipients.length === 0 ? (
+    <p className={styles.sectionSubtitle}>No birthdays or anniversaries in the next 7 days.</p>
+  ) : (
+    recipients.map((day) => (
+      <div key={day.date} style={{ marginBottom: 14 }}>
+        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>
+          {day.daysFromNow === 0
+            ? 'Today'
+            : day.daysFromNow === 1
+            ? 'Tomorrow'
+            : new Date(day.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+        </div>
+
+        {day.birthdays.map((p) => (
+          <div key={p.email + 'b'} style={{ fontSize: 14, padding: '4px 0' }}>
+            🎂 <b>{p.name}</b> <span style={{ color: '#64748b' }}>({p.email})</span> - Birthday
+          </div>
+        ))}
+
+        {day.anniversaries.map((p) => (
+          <div key={p.email + 'a'} style={{ fontSize: 14, padding: '4px 0' }}>
+            🎉 <b>{p.name}</b> <span style={{ color: '#64748b' }}>({p.email})</span> - {p.years}{' '}
+            {p.years === 1 ? 'year' : 'years'} Work Anniversary
+          </div>
+        ))}
+      </div>
+    ))
+  )}
+</div>
+
           {/* Select Celebration Type */}
           <div className={styles.sectionCard}>
             <h2 className={styles.sectionTitle}>Select Celebration Type</h2>
             <p className={styles.sectionSubtitle}>Choose the type of celebration for which you want to edit the message.</p>
-            
+
             <div className={styles.tabContainer}>
-              <div 
+              <div
                 className={`${styles.tabCard} ${activeTab === 'birthday' ? styles.activeTab : ''}`}
                 onClick={() => setActiveTab('birthday')}
               >
@@ -92,7 +163,7 @@ const Wishflow = () => {
                 {activeTab === 'birthday' && <div className={styles.checkIcon}>✔</div>}
               </div>
 
-              <div 
+              <div
                 className={`${styles.tabCard} ${activeTab === 'anniversary' ? styles.activeTab : ''}`}
                 onClick={() => setActiveTab('anniversary')}
               >
@@ -110,11 +181,10 @@ const Wishflow = () => {
           <div className={styles.sectionCard}>
             <h2 className={styles.sectionTitle}>Edit Message Body</h2>
             <p className={styles.sectionSubtitle}>You can only edit the message body. The greeting, intro, and signature will be added automatically.</p>
-            
+
             <div className={styles.editorContainer}>
-             
-              <textarea 
-                className={styles.textArea} 
+              <textarea
+                className={styles.textArea}
                 value={currentMessage}
                 onChange={handleTextChange}
                 rows={10}
@@ -131,10 +201,10 @@ const Wishflow = () => {
                 ↺ Reset to Default
               </button>
               <div className={styles.saveContainer}>
-                 <span className={styles.saveStatus}>{saveStatus}</span>
-                 <button className={styles.saveBtn} onClick={handleSave}>
-                   💾 Save Message
-                 </button>
+                <span className={styles.saveStatus}>{saveStatus}</span>
+                <button className={styles.saveBtn} onClick={handleSave}>
+                  💾 Save Message
+                </button>
               </div>
             </div>
           </div>
@@ -157,53 +227,33 @@ const Wishflow = () => {
                 <span className={styles.dot} style={{ backgroundColor: '#ffbd2e' }}></span>
                 <span className={styles.dot} style={{ backgroundColor: '#27c93f' }}></span>
               </div>
-              
+
               <div className={styles.emailMetadata}>
                 <div className={styles.metaRow}>
-                  <span className={styles.metaLabel}>From:</span> 
+                  <span className={styles.metaLabel}>From:</span>
                   <span className={styles.metaValue}>Praxsol Engineering &lt;no-reply@praxsol.com&gt;</span>
                 </div>
                 <div className={styles.metaRow}>
-                  <span className={styles.metaLabel}>To:</span> 
+                  <span className={styles.metaLabel}>To:</span>
                   <span className={styles.metaValue}>Name&lt;employee@company.com&gt;</span>
                 </div>
                 <div className={styles.metaRow}>
-                  <span className={styles.metaLabel}>Subject:</span> 
-                  <span className={styles.metaValue} style={{fontWeight: 600}}>
-                    {activeTab === 'birthday' 
-                      ? 'Birthday Wishes! From Praxsol Engineering Private Limited' 
+                  <span className={styles.metaLabel}>Subject:</span>
+                  <span className={styles.metaValue} style={{ fontWeight: 600 }}>
+                    {activeTab === 'birthday'
+                      ? 'Birthday Wishes! From Praxsol Engineering Private Limited'
                       : 'Work Anniversary at Praxsol Engineering Private Limited'}
                   </span>
                 </div>
               </div>
 
-              <div className={styles.emailBodyContent}>
-                <p>Dear Employee Name,</p>
-                
-                {/* Fixed Intro Paragraphs based on Red Marks */}
-                {activeTab === 'birthday' && (
-                  <p>Wishing you a very Happy Birthday from the entire Praxsol team!</p>
-                )}
-                {activeTab === 'anniversary' && (
-                  <>
-                    <p>Another year, another milestone! 🥂</p>
-                    <p>Happy Work Anniversary at Praxsol Engineering</p>
-                  </>
-                )}
-
-                {/* Editable Dynamic Body */}
-                <div className={styles.dynamicMessage}>
-                  {currentMessage.split('\n').map((line, idx) => (
-                    <p key={idx}>{line}</p>
-                  ))}
-                </div>
-                
-                <br/>
-                
-                {/* Fixed Footer based on Red Marks */}
-                <p>Warm Regards,</p>
-                <p style={{ fontWeight: 'bold' }}>Praxsol Engineering Private Limited</p>
-              </div>
+              {/* Real email HTML rendered by backend (same template used for sending) */}
+              <iframe
+                title="Email Preview"
+                className={styles.previewFrame}
+                srcDoc={previewHtml}
+                sandbox=""
+              />
             </div>
           </div>
         </div>

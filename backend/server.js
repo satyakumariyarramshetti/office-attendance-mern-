@@ -28,7 +28,8 @@ const leaveRequestsRoutes = require('./routes/leaveRequestsRoutes');
 const userRoutes = require('./routes/userRoutes'); // ఈ లైన్ యాడ్ చేయండి
 const celebrationRoutes = require('./routes/celebrationRoutes'); 
 const startCelebrationCron = require('./utils/celebrationCron'); 
-// ADD THIS LINE
+const { sendCelebrationMail } = require('./utils/celebrationMailer');
+const { buildBirthdayEmail, buildAnniversaryEmail } = require('./utils/celebrationEmailTemplate');
 
 // Express setup
 const app = express();
@@ -69,8 +70,21 @@ app.get("/test-mail", async (req, res) => {
   }
 });
 
-
-// Backend (Express)
+// Test: /test-celebration-mail?to=you@gmail.com&type=birthday  (or anniversary)
+app.get('/test-celebration-mail', async (req, res) => {
+  const to = req.query.to || process.env.CELEB_SENDER_EMAIL;
+  const type = req.query.type === 'anniversary' ? 'anniversary' : 'birthday';
+  try {
+    const html = type === 'birthday'
+      ? buildBirthdayEmail({ name: 'Test User', message: 'This is a sample birthday message.\n\nSecond paragraph here.' })
+      : buildAnniversaryEmail({ name: 'Test User', message: 'This is a sample anniversary message.\n\nSecond paragraph here.', yearsCompleted: 3 });
+    await sendCelebrationMail(to, `Test ${type} mail`, html, 'Test celebration mail');
+    res.status(200).send(`Celebration ${type} mail sent to ${to}`);
+  } catch (err) {
+    console.error('Test celebration mail failed:', err);
+    res.status(500).send('Failed: ' + err.message);
+  }
+});
 
 
 
