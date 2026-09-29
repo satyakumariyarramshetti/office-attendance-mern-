@@ -1,28 +1,357 @@
-.wishflowContainer {
+/* frontend/src/components/wishflow.module.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.pageContainer {
+  padding: 30px;
+  background-color: #f8fafc;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  color: #1e293b;
+}
+
+.loader {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 80vh;
-  padding: 20px;
-  background-color: #f4f7fa; /* Light background for contrast */
+  height: 50vh;
+  font-size: 1.2rem;
+  color: #64748b;
 }
 
-.card {
-  background: white;
-  padding: 40px 60px;
+.pageHeader {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.headerIcon {
+  font-size: 32px;
+  background: #eff6ff;
+  padding: 10px 15px;
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  text-align: center;
-  border-top: 4px solid #3b82f6;
+  color: #3b82f6;
 }
 
-.heading {
-  color: #060f1e;
-  font-size: 28px;
+.pageTitle {
+  margin: 0 0 5px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.pageSubtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  align-items: start;
+}
+
+.sectionCard {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 25px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 5px 0;
+  color: #0f172a;
+}
+
+.sectionSubtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 20px 0;
+}
+
+/* Tabs */
+.tabContainer {
+  display: flex;
+  gap: 15px;
+}
+
+.tabCard {
+  flex: 1;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  background: #fdfdfd;
+}
+
+.activeTab {
+  border-color: #3b82f6;
+  background: #f0f7ff;
+}
+
+.tabIcon {
+  font-size: 24px;
+  background: #f1f5f9;
+  padding: 10px;
+  border-radius: 8px;
+}
+.activeTab .tabIcon {
+  background: #dbeafe;
+}
+
+.tabText h4 {
+  margin: 0 0 3px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.tabText p {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.checkIcon {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  color: white;
+  background: #3b82f6;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 10px;
+}
+
+/* Editor */
+.editorContainer {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
   margin-bottom: 15px;
 }
 
-.description {
-  color: #64748b;
+.editorToolbar {
+  background: #f8fafc;
+  padding: 10px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toolBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #475569;
+  padding: 5px 8px;
+  border-radius: 4px;
+}
+.toolBtn:hover {
+  background: #e2e8f0;
+}
+
+.toolDivider {
+  color: #cbd5e1;
+}
+
+.textArea {
+  width: 100%;
+  border: none;
+  padding: 15px;
+  font-size: 14px;
+  resize: vertical;
+  color: #1e293b;
+  font-family: inherit;
+  outline: none;
+}
+
+.charCount {
+  text-align: right;
+  padding: 5px 15px 10px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.infoAlert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 12px 15px;
+  border-radius: 8px;
+  color: #1e40af;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.infoIcon {
   font-size: 18px;
+}
+
+.actionButtons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.resetBtn {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.resetBtn:hover {
+  background: #f1f5f9;
+}
+
+.saveContainer {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.saveStatus {
+  font-size: 13px;
+  color: #16a34a;
+  font-weight: 500;
+}
+
+.saveBtn {
+  background: #3b82f6;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.saveBtn:hover {
+  background: #2563eb;
+}
+
+/* Quick Tips */
+.tipsCard {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.tipsCard h4 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tipsCard ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.8;
+}
+
+/* Right Column - Email Preview */
+.previewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.previewToggle {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: #475569;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.emailPreviewBox {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+}
+
+.emailWindowControls {
+  background: #f8fafc;
+  padding: 12px 15px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  gap: 8px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.emailMetadata {
+  padding: 15px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 13px;
+  background: #fcfcfc;
+}
+
+.metaRow {
+  margin-bottom: 8px;
+  display: flex;
+}
+.metaRow:last-child {
+  margin-bottom: 0;
+}
+
+.metaLabel {
+  color: #64748b;
+  width: 60px;
+  font-weight: 500;
+}
+
+.metaValue {
+  color: #334155;
+}
+
+.emailBodyContent {
+  padding: 25px;
+  font-size: 14px;
+  color: #1e293b;
+  line-height: 1.6;
+}
+
+.dynamicMessage p {
+  margin: 15px 0;
 }

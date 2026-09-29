@@ -5,7 +5,6 @@ require('dotenv').config();
 console.log('SMTP_USER:', process.env.SMTP_USER ? 'Set' : 'Not Set');
 console.log('SMTP_PASS:', process.env.SMTP_PASS ? 'Set' : 'Not Set');
 console.log('ATLAS_URI:', process.env.ATLAS_URI ? 'Set' : 'Not Set');
-console.log('BREVO_API_KEY:', process.env.BREVO_API_KEY ? 'Set' : 'Not Set');
 
 
 
@@ -27,7 +26,8 @@ const staffRoutes = require('./routes/staffRoutes');
 const leaveBalanceRoutes = require('./routes/leaveBalanceRoutes');
 const leaveRequestsRoutes = require('./routes/leaveRequestsRoutes');
 const userRoutes = require('./routes/userRoutes'); // ఈ లైన్ యాడ్ చేయండి
-
+const celebrationRoutes = require('./routes/celebrationRoutes'); 
+const startCelebrationCron = require('./utils/celebrationCron'); 
 // ADD THIS LINE
 
 // Express setup
@@ -52,6 +52,7 @@ app.use(
  "/api/activity-reminder",
  activityReminderRoutes
 );
+app.use('/api/celebrations', celebrationRoutes);
 
 // Put this after your API routes (before DB connect)
 app.get("/test-mail", async (req, res) => {
@@ -102,6 +103,10 @@ mongoose.connect(uri, {
 })
   .then(() => {
     console.log('✅ MongoDB connected successfully');
+    
+    // 👇 ఈ కింది లైన్ యాడ్ చేయండి. అప్పుడే వార్నింగ్ పోతుంది & రోజూ 10 గంటలకి మెయిల్స్ వెళ్తాయి.
+    startCelebrationCron(); 
+    
     app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
   })
   .catch(err => console.error('❌ MongoDB connection error:', err));
