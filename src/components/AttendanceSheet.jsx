@@ -11,6 +11,7 @@ const AttendanceSheet = () => {
   // --- States ---
   const [records, setRecords] = useState([]);
   const [festivalHolidays, setFestivalHolidays] = useState([]);
+  const [staffRecords, setStaffRecords] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState(""); // Specific Date Selection
   const [punchFilter, setPunchFilter] = useState("all");
@@ -35,6 +36,19 @@ const AttendanceSheet = () => {
   useEffect(() => {
     setLoading(true);
 
+    const fetchStaff = fetch(`${API_BASE}/api/staffs`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch staff");
+        return res.json();
+      })
+      .then((data) => {
+        setStaffRecords(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        console.error("Staff fetch error:", err);
+        setStaffRecords([]);
+      });
+
     const fetchAttendance = fetch(`${API_BASE}/api/attendance/all`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch attendance");
@@ -58,7 +72,7 @@ const AttendanceSheet = () => {
         setFestivalHolidays([]);
       });
 
-    Promise.all([fetchAttendance, fetchHolidays])
+    Promise.all([fetchAttendance, fetchHolidays, fetchStaff])
       .catch((err) => {
         console.error("Fetch error:", err);
         setError("Failed to load attendance data");
@@ -243,9 +257,204 @@ const AttendanceSheet = () => {
     };
   }, [records, festivalHolidays, selectedMonth, selectedYear]);
 
+  // Generate employee/date rows for working days with no attendance punches.
+  const missingAttendanceRecords = useMemo(() => {
+    const employeeMap = new Map();
+    const attendanceMap = new Map();
+    const holidayMap = new Map();
+
+    const toDateKey = (value) => {
+      if (!value) return "";
+      if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+        return value.slice(0, 10);
+      }
+
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "";
+
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayKey = toDateKey(today);
+
+    // Build the employee list and index attendance by employee/date.
+    records.forEach((record) => {
+      if (!record.id) return;
+
+      if (!employeeMap.has(record.id)) {
+        employeeMap.set(record.id, {
+          id: record.id,
+          name: record.name || "",
+        });
+      }
+
+      const dateKey = toDateKey(record.date);
+      if (!dateKey) return;
+
+      const key = `${record.id}_${dateKey}`;
+
+      if (!attendanceMap.has(key)) {
+        attendanceMap.set(key, []);
+      }
+      attendanceMap.get(key).push(record);
+
+      if (record.holidayName) {
+        holidayMap.set(dateKey, record.holidayName);
+      }
+    });
+
+    // Add staff details so inactivation dates can be checked.
+    staffRecords.forEach((staff) => {
+      if (!staff.id) return;
+
+      const existing = employeeMap.get(staff.id) || {};
+
+      employeeMap.set(staff.id, {
+        ...existing,
+        id: staff.id,
+        name: staff.name || existing.name || "",
+        status: staff.status || "Active Employee",
+        inactivationDate: staff.inactivationDate || null,
+      });
+    });
+
+    // Include festival holidays from the separate holiday endpoint.
+    festivalHolidays.forEach((holiday) => {
+      if (holiday.date && holiday.name) {
+        holidayMap.set(toDateKey(holiday.date), holiday.name);
+      }
+    });
+
+    // Determine the dates to inspect.
+    let datesToCheck = [];
+
+    if (selectedDate) {
+      datesToCheck = [selectedDate];
+    } else {
+      const datedRecords = records
+        .map((record) => toDateKey(record.date))
+        .filter(Boolean)
+        .sort();
+
+      const firstDate =
+        selectedMonth && selectedYear
+          ? `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-01`
+          : datedRecords[0];
+
+      if (!firstDate) return [];
+
+      const start = new Date(`${firstDate}T00:00:00`);
+      const end = new Date(today);
+
+      // Respect the selected month and year when both are selected.
+      if (selectedMonth && selectedYear) {
+        end.setFullYear(Number(selectedYear), Number(selectedMonth) - 1, 1);
+        end.setMonth(end.getMonth() + 1, 0);
+      }
+
+      for (
+        let date = new Date(start);
+        date <= end;
+        date.setDate(date.getDate() + 1)
+      ) {
+        datesToCheck.push(toDateKey(date));
+      }
+    }
+
+    const missing = [];
+
+    datesToCheck.forEach((dateKey) => {
+      // Do not mark future dates or today's attendance by default.
+      if (dateKey > todayKey || (dateKey === todayKey && !includeToday)) {
+        return;
+      }
+
+      // Exclude festival/public holidays.
+      if (holidayMap.has(dateKey)) return;
+
+      const date = new Date(`${dateKey}T00:00:00`);
+      const day = date.getDate();
+
+      // Exclude Sundays and the second Saturday.
+      if (
+        date.getDay() === 0 ||
+        (date.getDay() === 6 && Math.ceil(day / 7) === 2)
+      ) {
+        return;
+      }
+
+      employeeMap.forEach((employee) => {
+        // 1. Employee must currently exist in the Staff collection.
+        if (!staffRecords.some((staff) => staff.id === employee.id)) {
+          return;
+        }
+
+        // 2. If inactive, exclude the inactivation date and all later dates.
+        if (
+          employee.status?.trim().toLowerCase() === "inactive employee" &&
+          employee.inactivationDate
+        ) {
+          const inactiveDateKey = toDateKey(employee.inactivationDate);
+
+          if (inactiveDateKey && dateKey >= inactiveDateKey) {
+            return;
+          }
+        }
+
+        // 3. Continue existing attendance checks.
+        const key = `${employee.id}_${dateKey}`;
+        const employeeRecords = attendanceMap.get(key) || [];
+
+        // Exclude holidays or leave records for this employee/date.
+        if (
+          employeeRecords.some(
+            (record) =>
+              record.holidayName || record.leaveType || record.dailyLeaveType,
+          )
+        ) {
+          return;
+        }
+
+        // Skip employees who have at least one punch.
+        const hasAnyPunch = employeeRecords.some(
+          (record) =>
+            !isMissingTime(record.inTime) || !isMissingTime(record.outTime),
+        );
+
+        if (hasAnyPunch) return;
+
+        missing.push({
+          ...(employeeRecords[0] || {}),
+          id: employee.id,
+          name: employee.name,
+          date: dateKey,
+          day: date.toLocaleDateString("en-US", { weekday: "long" }),
+          inTime: null,
+          outTime: null,
+          missingAttendance: true,
+        });
+      });
+    });
+
+    return missing;
+  }, [
+    records,
+    festivalHolidays,
+    staffRecords,
+    selectedMonth,
+    selectedYear,
+    selectedDate,
+    includeToday,
+  ]);
+
   // --- Filtering Logic (Search + Month + Year + DatePicker + Punch Filter) ---
   const filteredRecords = useMemo(() => {
-    return records.filter((record) => {
+    const sourceRecords =
+      punchFilter === "missing-day" ? missingAttendanceRecords : records;
+
+    return sourceRecords.filter((record) => {
       const dateObj = new Date(record.date);
       const recMonth = dateObj.getMonth() + 1;
       const recYear = dateObj.getFullYear();
@@ -327,6 +536,7 @@ const AttendanceSheet = () => {
     });
   }, [
     records,
+    missingAttendanceRecords,
     selectedMonth,
     selectedYear,
     selectedDate,
@@ -376,7 +586,9 @@ const AttendanceSheet = () => {
         Hours: record.hours || "N/A",
         "Leave Type": isHoliday
           ? `Holiday - ${record.holidayName}`
-          : getLeaveOrHoliday(record),
+          : record.missingAttendance
+            ? "Employee Missed Attendance"
+            : getLeaveOrHoliday(record),
       };
     });
 
@@ -528,6 +740,7 @@ const AttendanceSheet = () => {
               <option value="in">Missed In Time</option>
               <option value="out">Missed Out Time</option>
               <option value="both">Missed Both</option>
+              <option value="missing-day">Employee Missed Attendance</option>
             </select>
           </div>
 
@@ -666,7 +879,9 @@ const AttendanceSheet = () => {
                         <td className={isHoliday ? "holiday-text" : ""}>
                           {isHoliday
                             ? `Holiday: ${record.holidayName}`
-                            : getLeaveOrHoliday(record)}
+                            : record.missingAttendance
+                              ? "Employee Missed Attendance"
+                              : getLeaveOrHoliday(record)}
                         </td>
 
                         <td>{record.location || "N/A"}</td>
