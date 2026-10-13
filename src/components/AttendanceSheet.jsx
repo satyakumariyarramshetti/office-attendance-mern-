@@ -10,6 +10,7 @@ const AttendanceSheet = () => {
 
   // --- States ---
   const [records, setRecords] = useState([]);
+  const [festivalHolidays, setFestivalHolidays] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState(""); // Specific Date Selection
   const [punchFilter, setPunchFilter] = useState("all");
@@ -33,15 +34,36 @@ const AttendanceSheet = () => {
   // --- Initial Fetch ---
   useEffect(() => {
     setLoading(true);
-    fetch(`${API_BASE}/api/attendance/all`)
-      .then((res) => res.json())
-      .then((data) => {
-        setRecords(data);
-        setLoading(false);
+
+    const fetchAttendance = fetch(`${API_BASE}/api/attendance/all`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch attendance");
+        return res.json();
       })
+      .then((data) => {
+        setRecords(Array.isArray(data) ? data : []);
+      });
+
+    const fetchHolidays = fetch(`${API_BASE}/api/attendance/holidays/all`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch festival holidays");
+        return res.json();
+      })
+      .then((data) => {
+        setFestivalHolidays(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        // Attendance can still load if the holiday request fails.
+        console.error("Festival holiday fetch error:", err);
+        setFestivalHolidays([]);
+      });
+
+    Promise.all([fetchAttendance, fetchHolidays])
       .catch((err) => {
         console.error("Fetch error:", err);
         setError("Failed to load attendance data");
+      })
+      .finally(() => {
         setLoading(false);
       });
   }, [API_BASE]);
@@ -140,6 +162,86 @@ const AttendanceSheet = () => {
       normalizedValue === "-"
     );
   };
+
+  // Calculate the selected month's calendar and working days.
+  const workingDaysSummary = useMemo(() => {
+    const month = Number(selectedMonth);
+    const year = Number(selectedYear);
+
+    if (!month || !year) {
+      return {
+        totalDays: 0,
+        holidays: 0,
+        workingDays: 0,
+        holidayDates: [],
+      };
+    }
+
+    const totalDays = new Date(year, month, 0).getDate();
+    const holidayMap = new Map();
+
+    // Use the holiday information already returned by the API.
+    records.forEach((record) => {
+      const date = new Date(record.date);
+      if (
+        date.getFullYear() !== year ||
+        date.getMonth() + 1 !== month ||
+        !record.holidayName
+      ) {
+        return;
+      }
+
+      const key = `${year}-${String(month).padStart(2, "0")}-${String(
+        date.getDate(),
+      ).padStart(2, "0")}`;
+
+      holidayMap.set(key, record.holidayName);
+    });
+
+    // Add festival holidays returned by the dedicated holiday endpoint.
+    festivalHolidays.forEach((holiday) => {
+      if (!holiday.date || !holiday.name) return;
+
+      // Holiday dates are stored as YYYY-MM-DD.
+      const [holidayYear, holidayMonth, holidayDay] = holiday.date
+        .split("-")
+        .map(Number);
+
+      if (holidayYear !== year || holidayMonth !== month || !holidayDay) {
+        return;
+      }
+
+      const key = holiday.date;
+
+      // Preserve an existing holiday name if one is already recorded.
+      holidayMap.set(key, holidayMap.get(key) || holiday.name);
+    });
+
+    // Add weekly offs. Sunday and second Saturday are excluded.
+    for (let day = 1; day <= totalDays; day++) {
+      const date = new Date(year, month - 1, day);
+      const key = `${year}-${String(month).padStart(2, "0")}-${String(
+        day,
+      ).padStart(2, "0")}`;
+
+      if (date.getDay() === 0) {
+        holidayMap.set(key, holidayMap.get(key) || "SUNDAY");
+      } else if (date.getDay() === 6 && Math.ceil(day / 7) === 2) {
+        holidayMap.set(key, holidayMap.get(key) || "2nd SATURDAY");
+      }
+    }
+
+    // Ensure October 2026 public and festival holidays are counted.
+
+    const holidays = holidayMap.size;
+
+    return {
+      totalDays,
+      holidays,
+      workingDays: totalDays - holidays,
+      holidayDates: [...holidayMap.entries()],
+    };
+  }, [records, festivalHolidays, selectedMonth, selectedYear]);
 
   // --- Filtering Logic (Search + Month + Year + DatePicker + Punch Filter) ---
   const filteredRecords = useMemo(() => {
@@ -428,7 +530,7 @@ const AttendanceSheet = () => {
               <option value="both">Missed Both</option>
             </select>
           </div>
-          
+
           <div className="include-today-filter">
             <input
               id="includeToday"
@@ -438,7 +540,7 @@ const AttendanceSheet = () => {
             />
             <label htmlFor="includeToday">Include Today</label>
           </div>
-          
+
           <div className="select-box">
             <label>Specific Date</label>
             <div className="date-input-wrapper">
@@ -467,6 +569,23 @@ const AttendanceSheet = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+        </div>
+      </div>
+
+      <div className="working-days-summary">
+        <div className="summary-card">
+          <span>Calendar Days</span>
+          <strong>{workingDaysSummary.totalDays}</strong>
+        </div>
+
+        <div className="summary-card">
+          <span>Holidays & Weekly Offs</span>
+          <strong>{workingDaysSummary.holidays}</strong>
+        </div>
+
+        <div className="summary-card">
+          <span>Working Days</span>
+          <strong>{workingDaysSummary.workingDays}</strong>
         </div>
       </div>
 

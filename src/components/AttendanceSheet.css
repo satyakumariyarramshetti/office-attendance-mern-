@@ -253,3 +253,32 @@
   text-transform: none;
   cursor: pointer;
 }
+
+  .working-days-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin: 18px 0;
+  }
+
+  .summary-card {
+    flex: 1;
+    min-width: 150px;
+    padding: 16px 18px;
+    background: #fff;
+    border: 1px solid #dbe5f1;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+  }
+
+  .summary-card span {
+    display: block;
+    color: #52657d;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  .summary-card strong {
+    color: #1d4ed8;
+    font-size: 25px;
+  }
