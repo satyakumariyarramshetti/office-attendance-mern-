@@ -4,45 +4,44 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import XLSX from "xlsx-js-style";
 
- const calculateTimeDifference = (startTime, endTime) => {
-    if (!startTime || !endTime || startTime === "N/A" || endTime === "N/A")
-      return "00:00";
-    const startMins = timeToMinutes(startTime);
-    const endMins = timeToMinutes(endTime);
-    return minutesToHoursMinutes(endMins - startMins);
-  };
+const calculateTimeDifference = (startTime, endTime) => {
+  if (!startTime || !endTime || startTime === "N/A" || endTime === "N/A")
+    return "00:00";
+  const startMins = timeToMinutes(startTime);
+  const endMins = timeToMinutes(endTime);
+  return minutesToHoursMinutes(endMins - startMins);
+};
 
-  const calculateNetWorkingHours = (inTime, outTime, lunchOut, lunchIn) => {
-    if (!inTime || !outTime || inTime === "N/A" || outTime === "N/A")
-      return "00:00";
-    const inMins = timeToMinutes(inTime);
-    const outMins = timeToMinutes(outTime);
-    let lunchMins = 0;
-    if (lunchOut && lunchIn && lunchOut !== "N/A" && lunchIn !== "N/A") {
-      const lOut = timeToMinutes(lunchOut);
-      const lIn = timeToMinutes(lunchIn);
-      if (lIn > lOut) lunchMins = lIn - lOut;
-    }
-    return minutesToHoursMinutes(outMins - inMins - lunchMins);
-  };
-  const computeGrossHours = (lunchHours, workingHours) => {
-    const lMins = timeToMinutes(lunchHours);
-    const wMins = timeToMinutes(workingHours);
-    return minutesToHoursMinutes(lMins + wMins);
-  };
-    const timeToMinutes = (timeStr) => {
-    if (!timeStr || !/^\d{2}:\d{2}$/.test(timeStr)) return 0;
-    const [hours, minutes] = timeStr.split(":").map(Number);
-    return hours * 60 + minutes;
-  };
+const calculateNetWorkingHours = (inTime, outTime, lunchOut, lunchIn) => {
+  if (!inTime || !outTime || inTime === "N/A" || outTime === "N/A")
+    return "00:00";
+  const inMins = timeToMinutes(inTime);
+  const outMins = timeToMinutes(outTime);
+  let lunchMins = 0;
+  if (lunchOut && lunchIn && lunchOut !== "N/A" && lunchIn !== "N/A") {
+    const lOut = timeToMinutes(lunchOut);
+    const lIn = timeToMinutes(lunchIn);
+    if (lIn > lOut) lunchMins = lIn - lOut;
+  }
+  return minutesToHoursMinutes(outMins - inMins - lunchMins);
+};
+const computeGrossHours = (lunchHours, workingHours) => {
+  const lMins = timeToMinutes(lunchHours);
+  const wMins = timeToMinutes(workingHours);
+  return minutesToHoursMinutes(lMins + wMins);
+};
+const timeToMinutes = (timeStr) => {
+  if (!timeStr || !/^\d{2}:\d{2}$/.test(timeStr)) return 0;
+  const [hours, minutes] = timeStr.split(":").map(Number);
+  return hours * 60 + minutes;
+};
 
-  const minutesToHoursMinutes = (totalMinutes) => {
-    if (isNaN(totalMinutes) || totalMinutes < 0) return "00:00";
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = Math.round(totalMinutes % 60);
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
-  };
-
+const minutesToHoursMinutes = (totalMinutes) => {
+  if (isNaN(totalMinutes) || totalMinutes < 0) return "00:00";
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = Math.round(totalMinutes % 60);
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+};
 
 const AttendanceSheet = () => {
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
@@ -64,6 +63,7 @@ const AttendanceSheet = () => {
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [showModal, setShowModal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [holidayData, setHolidayData] = useState({ date: "", name: "" });
   const [grossHoursLimit, setGrossHoursLimit] = useState("6");
   const [isGrossHoursFilterActive, setIsGrossHoursFilterActive] =
@@ -165,12 +165,6 @@ const AttendanceSheet = () => {
     return "N/A";
   };
 
-
-
- 
-
-
-  
   const isMissingTime = (value) => {
     if (value === null || value === undefined) return true;
 
@@ -484,6 +478,15 @@ const AttendanceSheet = () => {
       const idMatch = record.id?.toLowerCase().includes(term);
       const nameMatch = record.name?.toLowerCase().includes(term);
 
+      const leaveTypeValue = String(record.leaveType || "").trim();
+
+      const categoryMatch =
+        selectedCategory === "all"
+          ? true
+          : selectedCategory === "N/A"
+            ? !leaveTypeValue
+            : leaveTypeValue === selectedCategory;
+
       // Apply Gross Hours filtering only when explicitly activated
       // and only for the All Records view.
       let grossHoursMatch = true;
@@ -578,7 +581,8 @@ const AttendanceSheet = () => {
         datePickerMatch &&
         (idMatch || nameMatch) &&
         punchMatch &&
-        grossHoursMatch
+        grossHoursMatch &&
+        categoryMatch
       );
     });
   }, [
@@ -592,6 +596,7 @@ const AttendanceSheet = () => {
     includeToday,
     grossHoursLimit,
     isGrossHoursFilterActive,
+    selectedCategory,
     
   ]);
 
@@ -694,6 +699,20 @@ const AttendanceSheet = () => {
   )
     .filter(Boolean)
     .sort((a, b) => b - a);
+
+  const categoryOptions = useMemo(() => {
+    const categories = new Set();
+
+    records.forEach((record) => {
+      const category = String(record.leaveType || "").trim();
+
+      if (category) {
+        categories.add(category);
+      }
+    });
+
+    return [...categories].sort((a, b) => a.localeCompare(b));
+  }, [records]);
 
   return (
     <div className="container admin-container mt-4">
@@ -804,42 +823,60 @@ const AttendanceSheet = () => {
             <label htmlFor="includeToday">Include Today</label>
           </div>
 
-       
-<div className="select-box">
-  <label>Gross Hours (Max)</label>
+          <div className="select-box">
+            <label>Gross Hours (Max)</label>
 
-  <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-    <input
-      type="number"
-      min="0"
-      max="24"
-      step="0.5"
-      value={grossHoursLimit}
-      readOnly={!isGrossHoursFilterActive}
-      onClick={() => {
-        if (!isGrossHoursFilterActive) {
-          setIsGrossHoursFilterActive(true);
-        }
-      }}
-      onChange={(e) => setGrossHoursLimit(e.target.value)}
-      placeholder="Enter hours"
-      style={{ flex: 1 }}
-    />
+            <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+              <input
+                type="number"
+                min="0"
+                max="24"
+                step="0.5"
+                value={grossHoursLimit}
+                readOnly={!isGrossHoursFilterActive}
+                onClick={() => {
+                  if (!isGrossHoursFilterActive) {
+                    setIsGrossHoursFilterActive(true);
+                  }
+                }}
+                onChange={(e) => setGrossHoursLimit(e.target.value)}
+                placeholder="Enter hours"
+                style={{ flex: 1 }}
+              />
 
-    <button
-      type="button"
-      className={`btn btn-sm ${
-        isGrossHoursFilterActive ? "btn-primary" : "btn-outline-secondary"
-      }`}
-      onClick={() =>
-        setIsGrossHoursFilterActive((previous) => !previous)
-      }
-    >
-      {isGrossHoursFilterActive ? "On" : "Off"}
-    </button>
-  </div>
-</div>
+              <button
+                type="button"
+                className={`btn btn-sm ${
+                  isGrossHoursFilterActive
+                    ? "btn-primary"
+                    : "btn-outline-secondary"
+                }`}
+                onClick={() =>
+                  setIsGrossHoursFilterActive((previous) => !previous)
+                }
+              >
+                {isGrossHoursFilterActive ? "On" : "Off"}
+              </button>
+            </div>
+          </div>
 
+          <div className="select-box">
+            <label>Category</label>
+
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+            >
+              <option value="all">All Categories</option>
+              <option value="N/A">N/A (No Category)</option>
+
+              {categoryOptions.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
 
           <div className="select-box">
             <label>Specific Date</label>
