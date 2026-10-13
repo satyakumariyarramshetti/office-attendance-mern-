@@ -196,3 +196,60 @@
 .holiday-row td:nth-child(4) {
   color: #1e293b; /* Keep ID, Name, Date, Day, and Holiday Name dark */
 }
+
+
+/* Include Today checkbox */
+.include-today-filter {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 0 10px;
+  min-height: 42px;
+  width: auto;
+  white-space: nowrap;
+  background: #f0f7ff;
+  border: 1px solid #cbdff7;
+  border-radius: 6px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.include-today-filter:hover {
+  background: #e4f0ff;
+  border-color: #3b82f6;
+}
+
+/* Override the global attendance-toolbar input styles */
+.attendance-toolbar .include-today-filter input[type="checkbox"] {
+  appearance: auto;
+  -webkit-appearance: checkbox;
+  width: 15px;
+  height: 15px;
+  min-width: 15px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  accent-color: #2563eb;
+  flex: 0 0 15px;
+  cursor: pointer;
+}
+
+.attendance-toolbar .include-today-filter input[type="checkbox"]:focus {
+  box-shadow: none;
+}
+
+/* Override the uppercase filter-label styles */
+.attendance-toolbar .include-today-filter label {
+  margin: 0;
+  padding: 0;
+  color: #1e3a5f;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: normal;
+  text-transform: none;
+  cursor: pointer;
+}
