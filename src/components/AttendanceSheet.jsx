@@ -449,56 +449,66 @@ const AttendanceSheet = () => {
 
   // --- Filtering Logic (Search + Month + Year + DatePicker + Punch Filter) ---
   const filteredRecords = useMemo(() => {
+    // Always use actual attendance records as the main source.
+    // Add generated full-day missing attendance when requested.
     const sourceRecords =
-      punchFilter === "missing-day" ? missingAttendanceRecords : records;
+      punchFilter === "missing-day"
+        ? [...records, ...missingAttendanceRecords]
+        : records;
 
     return sourceRecords.filter((record) => {
       const dateObj = new Date(record.date);
       const recMonth = dateObj.getMonth() + 1;
       const recYear = dateObj.getFullYear();
 
-      // 1. Month/Year Filter
+      // Keep existing Month / Year filters
       const monthMatch = !selectedMonth || recMonth === Number(selectedMonth);
 
       const yearMatch = !selectedYear || recYear === Number(selectedYear);
 
-      // 2. Specific Date Filter
+      // Keep Specific Date filter
       let datePickerMatch = true;
 
       if (selectedDate) {
-        const selDateStr = new Date(selectedDate).toDateString();
-        const recDateStr = dateObj.toDateString();
+        const selectedDateObj = new Date(`${selectedDate}T00:00:00`);
 
-        datePickerMatch = selDateStr === recDateStr;
+        datePickerMatch =
+          selectedDateObj.toDateString() === dateObj.toDateString();
       }
 
-      // 3. Search by Employee ID or Name
+      // Keep Employee Search
       const term = searchTerm.toLowerCase().trim();
 
-      const idMatch = record.id?.toLowerCase().includes(term);
-      const nameMatch = record.name?.toLowerCase().includes(term);
+      const idMatch = String(record.id || "")
+        .toLowerCase()
+        .includes(term);
 
-      const leaveTypeValue = String(record.leaveType || "").trim();
+      const nameMatch = String(record.name || "")
+        .toLowerCase()
+        .includes(term);
+
+      // Category: include leaveType and dailyLeaveType
+      const leaveTypeValue = String(
+        record.leaveType || record.dailyLeaveType || "",
+      ).trim();
 
       const categoryMatch =
         selectedCategory === "all"
           ? true
           : selectedCategory === "N/A"
-            ? !leaveTypeValue
+            ? !leaveTypeValue && !record.holidayName
             : leaveTypeValue === selectedCategory;
 
-      // Apply Gross Hours filtering only when explicitly activated
-      // and only for the All Records view.
+      // Gross Hours
       let grossHoursMatch = true;
 
-      if (isGrossHoursFilterActive && punchFilter === "all") {
+      if (isGrossHoursFilterActive && grossHoursLimit.trim() !== "") {
         const hasInTime = !isMissingTime(record.inTime);
         const hasOutTime = !isMissingTime(record.outTime);
 
-        // Ignore records without both In Time and Out Time.
         if (!hasInTime || !hasOutTime) {
           grossHoursMatch = false;
-        } else if (grossHoursLimit.trim() !== "") {
+        } else {
           const lunchHours = calculateTimeDifference(
             record.lunchOut,
             record.lunchIn,
@@ -512,8 +522,8 @@ const AttendanceSheet = () => {
           );
 
           const grossHours = computeGrossHours(lunchHours, workingHours);
-          const [hours, minutes] = grossHours.split(":").map(Number);
 
+          const [hours, minutes] = grossHours.split(":").map(Number);
           const grossTotalMinutes = hours * 60 + minutes;
           const grossLimitMinutes = Number(grossHoursLimit) * 60;
 
@@ -524,16 +534,14 @@ const AttendanceSheet = () => {
         }
       }
 
-      // 4. Missing In/Out Time Filter
+      // Missing In / Out / Full-day attendance
       let punchMatch = true;
 
       if (punchFilter !== "all") {
-        // Exclude holidays and leave records from missing-punch results
-
         const isHoliday = !!record.holidayName;
+
         const isLeave = !!record.leaveType || !!record.dailyLeaveType;
 
-        // Compare dates using local calendar dates
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -542,9 +550,17 @@ const AttendanceSheet = () => {
 
         const isToday = recordDate.getTime() === today.getTime();
 
-        // Exclude holidays and leave records.
-        // Do not flag today's missing Out Time or Both.
-        if (isHoliday || isLeave) {
+        if (punchFilter === "missing-day") {
+          // Include generated full-day missing records.
+          // Also include actual records that have missing In or Out,
+          // so the combined report can show all attendance exceptions.
+          punchMatch =
+            !!record.missingAttendance ||
+            (!isHoliday &&
+              !isLeave &&
+              (isMissingTime(record.inTime) || isMissingTime(record.outTime)) &&
+              (includeToday || !isToday));
+        } else if (isHoliday || isLeave) {
           punchMatch = false;
         } else {
           const missingIn = isMissingTime(record.inTime);
@@ -552,19 +568,14 @@ const AttendanceSheet = () => {
 
           switch (punchFilter) {
             case "in":
-              // In-Time is missing, regardless of Out-Time.
               punchMatch = missingIn;
               break;
 
             case "out":
-              // Out-Time is missing, regardless of In-Time.
               punchMatch = (includeToday || !isToday) && missingOut;
               break;
 
             case "both":
-              // Either In-Time OR Out-Time is missing.
-              // Includes records where both are missing, even if lunch
-              // timings are present.
               punchMatch =
                 (includeToday || !isToday) && (missingIn || missingOut);
               break;
@@ -575,14 +586,34 @@ const AttendanceSheet = () => {
         }
       }
 
+      // Group 1: Attendance exceptions
+      const attendanceGroupActive = punchFilter !== "all";
+      const attendanceGroupMatch = attendanceGroupActive && punchMatch;
+
+      // Group 2: Gross Hours and Category
+      const grossCategoryGroupActive =
+        isGrossHoursFilterActive || selectedCategory !== "all";
+
+      const grossCategoryGroupMatch =
+        grossCategoryGroupActive && grossHoursMatch && categoryMatch;
+
+      // OR logic: include a record matching either active group.
+      let combinedFilterMatch = true;
+
+      if (attendanceGroupActive && grossCategoryGroupActive) {
+        combinedFilterMatch = attendanceGroupMatch || grossCategoryGroupMatch;
+      } else if (attendanceGroupActive) {
+        combinedFilterMatch = attendanceGroupMatch;
+      } else if (grossCategoryGroupActive) {
+        combinedFilterMatch = grossCategoryGroupMatch;
+      }
+
       return (
         monthMatch &&
         yearMatch &&
         datePickerMatch &&
         (idMatch || nameMatch) &&
-        punchMatch &&
-        grossHoursMatch &&
-        categoryMatch
+        combinedFilterMatch
       );
     });
   }, [
@@ -597,7 +628,6 @@ const AttendanceSheet = () => {
     grossHoursLimit,
     isGrossHoursFilterActive,
     selectedCategory,
-    
   ]);
 
   const exportToExcel = () => {
