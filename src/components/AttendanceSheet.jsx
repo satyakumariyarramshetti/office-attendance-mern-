@@ -4,6 +4,46 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import XLSX from "xlsx-js-style";
 
+ const calculateTimeDifference = (startTime, endTime) => {
+    if (!startTime || !endTime || startTime === "N/A" || endTime === "N/A")
+      return "00:00";
+    const startMins = timeToMinutes(startTime);
+    const endMins = timeToMinutes(endTime);
+    return minutesToHoursMinutes(endMins - startMins);
+  };
+
+  const calculateNetWorkingHours = (inTime, outTime, lunchOut, lunchIn) => {
+    if (!inTime || !outTime || inTime === "N/A" || outTime === "N/A")
+      return "00:00";
+    const inMins = timeToMinutes(inTime);
+    const outMins = timeToMinutes(outTime);
+    let lunchMins = 0;
+    if (lunchOut && lunchIn && lunchOut !== "N/A" && lunchIn !== "N/A") {
+      const lOut = timeToMinutes(lunchOut);
+      const lIn = timeToMinutes(lunchIn);
+      if (lIn > lOut) lunchMins = lIn - lOut;
+    }
+    return minutesToHoursMinutes(outMins - inMins - lunchMins);
+  };
+  const computeGrossHours = (lunchHours, workingHours) => {
+    const lMins = timeToMinutes(lunchHours);
+    const wMins = timeToMinutes(workingHours);
+    return minutesToHoursMinutes(lMins + wMins);
+  };
+    const timeToMinutes = (timeStr) => {
+    if (!timeStr || !/^\d{2}:\d{2}$/.test(timeStr)) return 0;
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    return hours * 60 + minutes;
+  };
+
+  const minutesToHoursMinutes = (totalMinutes) => {
+    if (isNaN(totalMinutes) || totalMinutes < 0) return "00:00";
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = Math.round(totalMinutes % 60);
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+  };
+
+
 const AttendanceSheet = () => {
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
   const navigate = useNavigate();
@@ -25,7 +65,9 @@ const AttendanceSheet = () => {
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [showModal, setShowModal] = useState(false);
   const [holidayData, setHolidayData] = useState({ date: "", name: "" });
-
+  const [grossHoursLimit, setGrossHoursLimit] = useState("6");
+  const [isGrossHoursFilterActive, setIsGrossHoursFilterActive] =
+    useState(false);
   // --- Auth Check ---
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("adminToken");
@@ -123,47 +165,12 @@ const AttendanceSheet = () => {
     return "N/A";
   };
 
-  const timeToMinutes = (timeStr) => {
-    if (!timeStr || !/^\d{2}:\d{2}$/.test(timeStr)) return 0;
-    const [hours, minutes] = timeStr.split(":").map(Number);
-    return hours * 60 + minutes;
-  };
 
-  const minutesToHoursMinutes = (totalMinutes) => {
-    if (isNaN(totalMinutes) || totalMinutes < 0) return "00:00";
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = Math.round(totalMinutes % 60);
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
-  };
 
-  const calculateTimeDifference = (startTime, endTime) => {
-    if (!startTime || !endTime || startTime === "N/A" || endTime === "N/A")
-      return "00:00";
-    const startMins = timeToMinutes(startTime);
-    const endMins = timeToMinutes(endTime);
-    return minutesToHoursMinutes(endMins - startMins);
-  };
+ 
 
-  const calculateNetWorkingHours = (inTime, outTime, lunchOut, lunchIn) => {
-    if (!inTime || !outTime || inTime === "N/A" || outTime === "N/A")
-      return "00:00";
-    const inMins = timeToMinutes(inTime);
-    const outMins = timeToMinutes(outTime);
-    let lunchMins = 0;
-    if (lunchOut && lunchIn && lunchOut !== "N/A" && lunchIn !== "N/A") {
-      const lOut = timeToMinutes(lunchOut);
-      const lIn = timeToMinutes(lunchIn);
-      if (lIn > lOut) lunchMins = lIn - lOut;
-    }
-    return minutesToHoursMinutes(outMins - inMins - lunchMins);
-  };
 
-  const computeGrossHours = (lunchHours, workingHours) => {
-    const lMins = timeToMinutes(lunchHours);
-    const wMins = timeToMinutes(workingHours);
-    return minutesToHoursMinutes(lMins + wMins);
-  };
-
+  
   const isMissingTime = (value) => {
     if (value === null || value === undefined) return true;
 
@@ -257,202 +264,194 @@ const AttendanceSheet = () => {
     };
   }, [records, festivalHolidays, selectedMonth, selectedYear]);
 
+  // Generate missing attendance only from each employee's joining date.
+  const missingAttendanceRecords = useMemo(() => {
+    const attendanceMap = new Map();
+    const holidayMap = new Set();
+    const employeeMap = new Map();
 
-// Generate missing attendance only from each employee's joining date.
-const missingAttendanceRecords = useMemo(() => {
-  const attendanceMap = new Map();
-  const holidayMap = new Set();
-  const employeeMap = new Map();
+    const toDateKey = (value) => {
+      if (!value) return "";
 
-  const toDateKey = (value) => {
-    if (!value) return "";
-
-    if (
-      typeof value === "string" &&
-      /^\d{4}-\d{2}-\d{2}/.test(value)
-    ) {
-      return value.slice(0, 10);
-    }
-
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "";
-
-    return [
-      date.getFullYear(),
-      String(date.getMonth() + 1).padStart(2, "0"),
-      String(date.getDate()).padStart(2, "0"),
-    ].join("-");
-  };
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const todayKey = toDateKey(today);
-
-  // 1. Build employees from the Staff collection.
-  staffRecords.forEach((staff) => {
-    if (!staff.id || !staff.onboardingDate) return;
-
-    const joiningDate = toDateKey(staff.onboardingDate);
-    if (!joiningDate) return;
-
-    employeeMap.set(String(staff.id).trim(), {
-      id: String(staff.id).trim(),
-      name: staff.name || "",
-      onboardingDate: joiningDate,
-      status: staff.status || "Active Employee",
-      inactivationDate: staff.inactivationDate || null,
-    });
-  });
-
-  // 2. Index existing attendance by employee ID and date.
-  records.forEach((record) => {
-    const id = String(record.id || "").trim();
-    const dateKey = toDateKey(record.date);
-
-    if (!id || !dateKey) return;
-
-    const key = `${id}_${dateKey}`;
-
-    if (!attendanceMap.has(key)) {
-      attendanceMap.set(key, []);
-    }
-
-    attendanceMap.get(key).push(record);
-
-    if (record.holidayName) {
-      holidayMap.add(dateKey);
-    }
-  });
-
-  // 3. Add festival holidays.
-  festivalHolidays.forEach((holiday) => {
-    const dateKey = toDateKey(holiday.date);
-    if (dateKey && holiday.name) {
-      holidayMap.add(dateKey);
-    }
-  });
-
-  // 4. Determine the date range to inspect.
-  let datesToCheck = [];
-
-  if (selectedDate) {
-    datesToCheck = [selectedDate];
-  } else if (selectedMonth && selectedYear) {
-    const year = Number(selectedYear);
-    const month = Number(selectedMonth);
-
-    const daysInMonth = new Date(year, month, 0).getDate();
-
-    for (let day = 1; day <= daysInMonth; day++) {
-      datesToCheck.push(
-        `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
-      );
-    }
-  } else {
-    // All Months / All Years: inspect dates from the earliest
-    // employee joining date through today.
-    const joiningDates = [...employeeMap.values()]
-      .map((employee) => employee.onboardingDate)
-      .sort();
-
-    if (!joiningDates.length) return [];
-
-    const firstDate = joiningDates[0];
-    const start = new Date(`${firstDate}T00:00:00`);
-
-    for (
-      let date = new Date(start);
-      toDateKey(date) <= todayKey;
-      date.setDate(date.getDate() + 1)
-    ) {
-      datesToCheck.push(toDateKey(date));
-    }
-  }
-
-  // 5. Generate missing attendance for working days.
-  const missing = [];
-
-  datesToCheck.forEach((dateKey) => {
-    // Do not check future dates or today unless requested.
-    if (dateKey > todayKey) return;
-    if (dateKey === todayKey && !includeToday) return;
-
-    // Exclude public/festival holidays.
-    if (holidayMap.has(dateKey)) return;
-
-    const date = new Date(`${dateKey}T00:00:00`);
-    const day = date.getDate();
-
-    // Exclude Sundays and second Saturdays.
-    if (
-      date.getDay() === 0 ||
-      (date.getDay() === 6 && Math.ceil(day / 7) === 2)
-    ) {
-      return;
-    }
-
-    employeeMap.forEach((employee) => {
-      // IMPORTANT: Never check attendance before joining.
-      if (dateKey < employee.onboardingDate) return;
-
-      // Exclude dates on/after the employee's inactivation date.
-      if (
-        employee.status.trim().toLowerCase() === "inactive employee" &&
-        employee.inactivationDate
-      ) {
-        const inactiveDate = toDateKey(employee.inactivationDate);
-
-        if (inactiveDate && dateKey >= inactiveDate) return;
+      if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+        return value.slice(0, 10);
       }
 
-      const key = `${employee.id}_${dateKey}`;
-      const employeeRecords = attendanceMap.get(key) || [];
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "";
 
-      // Exclude leave and employee-specific holiday records.
-      const hasLeaveOrHoliday = employeeRecords.some(
-        (record) =>
-          record.holidayName ||
-          record.leaveType ||
-          record.dailyLeaveType
-      );
+      return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0"),
+      ].join("-");
+    };
 
-      if (hasLeaveOrHoliday) return;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayKey = toDateKey(today);
 
-      // If any attendance punch exists, do not flag the day.
-      const hasAnyPunch = employeeRecords.some(
-        (record) =>
-          !isMissingTime(record.inTime) ||
-          !isMissingTime(record.outTime)
-      );
+    // 1. Build employees from the Staff collection.
+    staffRecords.forEach((staff) => {
+      if (!staff.id || !staff.onboardingDate) return;
 
-      if (hasAnyPunch) return;
+      const joiningDate = toDateKey(staff.onboardingDate);
+      if (!joiningDate) return;
 
-      missing.push({
-        ...(employeeRecords[0] || {}),
-        id: employee.id,
-        name: employee.name,
-        date: dateKey,
-        day: date.toLocaleDateString("en-US", {
-          weekday: "long",
-        }),
-        inTime: null,
-        outTime: null,
-        missingAttendance: true,
+      employeeMap.set(String(staff.id).trim(), {
+        id: String(staff.id).trim(),
+        name: staff.name || "",
+        onboardingDate: joiningDate,
+        status: staff.status || "Active Employee",
+        inactivationDate: staff.inactivationDate || null,
       });
     });
-  });
 
-  return missing;
-}, [
-  records,
-  festivalHolidays,
-  staffRecords,
-  selectedMonth,
-  selectedYear,
-  selectedDate,
-  includeToday,
-]);
+    // 2. Index existing attendance by employee ID and date.
+    records.forEach((record) => {
+      const id = String(record.id || "").trim();
+      const dateKey = toDateKey(record.date);
 
+      if (!id || !dateKey) return;
+
+      const key = `${id}_${dateKey}`;
+
+      if (!attendanceMap.has(key)) {
+        attendanceMap.set(key, []);
+      }
+
+      attendanceMap.get(key).push(record);
+
+      if (record.holidayName) {
+        holidayMap.add(dateKey);
+      }
+    });
+
+    // 3. Add festival holidays.
+    festivalHolidays.forEach((holiday) => {
+      const dateKey = toDateKey(holiday.date);
+      if (dateKey && holiday.name) {
+        holidayMap.add(dateKey);
+      }
+    });
+
+    // 4. Determine the date range to inspect.
+    let datesToCheck = [];
+
+    if (selectedDate) {
+      datesToCheck = [selectedDate];
+    } else if (selectedMonth && selectedYear) {
+      const year = Number(selectedYear);
+      const month = Number(selectedMonth);
+
+      const daysInMonth = new Date(year, month, 0).getDate();
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        datesToCheck.push(
+          `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+        );
+      }
+    } else {
+      // All Months / All Years: inspect dates from the earliest
+      // employee joining date through today.
+      const joiningDates = [...employeeMap.values()]
+        .map((employee) => employee.onboardingDate)
+        .sort();
+
+      if (!joiningDates.length) return [];
+
+      const firstDate = joiningDates[0];
+      const start = new Date(`${firstDate}T00:00:00`);
+
+      for (
+        let date = new Date(start);
+        toDateKey(date) <= todayKey;
+        date.setDate(date.getDate() + 1)
+      ) {
+        datesToCheck.push(toDateKey(date));
+      }
+    }
+
+    // 5. Generate missing attendance for working days.
+    const missing = [];
+
+    datesToCheck.forEach((dateKey) => {
+      // Do not check future dates or today unless requested.
+      if (dateKey > todayKey) return;
+      if (dateKey === todayKey && !includeToday) return;
+
+      // Exclude public/festival holidays.
+      if (holidayMap.has(dateKey)) return;
+
+      const date = new Date(`${dateKey}T00:00:00`);
+      const day = date.getDate();
+
+      // Exclude Sundays and second Saturdays.
+      if (
+        date.getDay() === 0 ||
+        (date.getDay() === 6 && Math.ceil(day / 7) === 2)
+      ) {
+        return;
+      }
+
+      employeeMap.forEach((employee) => {
+        // IMPORTANT: Never check attendance before joining.
+        if (dateKey < employee.onboardingDate) return;
+
+        // Exclude dates on/after the employee's inactivation date.
+        if (
+          employee.status.trim().toLowerCase() === "inactive employee" &&
+          employee.inactivationDate
+        ) {
+          const inactiveDate = toDateKey(employee.inactivationDate);
+
+          if (inactiveDate && dateKey >= inactiveDate) return;
+        }
+
+        const key = `${employee.id}_${dateKey}`;
+        const employeeRecords = attendanceMap.get(key) || [];
+
+        // Exclude leave and employee-specific holiday records.
+        const hasLeaveOrHoliday = employeeRecords.some(
+          (record) =>
+            record.holidayName || record.leaveType || record.dailyLeaveType,
+        );
+
+        if (hasLeaveOrHoliday) return;
+
+        // If any attendance punch exists, do not flag the day.
+        const hasAnyPunch = employeeRecords.some(
+          (record) =>
+            !isMissingTime(record.inTime) || !isMissingTime(record.outTime),
+        );
+
+        if (hasAnyPunch) return;
+
+        missing.push({
+          ...(employeeRecords[0] || {}),
+          id: employee.id,
+          name: employee.name,
+          date: dateKey,
+          day: date.toLocaleDateString("en-US", {
+            weekday: "long",
+          }),
+          inTime: null,
+          outTime: null,
+          missingAttendance: true,
+        });
+      });
+    });
+
+    return missing;
+  }, [
+    records,
+    festivalHolidays,
+    staffRecords,
+    selectedMonth,
+    selectedYear,
+    selectedDate,
+    includeToday,
+  ]);
 
   // --- Filtering Logic (Search + Month + Year + DatePicker + Punch Filter) ---
   const filteredRecords = useMemo(() => {
@@ -484,6 +483,43 @@ const missingAttendanceRecords = useMemo(() => {
 
       const idMatch = record.id?.toLowerCase().includes(term);
       const nameMatch = record.name?.toLowerCase().includes(term);
+
+      // Apply Gross Hours filtering only when explicitly activated
+      // and only for the All Records view.
+      let grossHoursMatch = true;
+
+      if (isGrossHoursFilterActive && punchFilter === "all") {
+        const hasInTime = !isMissingTime(record.inTime);
+        const hasOutTime = !isMissingTime(record.outTime);
+
+        // Ignore records without both In Time and Out Time.
+        if (!hasInTime || !hasOutTime) {
+          grossHoursMatch = false;
+        } else if (grossHoursLimit.trim() !== "") {
+          const lunchHours = calculateTimeDifference(
+            record.lunchOut,
+            record.lunchIn,
+          );
+
+          const workingHours = calculateNetWorkingHours(
+            record.inTime,
+            record.outTime,
+            record.lunchOut,
+            record.lunchIn,
+          );
+
+          const grossHours = computeGrossHours(lunchHours, workingHours);
+          const [hours, minutes] = grossHours.split(":").map(Number);
+
+          const grossTotalMinutes = hours * 60 + minutes;
+          const grossLimitMinutes = Number(grossHoursLimit) * 60;
+
+          grossHoursMatch =
+            Number.isFinite(grossLimitMinutes) &&
+            grossLimitMinutes >= 0 &&
+            grossTotalMinutes <= grossLimitMinutes;
+        }
+      }
 
       // 4. Missing In/Out Time Filter
       let punchMatch = true;
@@ -541,7 +577,8 @@ const missingAttendanceRecords = useMemo(() => {
         yearMatch &&
         datePickerMatch &&
         (idMatch || nameMatch) &&
-        punchMatch
+        punchMatch &&
+        grossHoursMatch
       );
     });
   }, [
@@ -553,6 +590,9 @@ const missingAttendanceRecords = useMemo(() => {
     searchTerm,
     punchFilter,
     includeToday,
+    grossHoursLimit,
+    isGrossHoursFilterActive,
+    
   ]);
 
   const exportToExcel = () => {
@@ -763,6 +803,43 @@ const missingAttendanceRecords = useMemo(() => {
             />
             <label htmlFor="includeToday">Include Today</label>
           </div>
+
+       
+<div className="select-box">
+  <label>Gross Hours (Max)</label>
+
+  <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+    <input
+      type="number"
+      min="0"
+      max="24"
+      step="0.5"
+      value={grossHoursLimit}
+      readOnly={!isGrossHoursFilterActive}
+      onClick={() => {
+        if (!isGrossHoursFilterActive) {
+          setIsGrossHoursFilterActive(true);
+        }
+      }}
+      onChange={(e) => setGrossHoursLimit(e.target.value)}
+      placeholder="Enter hours"
+      style={{ flex: 1 }}
+    />
+
+    <button
+      type="button"
+      className={`btn btn-sm ${
+        isGrossHoursFilterActive ? "btn-primary" : "btn-outline-secondary"
+      }`}
+      onClick={() =>
+        setIsGrossHoursFilterActive((previous) => !previous)
+      }
+    >
+      {isGrossHoursFilterActive ? "On" : "Off"}
+    </button>
+  </div>
+</div>
+
 
           <div className="select-box">
             <label>Specific Date</label>
