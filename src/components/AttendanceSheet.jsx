@@ -508,16 +508,21 @@ const AttendanceSheet = () => {
 
           switch (punchFilter) {
             case "in":
+              // In-Time is missing, regardless of Out-Time.
               punchMatch = missingIn;
               break;
 
             case "out":
+              // Out-Time is missing, regardless of In-Time.
               punchMatch = (includeToday || !isToday) && missingOut;
               break;
 
             case "both":
+              // Either In-Time OR Out-Time is missing.
+              // Includes records where both are missing, even if lunch
+              // timings are present.
               punchMatch =
-                (includeToday || !isToday) && missingIn && missingOut;
+                (includeToday || !isToday) && (missingIn || missingOut);
               break;
 
             default:
