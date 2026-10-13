@@ -257,197 +257,202 @@ const AttendanceSheet = () => {
     };
   }, [records, festivalHolidays, selectedMonth, selectedYear]);
 
-  // Generate employee/date rows for working days with no attendance punches.
-  const missingAttendanceRecords = useMemo(() => {
-    const employeeMap = new Map();
-    const attendanceMap = new Map();
-    const holidayMap = new Map();
 
-    const toDateKey = (value) => {
-      if (!value) return "";
-      if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) {
-        return value.slice(0, 10);
-      }
+// Generate missing attendance only from each employee's joining date.
+const missingAttendanceRecords = useMemo(() => {
+  const attendanceMap = new Map();
+  const holidayMap = new Set();
+  const employeeMap = new Map();
 
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return "";
+  const toDateKey = (value) => {
+    if (!value) return "";
 
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-    };
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayKey = toDateKey(today);
-
-    // Build the employee list and index attendance by employee/date.
-    records.forEach((record) => {
-      if (!record.id) return;
-
-      if (!employeeMap.has(record.id)) {
-        employeeMap.set(record.id, {
-          id: record.id,
-          name: record.name || "",
-        });
-      }
-
-      const dateKey = toDateKey(record.date);
-      if (!dateKey) return;
-
-      const key = `${record.id}_${dateKey}`;
-
-      if (!attendanceMap.has(key)) {
-        attendanceMap.set(key, []);
-      }
-      attendanceMap.get(key).push(record);
-
-      if (record.holidayName) {
-        holidayMap.set(dateKey, record.holidayName);
-      }
-    });
-
-    // Add staff details so inactivation dates can be checked.
-    staffRecords.forEach((staff) => {
-      if (!staff.id) return;
-
-      const existing = employeeMap.get(staff.id) || {};
-
-      employeeMap.set(staff.id, {
-        ...existing,
-        id: staff.id,
-        name: staff.name || existing.name || "",
-        status: staff.status || "Active Employee",
-        inactivationDate: staff.inactivationDate || null,
-      });
-    });
-
-    // Include festival holidays from the separate holiday endpoint.
-    festivalHolidays.forEach((holiday) => {
-      if (holiday.date && holiday.name) {
-        holidayMap.set(toDateKey(holiday.date), holiday.name);
-      }
-    });
-
-    // Determine the dates to inspect.
-    let datesToCheck = [];
-
-    if (selectedDate) {
-      datesToCheck = [selectedDate];
-    } else {
-      const datedRecords = records
-        .map((record) => toDateKey(record.date))
-        .filter(Boolean)
-        .sort();
-
-      const firstDate =
-        selectedMonth && selectedYear
-          ? `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-01`
-          : datedRecords[0];
-
-      if (!firstDate) return [];
-
-      const start = new Date(`${firstDate}T00:00:00`);
-      const end = new Date(today);
-
-      // Respect the selected month and year when both are selected.
-      if (selectedMonth && selectedYear) {
-        end.setFullYear(Number(selectedYear), Number(selectedMonth) - 1, 1);
-        end.setMonth(end.getMonth() + 1, 0);
-      }
-
-      for (
-        let date = new Date(start);
-        date <= end;
-        date.setDate(date.getDate() + 1)
-      ) {
-        datesToCheck.push(toDateKey(date));
-      }
+    if (
+      typeof value === "string" &&
+      /^\d{4}-\d{2}-\d{2}/.test(value)
+    ) {
+      return value.slice(0, 10);
     }
 
-    const missing = [];
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
 
-    datesToCheck.forEach((dateKey) => {
-      // Do not mark future dates or today's attendance by default.
-      if (dateKey > todayKey || (dateKey === todayKey && !includeToday)) {
-        return;
-      }
+    return [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getDate()).padStart(2, "0"),
+    ].join("-");
+  };
 
-      // Exclude festival/public holidays.
-      if (holidayMap.has(dateKey)) return;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayKey = toDateKey(today);
 
-      const date = new Date(`${dateKey}T00:00:00`);
-      const day = date.getDate();
+  // 1. Build employees from the Staff collection.
+  staffRecords.forEach((staff) => {
+    if (!staff.id || !staff.onboardingDate) return;
 
-      // Exclude Sundays and the second Saturday.
+    const joiningDate = toDateKey(staff.onboardingDate);
+    if (!joiningDate) return;
+
+    employeeMap.set(String(staff.id).trim(), {
+      id: String(staff.id).trim(),
+      name: staff.name || "",
+      onboardingDate: joiningDate,
+      status: staff.status || "Active Employee",
+      inactivationDate: staff.inactivationDate || null,
+    });
+  });
+
+  // 2. Index existing attendance by employee ID and date.
+  records.forEach((record) => {
+    const id = String(record.id || "").trim();
+    const dateKey = toDateKey(record.date);
+
+    if (!id || !dateKey) return;
+
+    const key = `${id}_${dateKey}`;
+
+    if (!attendanceMap.has(key)) {
+      attendanceMap.set(key, []);
+    }
+
+    attendanceMap.get(key).push(record);
+
+    if (record.holidayName) {
+      holidayMap.add(dateKey);
+    }
+  });
+
+  // 3. Add festival holidays.
+  festivalHolidays.forEach((holiday) => {
+    const dateKey = toDateKey(holiday.date);
+    if (dateKey && holiday.name) {
+      holidayMap.add(dateKey);
+    }
+  });
+
+  // 4. Determine the date range to inspect.
+  let datesToCheck = [];
+
+  if (selectedDate) {
+    datesToCheck = [selectedDate];
+  } else if (selectedMonth && selectedYear) {
+    const year = Number(selectedYear);
+    const month = Number(selectedMonth);
+
+    const daysInMonth = new Date(year, month, 0).getDate();
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      datesToCheck.push(
+        `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+      );
+    }
+  } else {
+    // All Months / All Years: inspect dates from the earliest
+    // employee joining date through today.
+    const joiningDates = [...employeeMap.values()]
+      .map((employee) => employee.onboardingDate)
+      .sort();
+
+    if (!joiningDates.length) return [];
+
+    const firstDate = joiningDates[0];
+    const start = new Date(`${firstDate}T00:00:00`);
+
+    for (
+      let date = new Date(start);
+      toDateKey(date) <= todayKey;
+      date.setDate(date.getDate() + 1)
+    ) {
+      datesToCheck.push(toDateKey(date));
+    }
+  }
+
+  // 5. Generate missing attendance for working days.
+  const missing = [];
+
+  datesToCheck.forEach((dateKey) => {
+    // Do not check future dates or today unless requested.
+    if (dateKey > todayKey) return;
+    if (dateKey === todayKey && !includeToday) return;
+
+    // Exclude public/festival holidays.
+    if (holidayMap.has(dateKey)) return;
+
+    const date = new Date(`${dateKey}T00:00:00`);
+    const day = date.getDate();
+
+    // Exclude Sundays and second Saturdays.
+    if (
+      date.getDay() === 0 ||
+      (date.getDay() === 6 && Math.ceil(day / 7) === 2)
+    ) {
+      return;
+    }
+
+    employeeMap.forEach((employee) => {
+      // IMPORTANT: Never check attendance before joining.
+      if (dateKey < employee.onboardingDate) return;
+
+      // Exclude dates on/after the employee's inactivation date.
       if (
-        date.getDay() === 0 ||
-        (date.getDay() === 6 && Math.ceil(day / 7) === 2)
+        employee.status.trim().toLowerCase() === "inactive employee" &&
+        employee.inactivationDate
       ) {
-        return;
+        const inactiveDate = toDateKey(employee.inactivationDate);
+
+        if (inactiveDate && dateKey >= inactiveDate) return;
       }
 
-      employeeMap.forEach((employee) => {
-        // 1. Employee must currently exist in the Staff collection.
-        if (!staffRecords.some((staff) => staff.id === employee.id)) {
-          return;
-        }
+      const key = `${employee.id}_${dateKey}`;
+      const employeeRecords = attendanceMap.get(key) || [];
 
-        // 2. If inactive, exclude the inactivation date and all later dates.
-        if (
-          employee.status?.trim().toLowerCase() === "inactive employee" &&
-          employee.inactivationDate
-        ) {
-          const inactiveDateKey = toDateKey(employee.inactivationDate);
+      // Exclude leave and employee-specific holiday records.
+      const hasLeaveOrHoliday = employeeRecords.some(
+        (record) =>
+          record.holidayName ||
+          record.leaveType ||
+          record.dailyLeaveType
+      );
 
-          if (inactiveDateKey && dateKey >= inactiveDateKey) {
-            return;
-          }
-        }
+      if (hasLeaveOrHoliday) return;
 
-        // 3. Continue existing attendance checks.
-        const key = `${employee.id}_${dateKey}`;
-        const employeeRecords = attendanceMap.get(key) || [];
+      // If any attendance punch exists, do not flag the day.
+      const hasAnyPunch = employeeRecords.some(
+        (record) =>
+          !isMissingTime(record.inTime) ||
+          !isMissingTime(record.outTime)
+      );
 
-        // Exclude holidays or leave records for this employee/date.
-        if (
-          employeeRecords.some(
-            (record) =>
-              record.holidayName || record.leaveType || record.dailyLeaveType,
-          )
-        ) {
-          return;
-        }
+      if (hasAnyPunch) return;
 
-        // Skip employees who have at least one punch.
-        const hasAnyPunch = employeeRecords.some(
-          (record) =>
-            !isMissingTime(record.inTime) || !isMissingTime(record.outTime),
-        );
-
-        if (hasAnyPunch) return;
-
-        missing.push({
-          ...(employeeRecords[0] || {}),
-          id: employee.id,
-          name: employee.name,
-          date: dateKey,
-          day: date.toLocaleDateString("en-US", { weekday: "long" }),
-          inTime: null,
-          outTime: null,
-          missingAttendance: true,
-        });
+      missing.push({
+        ...(employeeRecords[0] || {}),
+        id: employee.id,
+        name: employee.name,
+        date: dateKey,
+        day: date.toLocaleDateString("en-US", {
+          weekday: "long",
+        }),
+        inTime: null,
+        outTime: null,
+        missingAttendance: true,
       });
     });
+  });
 
-    return missing;
-  }, [
-    records,
-    festivalHolidays,
-    staffRecords,
-    selectedMonth,
-    selectedYear,
-    selectedDate,
-    includeToday,
-  ]);
+  return missing;
+}, [
+  records,
+  festivalHolidays,
+  staffRecords,
+  selectedMonth,
+  selectedYear,
+  selectedDate,
+  includeToday,
+]);
+
 
   // --- Filtering Logic (Search + Month + Year + DatePicker + Punch Filter) ---
   const filteredRecords = useMemo(() => {
