@@ -13,6 +13,7 @@ const AttendanceSchema = new mongoose.Schema({
   lunchIn: { type: String },
   lunchOut: { type: String },
   outTime: { type: String },
+  systemOutTime: { type: String },
   permissionType: { type: String }, 
   hours: { type: String, default: '' },  
   dailyLeaveType: { type: String ,default:null},

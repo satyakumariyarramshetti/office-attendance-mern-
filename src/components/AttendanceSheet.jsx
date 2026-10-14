@@ -708,6 +708,7 @@ const AttendanceSheet = () => {
         "Lunch Out": isHoliday ? "—" : record.lunchOut || "—",
         "Lunch In": isHoliday ? "—" : record.lunchIn || "—",
         "Out Time": isHoliday ? "—" : record.outTime || "—",
+        "System Out Time": isHoliday ? "—" : record.systemOutTime || "—",
         "Lunch Hours": isHoliday ? "—" : lunchHours,
         "Working Hours": isHoliday ? "—" : workingHours,
         "Gross Hours": isHoliday
@@ -796,6 +797,7 @@ const AttendanceSheet = () => {
       "Lunch Out",
       "Lunch In",
       "Out Time",
+      "System Out Time",
       "Lunch Hours",
       "Working Hours",
       "Gross Hours",
@@ -953,6 +955,7 @@ const AttendanceSheet = () => {
         "Lunch Out": isHoliday ? "—" : record.lunchOut || "—",
         "Lunch In": isHoliday ? "—" : record.lunchIn || "—",
         "Out Time": isHoliday ? "—" : record.outTime || "—",
+        "System Out Time": isHoliday ? "—" : record.systemOutTime || "—",
         "Lunch Hours": isHoliday ? "—" : lunchHours,
         "Working Hours": isHoliday ? "—" : workingHours,
         "Gross Hours": isHoliday ? "—" : grossHours,
@@ -1333,6 +1336,7 @@ const AttendanceSheet = () => {
                   <th>Lunch Out</th>
                   <th>Lunch In</th>
                   <th>Out Time</th>
+                  <th>System Out</th>
                   <th>Lunch Hrs</th>
                   <th>Work Hrs</th>
                   <th>Gross Hrs</th>
@@ -1377,6 +1381,7 @@ const AttendanceSheet = () => {
                         <td>{isHoliday ? "—" : record.lunchOut || "—"}</td>
                         <td>{isHoliday ? "—" : record.lunchIn || "—"}</td>
                         <td>{isHoliday ? "—" : record.outTime || "—"}</td>
+                        <td>{isHoliday ? "—" : record.systemOutTime || "—"}</td>
                         <td>{isHoliday ? "—" : lunchH}</td>
                         <td>{isHoliday ? "—" : workH}</td>
                         <td>{isHoliday ? "—" : grossH}</td>

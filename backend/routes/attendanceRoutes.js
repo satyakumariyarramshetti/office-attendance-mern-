@@ -275,6 +275,7 @@ router.post('/save', async (req, res) => {
   permissionType, hours, dailyLeaveType,siteComments, leaveType, location,
   inTimeMethod,
   systemInTime,
+  systemOutTime,
   delayReason,
   halfDayReason
 } = req.body;
@@ -343,6 +344,7 @@ const isOutTimeCard =
       if (typeof lunchOut !== 'undefined') attendance.lunchOut = lunchOut;
       if (typeof lunchIn !== 'undefined') attendance.lunchIn = lunchIn;
       if (typeof outTime !== 'undefined') attendance.outTime = outTime;
+      if (typeof systemOutTime !== 'undefined') attendance.systemOutTime = systemOutTime;
       if (typeof day !== 'undefined') attendance.day = day;
       if (typeof siteComments !== 'undefined') attendance.siteComments = siteComments;
       if (typeof delayReason !== 'undefined') {
@@ -439,6 +441,7 @@ const isOutTimeCard =
         lunchOut,
         lunchIn,
         outTime,
+        systemOutTime,
         permissionType: isPermissionCard ? (permissionType || null) : null,
         hours: isPermissionCard ? hours : undefined,
         dailyLeaveType: isOutTimeCard
@@ -972,4 +975,3 @@ router.get('/monthly-summary/:id', async (req, res) => {
 
 
 module.exports = router;
-

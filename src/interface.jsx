@@ -72,7 +72,7 @@ const Interface = () => {
     id: '', name: '', date: '', day: '',
     inTime: '',
     systemInTime: '',
-    lunchIn: '', lunchOut: '', outTime: '',
+    lunchIn: '', lunchOut: '', outTime: '', systemOutTime: '',
     permissionType: '',
 
 
@@ -263,11 +263,13 @@ const Interface = () => {
         setInTimeMethod('live'); // Mark as live time
       }
       const newSystemInTime = attendanceData.systemInTime || '';
+      const newSystemOutTime = attendanceData.systemOutTime || '';
 
       setFormData(prev => ({
         ...prev, id: fullId, name: staffName, date: date, day: getCurrentDay(date),
         inTime: newInTime, systemInTime: newSystemInTime,
         outTime: attendanceData.outTime || (context === 'outTime' ? getCurrentTime() : ''),
+        systemOutTime: newSystemOutTime,
         lunchOut: newLunchOut, lunchIn: newLunchIn,
         permissionType: attendanceData.permissionType || '',
 
@@ -679,6 +681,7 @@ const Interface = () => {
       }
 
       payload.outTime = formData.outTime;
+      payload.systemOutTime = new Date().toTimeString().slice(0, 5);
       payload.dailyLeaveType = formData.dailyLeaveType;
       payload.siteComments = formData.siteComments;
       submitData(payload, 'outTime');
@@ -1214,4 +1217,3 @@ const Interface = () => {
 };
 
 export default Interface;
-
