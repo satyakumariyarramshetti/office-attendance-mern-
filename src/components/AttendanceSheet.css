@@ -1,270 +1,191 @@
+/* =========================================================
+   ADMIN CONTAINER
+========================================================= */
+
 .admin-container {
-  background-color: #fff;
+  width: 100%;
+  box-sizing: border-box;
   padding: 25px;
+  background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  font-family: 'Inter', sans-serif;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+  font-family: "Inter", sans-serif;
 }
 
 .admin-title {
+  margin: 0 0 30px;
   text-align: center;
   color: #1e293b;
-  font-weight: 800;
-  margin-bottom: 30px;
   font-size: 24px;
+  font-weight: 800;
 }
 
-/* Filter toolbar */
+
+/* =========================================================
+   ATTENDANCE FILTER TOOLBAR
+========================================================= */
+
 .attendance-toolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 22px;
   padding: 20px;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+
+  background: linear-gradient(
+    135deg,
+    #f8fafc 0%,
+    #f1f5f9 100%
+  );
+
   border: 1px solid #dbe4ef;
   border-radius: 14px;
+
   box-shadow: 0 5px 18px rgba(15, 23, 42, 0.06);
 }
 
+
+/* =========================================================
+   FILTER GRID
+========================================================= */
+
 .filter-group {
+  width: 100%;
   display: grid;
+
+  /*
+    4 equal columns on desktop.
+    Every filter gets exactly the same width.
+  */
   grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  gap: 16px;
   align-items: end;
-  gap: 14px;
 }
+
+
+/* =========================================================
+   FILTER BOX
+========================================================= */
 
 .select-box,
 .search-box-wrapper {
+  width: 100%;
   min-width: 0;
+
   display: flex;
   flex-direction: column;
+
   gap: 7px;
+
+  box-sizing: border-box;
 }
+
+
+/* Filter labels */
 
 .select-box label,
 .search-box-wrapper label {
+  display: block;
+
+  min-height: 15px;
   margin: 0;
+
+  color: #52637a;
+
   font-size: 10px;
   font-weight: 700;
-  color: #52637a;
-  text-transform: uppercase;
+
   letter-spacing: 0.075em;
+  text-transform: uppercase;
 }
+
+
+/* =========================================================
+   ALL INPUTS / SELECTS
+========================================================= */
 
 .attendance-toolbar select,
-.attendance-toolbar input {
+.attendance-toolbar input[type="text"],
+.attendance-toolbar input[type="date"],
+.attendance-toolbar input[type="number"] {
   width: 100%;
   min-width: 0;
-  min-height: 44px;
-  padding: 10px 12px;
+  height: 44px;
+
+  box-sizing: border-box;
+
+  padding: 0 12px;
+
   color: #1e293b;
-  background-color: #fff;
+  background: #ffffff;
+
   border: 1px solid #cbd5e1;
   border-radius: 9px;
-  font-size: 13px;
+
   outline: none;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+
+  font-family: inherit;
+  font-size: 13px;
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background-color 0.18s ease;
 }
+
+
+/* Hover */
+
+.attendance-toolbar select:hover,
+.attendance-toolbar input[type="text"]:hover,
+.attendance-toolbar input[type="date"]:hover,
+.attendance-toolbar input[type="number"]:hover {
+  border-color: #94a3b8;
+}
+
+
+/* Focus */
 
 .attendance-toolbar select:focus,
-.attendance-toolbar input:focus {
+.attendance-toolbar input[type="text"]:focus,
+.attendance-toolbar input[type="date"]:focus,
+.attendance-toolbar input[type="number"]:focus {
   border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.14);
+
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.14);
 }
+
+
+/* =========================================================
+   INCLUDE TODAY
+========================================================= */
 
 .include-today-filter {
-  min-height: 44px;
-  align-self: end;
-  padding: 0 12px;
-  background: #eff6ff;
-  border-color: #c7dcf7;
-  border-radius: 9px;
-}
-
-.search-box-wrapper {
-  width: min(100%, 480px);
-  justify-self: end;
-}
-
-.search-box-wrapper input {
-  background-color: #fff;
-}
-
-.date-input-wrapper {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 7px;
-}
-
-.date-input-wrapper input {
-  flex: 1;
-  min-width: 0;
-}
-
-.clear-btn {
-  flex: 0 0 26px;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  color: #fff;
-  background: #ef4444;
-  border: none;
-  border-radius: 50%;
-  font-size: 10px;
-  cursor: pointer;
-}
-
-/* Table Design */
-.scrollable-table-container {
-  max-height: 550px;
-  overflow: auto;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-}
-
-.admin-table {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
+  height: 44px;
 
-.admin-table thead th {
-  position: sticky;
-  top: 0;
-  background: #1e293b;
-  color: white;
-  padding: 12px 15px;
-  font-weight: 600;
-  white-space: nowrap;
-  z-index: 10;
-}
-
-.admin-table td {
-  padding: 12px 15px;
-  border-bottom: 1px solid #f1f5f9;
-  text-align: center;
-  color: #334155;
-}
-
-.admin-table tbody tr:nth-child(even) { background: #f8fafc; }
-.admin-table tbody tr:hover { background: #eff6ff; }
-
-.comment-cell {
-    max-width: 200px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Row Highlights */
-.lop-leave-row td {
-  background-color: #fff1f2 !important;
-  color: #be123c !important;
-  font-weight: 600;
-}
-
-/* Footer Actions */
-.export-actions {
-  margin-top: 25px;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.btn-excel {
-  background: #10b981;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.btn-excel:hover { background: #059669; }
-
-.status-msg { text-align: center; padding: 20px; color: #64748b; }
-.status-msg.error { color: #ef4444; }
-
-@media (max-width: 900px) {
-  .filter-group {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 560px) {
-  .attendance-toolbar {
-    padding: 15px;
-  }
-
-  .filter-group {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
-  }
-
-  .search-box-wrapper {
-    width: 100%;
-  }
-}
-
-
-
-/* Holiday row highlight */
-.holiday-row {
-  background-color: #fff0f0 !important; /* Light red/pink background */
-  font-weight: 500;
-}
-
-.holiday-text {
-  color: #d9534f; /* Red color for holiday name */
-  font-weight: bold;
-}
-
-/* Modal styles */
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex; justify-content: center; align-items: center;
-  z-index: 1000;
-}
-.holiday-modal {
-  background: white; padding: 20px; border-radius: 8px;
-  width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-
-
-.holiday-row td {
-  color: #94a3b8; /* Light gray for the dashes so the holiday name stands out */
-}
-
-.holiday-row .holiday-text, 
-.holiday-row td:nth-child(1), 
-.holiday-row td:nth-child(2), 
-.holiday-row td:nth-child(3), 
-.holiday-row td:nth-child(4) {
-  color: #1e293b; /* Keep ID, Name, Date, Day, and Holiday Name dark */
-}
-
-
-/* Include Today checkbox */
-.include-today-filter {
-  display: inline-flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 6px;
-  padding: 0 12px;
-  min-height: 44px;
-  width: auto;
-  white-space: nowrap;
-  background: #f0f7ff;
-  border: 1px solid #cbdff7;
-  border-radius: 9px;
-  cursor: pointer;
   box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 0 12px;
+
+  background: #eff6ff;
+
+  border: 1px solid #c7dcf7;
+  border-radius: 9px;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .include-today-filter:hover {
@@ -272,64 +193,762 @@
   border-color: #3b82f6;
 }
 
-/* Override the global attendance-toolbar input styles */
-.attendance-toolbar .include-today-filter input[type="checkbox"] {
+
+/* Checkbox */
+
+.attendance-toolbar
+.include-today-filter
+input[type="checkbox"] {
   appearance: auto;
   -webkit-appearance: checkbox;
+
   width: 15px;
   height: 15px;
   min-width: 15px;
+
   margin: 0;
   padding: 0;
+
+  flex: 0 0 15px;
+
   border: none;
   box-shadow: none;
+
   accent-color: #2563eb;
-  flex: 0 0 15px;
+
   cursor: pointer;
 }
 
-.attendance-toolbar .include-today-filter input[type="checkbox"]:focus {
+
+/* Checkbox focus */
+
+.attendance-toolbar
+.include-today-filter
+input[type="checkbox"]:focus {
+  outline: none;
   box-shadow: none;
 }
 
-/* Override the uppercase filter-label styles */
-.attendance-toolbar .include-today-filter label {
+
+/* Include Today label */
+
+.attendance-toolbar
+.include-today-filter
+label {
   margin: 0;
   padding: 0;
+
   color: #1e3a5f;
+
   font-size: 12px;
   font-weight: 600;
+
   line-height: 1.2;
   letter-spacing: normal;
+
   text-transform: none;
+
   cursor: pointer;
 }
 
+
+/* =========================================================
+   GROSS HOURS
+========================================================= */
+
+.gross-hours-control {
+  width: 100%;
+  height: 44px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+}
+
+
+/* Gross hours input */
+
+.gross-hours-control input {
+  flex: 1 1 auto;
+
+  width: auto !important;
+  min-width: 0;
+
+  height: 44px !important;
+}
+
+
+/* Gross hours On/Off button */
+
+.gross-toggle {
+  flex: 0 0 52px;
+
+  height: 44px;
+
+  padding: 0;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #64748b;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.gross-toggle:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+
+/* Active */
+
+.gross-toggle.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.gross-toggle.active:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+
+/* =========================================================
+   DATE INPUT
+========================================================= */
+
+.date-input-wrapper {
+  width: 100%;
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+}
+
+.date-input-wrapper input {
+  flex: 1 1 auto;
+
+  width: auto !important;
+  min-width: 0;
+}
+
+
+/* Clear date button */
+
+.clear-btn {
+  flex: 0 0 28px;
+
+  width: 28px;
+  height: 28px;
+
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 50%;
+
+  background: #ef4444;
+  color: #ffffff;
+
+  font-size: 16px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.clear-btn:hover {
+  background: #dc2626;
+  transform: scale(1.05);
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+.search-box-wrapper {
+  width: 100%;
+  justify-self: stretch;
+}
+
+.search-box-wrapper input {
+  background: #ffffff;
+}
+
+
+/* =========================================================
+   RESET FILTERS
+========================================================= */
+
+.reset-filters-btn {
+  width: 100%;
+  height: 44px;
+
+  box-sizing: border-box;
+
+  margin: 0;
+  padding: 0 18px;
+
+  border: 1px solid #155eef;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #155eef;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.reset-filters-btn:hover {
+  background: #155eef;
+  color: #ffffff;
+
+  box-shadow:
+    0 4px 10px rgba(21, 94, 239, 0.18);
+}
+
+
+/* =========================================================
+   FILTER RESULT COUNT
+========================================================= */
+
+.filter-result-count {
+  width: 100%;
+  box-sizing: border-box;
+
+  margin: 12px 0 16px;
+  padding: 11px 16px;
+
+  background: #f3f7fc;
+
+  border: 1px solid #d6e2f0;
+  border-radius: 9px;
+
+  color: #243247;
+
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.filter-result-count strong {
+  margin-right: 4px;
+
+  color: #155eef;
+
+  font-size: 18px;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   WORKING DAYS SUMMARY
+========================================================= */
+
+.working-days-summary {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  gap: 14px;
+
+  margin: 18px 0;
+}
+
+
+/* Summary card */
+
+.summary-card {
+  min-width: 0;
+
+  padding: 16px 18px;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border: 1px solid #dbe5f1;
+  border-radius: 10px;
+
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.05);
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 5px 14px rgba(15, 23, 42, 0.08);
+}
+
+.summary-card span {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #52657d;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.summary-card strong {
+  color: #1d4ed8;
+
+  font-size: 25px;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.scrollable-table-container {
+  width: 100%;
+  max-height: 550px;
+
+  overflow: auto;
+
+  box-sizing: border-box;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+}
+
+
+/* Table */
+
+.admin-table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  font-size: 13px;
+}
+
+
+/* Table header */
+
+.admin-table thead th {
+  position: sticky;
+  top: 0;
+
+  z-index: 10;
+
+  padding: 12px 15px;
+
+  background: #1e293b;
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  white-space: nowrap;
+
+  text-align: center;
+}
+
+
+/* Table cells */
+
+.admin-table td {
+  padding: 12px 15px;
+
+  border-bottom: 1px solid #f1f5f9;
+
+  color: #334155;
+
+  text-align: center;
+}
+
+
+/* Alternating rows */
+
+.admin-table tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+
+/* Hover */
+
+.admin-table tbody tr:hover {
+  background: #eff6ff;
+}
+
+
+/* Comments */
+
+.comment-cell {
+  max-width: 200px;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   LOP / LEAVE ROW
+========================================================= */
+
+.lop-leave-row td {
+  background-color: #fff1f2 !important;
+
+  color: #be123c !important;
+
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   HOLIDAY ROW
+========================================================= */
+
+.holiday-row {
+  background-color: #fff0f0 !important;
+
+  font-weight: 500;
+}
+
+
+/* Holiday row normal cells */
+
+.holiday-row td {
+  color: #94a3b8;
+}
+
+
+/* Keep important holiday information dark */
+
+.holiday-row .holiday-text,
+.holiday-row td:nth-child(1),
+.holiday-row td:nth-child(2),
+.holiday-row td:nth-child(3),
+.holiday-row td:nth-child(4) {
+  color: #1e293b;
+}
+
+
+/* Holiday name */
+
+.holiday-text {
+  color: #d9534f;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   EXPORT ACTIONS
+========================================================= */
+
+.export-actions {
+  display: flex;
+  justify-content: flex-end;
+
+  margin-top: 25px;
+}
+
+
+/* Excel button */
+
+.btn-excel {
+  padding: 10px 20px;
+
+  border: none;
+  border-radius: 7px;
+
+  background: #10b981;
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.btn-excel:hover {
+  background: #059669;
+
+  transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   STATUS MESSAGES
+========================================================= */
+
+.status-msg {
+  padding: 20px;
+
+  color: #64748b;
+
+  text-align: center;
+}
+
+.status-msg.error {
+  color: #ef4444;
+}
+
+
+/* =========================================================
+   HOLIDAY MODAL
+========================================================= */
+
+.modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  box-sizing: border-box;
+
+  background: rgba(15, 23, 42, 0.55);
+
+  backdrop-filter: blur(3px);
+}
+
+
+/* Modal */
+
+.holiday-modal {
+  width: 100%;
+  max-width: 420px;
+
+  box-sizing: border-box;
+
+  padding: 25px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+
+  box-shadow:
+    0 20px 50px rgba(15, 23, 42, 0.18);
+
+  animation: holidayModalIn 0.2s ease-out;
+}
+
+
+/* Modal title */
+
+.holiday-modal h4 {
+  margin: 0 0 22px;
+
+  color: #1e293b;
+
+  font-size: 19px;
+  font-weight: 800;
+}
+
+
+/* Modal labels */
+
+.holiday-modal label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #475569;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+/* Modal inputs */
+
+.holiday-modal input[type="date"],
+.holiday-modal input[type="text"] {
+  width: 100%;
+  height: 44px;
+
+  box-sizing: border-box;
+
+  padding: 0 12px;
+
+  background: #ffffff;
+  color: #1e293b;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+
+  outline: none;
+
+  font-family: inherit;
+  font-size: 13px;
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.holiday-modal input[type="date"]:focus,
+.holiday-modal input[type="text"]:focus {
+  border-color: #2563eb;
+
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+
+/* Modal buttons */
+
+.holiday-modal .btn {
+  min-height: 40px;
+
+  padding: 0 16px;
+
+  border-radius: 7px;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+
+/* Modal animation */
+
+@keyframes holidayModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* =========================================================
+   DESKTOP LARGE SCREEN
+========================================================= */
+
+@media (min-width: 1200px) {
+  .filter-group {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+  .filter-group {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+
+/* =========================================================
+   SMALL TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+  .filter-group {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .working-days-summary {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    margin: 18px 0;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 560px) {
+  .admin-container {
+    padding: 15px;
+  }
+
+  .attendance-toolbar {
+    padding: 15px;
+  }
+
+  .filter-group {
+    grid-template-columns: 1fr;
+
+    gap: 12px;
+  }
+
+  .working-days-summary {
+    grid-template-columns: 1fr;
+
+    gap: 10px;
   }
 
   .summary-card {
-    flex: 1;
-    min-width: 150px;
-    padding: 16px 18px;
-    background: #fff;
-    border: 1px solid #dbe5f1;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+    width: 100%;
   }
 
-  .summary-card span {
-    display: block;
-    color: #52657d;
-    font-size: 13px;
-    margin-bottom: 8px;
+  .search-box-wrapper {
+    width: 100%;
   }
 
-  .summary-card strong {
-    color: #1d4ed8;
-    font-size: 25px;
+  .reset-filters-btn {
+    width: 100%;
   }
+
+  .holiday-modal {
+    padding: 20px;
+  }
+}

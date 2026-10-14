@@ -776,9 +776,21 @@ const AttendanceSheet = () => {
   const exportPendingUpdatesToExcel = () => {
     // Use exactly the records currently displayed in the UI.
     // Do not apply any additional filters or generate new records here.
-    const sortedRecords = [...filteredRecords].sort(
-      (a, b) => new Date(a.date) - new Date(b.date),
-    );
+    const sortedRecords = [...filteredRecords].sort((a, b) => {
+      const employeeA = String(a.id || "").trim();
+      const employeeB = String(b.id || "").trim();
+
+      const employeeCompare = employeeA.localeCompare(employeeB, undefined, {
+        numeric: true,
+        sensitivity: "base",
+      });
+
+      if (employeeCompare !== 0) {
+        return employeeCompare;
+      }
+
+      return new Date(a.date) - new Date(b.date);
+    });
 
     if (sortedRecords.length === 0) {
       alert("No records match the currently applied filters.");
@@ -1105,6 +1117,20 @@ const AttendanceSheet = () => {
     return [...categories].sort((a, b) => a.localeCompare(b));
   }, [records]);
 
+  const handleResetFilters = () => {
+    const now = new Date();
+
+    setSelectedMonth(now.getMonth() + 1);
+    setSelectedYear(now.getFullYear());
+    setPunchFilter("all");
+    setIncludeToday(false);
+    setGrossHoursLimit("6");
+    setIsGrossHoursFilterActive(false);
+    setSelectedCategory("all");
+    setSelectedDate("");
+    setSearchTerm("");
+  };
+
   return (
     <div className="container admin-container mt-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -1161,6 +1187,7 @@ const AttendanceSheet = () => {
       {/* --- Filter Toolbar --- */}
       <div className="attendance-toolbar">
         <div className="filter-group">
+          {/* Month */}
           <div className="select-box">
             <label>Month</label>
             <select
@@ -1168,13 +1195,18 @@ const AttendanceSheet = () => {
               onChange={(e) => setSelectedMonth(e.target.value)}
             >
               <option value="">All Months</option>
+
               {Array.from({ length: 12 }, (_, i) => (
                 <option key={i + 1} value={i + 1}>
-                  {new Date(0, i).toLocaleString("default", { month: "long" })}
+                  {new Date(0, i).toLocaleString("default", {
+                    month: "long",
+                  })}
                 </option>
               ))}
             </select>
           </div>
+
+          {/* Year */}
           <div className="select-box">
             <label>Year</label>
             <select
@@ -1182,6 +1214,7 @@ const AttendanceSheet = () => {
               onChange={(e) => setSelectedYear(e.target.value)}
             >
               <option value="">All Years</option>
+
               {allYears.map((y) => (
                 <option key={y} value={y}>
                   {y}
@@ -1189,6 +1222,8 @@ const AttendanceSheet = () => {
               ))}
             </select>
           </div>
+
+          {/* Missing Attendance */}
           <div className="select-box">
             <label>Missing Attendance</label>
 
@@ -1204,6 +1239,7 @@ const AttendanceSheet = () => {
             </select>
           </div>
 
+          {/* Include Today */}
           <div className="include-today-filter">
             <input
               id="includeToday"
@@ -1211,13 +1247,15 @@ const AttendanceSheet = () => {
               checked={includeToday}
               onChange={(e) => setIncludeToday(e.target.checked)}
             />
+
             <label htmlFor="includeToday">Include Today</label>
           </div>
 
+          {/* Gross Hours */}
           <div className="select-box">
             <label>Gross Hours (Max)</label>
 
-            <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+            <div className="gross-hours-control">
               <input
                 type="number"
                 min="0"
@@ -1232,15 +1270,12 @@ const AttendanceSheet = () => {
                 }}
                 onChange={(e) => setGrossHoursLimit(e.target.value)}
                 placeholder="Enter hours"
-                style={{ flex: 1 }}
               />
 
               <button
                 type="button"
-                className={`btn btn-sm ${
-                  isGrossHoursFilterActive
-                    ? "btn-primary"
-                    : "btn-outline-secondary"
+                className={`gross-toggle ${
+                  isGrossHoursFilterActive ? "active" : ""
                 }`}
                 onClick={() =>
                   setIsGrossHoursFilterActive((previous) => !previous)
@@ -1251,6 +1286,7 @@ const AttendanceSheet = () => {
             </div>
           </div>
 
+          {/* Category */}
           <div className="select-box">
             <label>Category</label>
 
@@ -1269,37 +1305,55 @@ const AttendanceSheet = () => {
             </select>
           </div>
 
+          {/* Specific Date */}
           <div className="select-box">
             <label>Specific Date</label>
+
             <div className="date-input-wrapper">
               <input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
               />
+
               {selectedDate && (
                 <button
+                  type="button"
                   className="clear-btn"
                   onClick={() => setSelectedDate("")}
                 >
-                  ✕
+                  ×
                 </button>
               )}
             </div>
           </div>
-        </div>
 
-        <div className="search-box-wrapper">
-          <label>Search Staff</label>
-          <input
-            type="text"
-            placeholder="Search by ID or Name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          {/* Search */}
+          <div className="search-box-wrapper">
+            <label>Search Staff</label>
+
+            <input
+              type="text"
+              placeholder="Search by ID or Name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          {/* Reset */}
+          <button
+            type="button"
+            className="reset-filters-btn"
+            onClick={handleResetFilters}
+          >
+            ↻ Reset Filters
+          </button>
         </div>
       </div>
 
+      <div className="filter-result-count">
+        <strong>{filteredRecords.length}</strong> records found
+      </div>
       <div className="working-days-summary">
         <div className="summary-card">
           <span>Calendar Days</span>
