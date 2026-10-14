@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import "./MonthlyDetails.css";
-
+import { calculateWorkingDays } from "../utils/workingDays";
 // ▼▼▼▼▼ NEW: Helper function for the LOP calculation logic ▼▼▼▼▼
 const calculateLateMarkLOP = (lateMarks) => {
   // The first 5 late marks are free
@@ -27,6 +27,7 @@ const MonthlyDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [festivalHolidays, setFestivalHolidays] = useState([]);
 
   const HOLIDAY_NAMES = [
     "Republic Day",
@@ -41,20 +42,25 @@ const MonthlyDetails = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       setLoading(true);
+
       try {
-        const [staffRes, attendanceRes] = await Promise.all([
+        const [staffRes, attendanceRes, holidayRes] = await Promise.all([
           fetch(`${API_BASE}/api/staffs`),
           fetch(`${API_BASE}/api/attendance/all`),
+          fetch(`${API_BASE}/api/attendance/holidays/all`),
         ]);
 
-        if (!staffRes.ok || !attendanceRes.ok)
+        if (!staffRes.ok || !attendanceRes.ok || !holidayRes.ok) {
           throw new Error("Failed to fetch initial data.");
+        }
 
         const staffData = await staffRes.json();
         const attendanceData = await attendanceRes.json();
+        const holidayData = await holidayRes.json();
 
         setStaff(staffData);
         setRecords(attendanceData);
+        setFestivalHolidays(holidayData);
       } catch (err) {
         setError("Failed to load data. Please check the server connection.");
         console.error(err);
@@ -78,6 +84,17 @@ const MonthlyDetails = () => {
   const processMonthlyData = () => {
     const year = selectedDate.getFullYear();
     const month = selectedDate.getMonth();
+
+    const workingDaysSummary = calculateWorkingDays(
+      records,
+      festivalHolidays,
+      month + 1,
+      year,
+    );
+
+    const totalWorkingDays = workingDaysSummary.workingDays;
+
+    const workingDaysTillDate = workingDaysSummary.workingDaysTillDate;
 
     // ప్రస్తుత వ్యూ లో ఉన్న నెల/సంవత్సరం విలువ (పోలిక కోసం)
     const currentViewValue = year * 12 + month;
@@ -142,12 +159,24 @@ const MonthlyDetails = () => {
         return {
           employee_id: employee.id,
           employee_name: employee.name,
+
           no_of_days: getDaysInMonth(year, month),
-          no_of_working_days: employeeAttendance
+
+          // NEW: fixed total working days for the month
+          total_working_days: totalWorkingDays,
+
+          // NEW: working days possible until today
+          working_days_till_date: workingDaysTillDate,
+
+          // EXISTING: employee's actual attendance working days
+          employee_working_days: employeeAttendance
             ? employeeAttendance.workingDays
             : 0,
+
           no_of_leaves: employeeAttendance ? employeeAttendance.leaves : 0,
+
           monthly_late_marks: lateMarks,
+
           late_marks_lop: lopFromLateMarks,
         };
       });
@@ -168,10 +197,11 @@ const MonthlyDetails = () => {
       "Employee ID": report.employee_id,
       "Employee Name": report.employee_name,
       "Days in Month": report.no_of_days,
-      "Working Days": report.no_of_working_days,
+      "Total Working Days": report.total_working_days,
+      "Working Days Till Date": report.working_days_till_date,
+      "Employee Working Days": report.employee_working_days,
       Leaves: report.no_of_leaves,
       "Monthly Late Marks Count": report.monthly_late_marks,
-      // ▼▼▼▼▼ NEW: Add the LOP column to the Excel export ▼▼▼▼▼
       "Late Marks LOP": report.late_marks_lop,
     }));
 
@@ -218,7 +248,9 @@ const MonthlyDetails = () => {
                     <th>Employee ID</th>
                     <th>Employee Name</th>
                     <th>Days in Month</th>
-                    <th>Working Days</th>
+                    <th>Total Working Days</th>
+                    <th>Working Days Till Date</th>
+                    <th>Employee Working Days</th>
                     <th>Leaves</th>
                     <th>Monthly Late Marks</th>
                     {/* ▼▼▼▼▼ NEW: Add the new table header for LOP ▼▼▼▼▼ */}
@@ -232,7 +264,9 @@ const MonthlyDetails = () => {
                         <td>{report.employee_id}</td>
                         <td>{report.employee_name}</td>
                         <td>{report.no_of_days}</td>
-                        <td>{report.no_of_working_days}</td>
+                        <td>{report.total_working_days}</td>
+                        <td>{report.working_days_till_date}</td>
+                        <td>{report.employee_working_days}</td>
                         <td>{report.no_of_leaves}</td>
                         <td>{report.monthly_late_marks}</td>
                         {/* ▼▼▼▼▼ NEW: Display the calculated LOP data ▼▼▼▼▼ */}
@@ -242,7 +276,7 @@ const MonthlyDetails = () => {
                   ) : (
                     <tr>
                       {/* ▼▼▼▼▼ NEW: Adjust colspan for the new column ▼▼▼▼▼ */}
-                      <td colSpan="7">No staff members found.</td>
+                      <td colSpan="9">No staff members found.</td>
                     </tr>
                   )}
                 </tbody>
