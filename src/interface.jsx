@@ -681,7 +681,13 @@ const Interface = () => {
       }
 
       payload.outTime = formData.outTime;
-      payload.systemOutTime = new Date().toTimeString().slice(0, 5);
+      const systemOutNow = new Date();
+      const systemOutDate = [
+        systemOutNow.getFullYear(),
+        String(systemOutNow.getMonth() + 1).padStart(2, '0'),
+        String(systemOutNow.getDate()).padStart(2, '0'),
+      ].join('-');
+      payload.systemOutTime = `${systemOutDate} ${systemOutNow.toTimeString().slice(0, 5)}`;
       payload.dailyLeaveType = formData.dailyLeaveType;
       payload.siteComments = formData.siteComments;
       submitData(payload, 'outTime');
