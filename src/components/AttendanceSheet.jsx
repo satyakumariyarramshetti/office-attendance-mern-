@@ -177,6 +177,15 @@ const AttendanceSheet = () => {
       normalizedValue === "-"
     );
   };
+  const isNoCategory = (record) => {
+    const leaveType = String(record.leaveType ?? "")
+      .trim()
+      .toUpperCase();
+
+    const emptyValues = ["", "N/A", "NA", "-", "—", "NONE", "NULL"];
+
+    return emptyValues.includes(leaveType);
+  };
 
   // Calculate the selected month's calendar and working days.
   const workingDaysSummary = useMemo(() => {
@@ -408,7 +417,7 @@ const AttendanceSheet = () => {
         // Exclude leave and employee-specific holiday records.
         const hasLeaveOrHoliday = employeeRecords.some(
           (record) =>
-            record.holidayName || record.leaveType || record.dailyLeaveType,
+            record.holidayName || record.leaveType ,
         );
 
         if (hasLeaveOrHoliday) return;
@@ -488,15 +497,14 @@ const AttendanceSheet = () => {
         .includes(term);
 
       // Category: include leaveType and dailyLeaveType
-      const leaveTypeValue = String(
-        record.leaveType || record.dailyLeaveType || "",
-      ).trim();
+      // Category filter = ONLY leaveType
+      const leaveTypeValue = String(record.leaveType ?? "").trim();
 
       const categoryMatch =
         selectedCategory === "all"
           ? true
           : selectedCategory === "N/A"
-            ? !leaveTypeValue && !record.holidayName
+            ? isNoCategory(record)
             : leaveTypeValue === selectedCategory;
 
       // Gross Hours
@@ -540,7 +548,7 @@ const AttendanceSheet = () => {
       if (punchFilter !== "all") {
         const isHoliday = !!record.holidayName;
 
-        const isLeave = !!record.leaveType || !!record.dailyLeaveType;
+        const isLeave = !!record.leaveType ;
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -551,15 +559,15 @@ const AttendanceSheet = () => {
         const isToday = recordDate.getTime() === today.getTime();
 
         if (punchFilter === "missing-day") {
-          // Include generated full-day missing records.
-          // Also include actual records that have missing In or Out,
-          // so the combined report can show all attendance exceptions.
+          const todayAllowed = includeToday || !isToday;
+
           punchMatch =
-            !!record.missingAttendance ||
-            (!isHoliday &&
-              !isLeave &&
-              (isMissingTime(record.inTime) || isMissingTime(record.outTime)) &&
-              (includeToday || !isToday));
+            todayAllowed &&
+            (!!record.missingAttendance ||
+              (!isHoliday &&
+                !isLeave &&
+                (isMissingTime(record.inTime) ||
+                  isMissingTime(record.outTime))));
         } else if (isHoliday || isLeave) {
           punchMatch = false;
         } else {
@@ -590,22 +598,44 @@ const AttendanceSheet = () => {
       const attendanceGroupActive = punchFilter !== "all";
       const attendanceGroupMatch = attendanceGroupActive && punchMatch;
 
-      // Group 2: Gross Hours and Category
-      const grossCategoryGroupActive =
-        isGrossHoursFilterActive || selectedCategory !== "all";
+      // Group 2: Gross Hours + Category.
+      // When both are selected, BOTH conditions must match.
+      // -------------------------------
+      // FILTER GROUPS
+      // -------------------------------
 
-      const grossCategoryGroupMatch =
-        grossCategoryGroupActive && grossHoursMatch && categoryMatch;
+      const grossFilterActive =
+        isGrossHoursFilterActive && grossHoursLimit.trim() !== "";
 
-      // OR logic: include a record matching either active group.
+      const categoryFilterActive = selectedCategory !== "all";
+
+      // Attendance filter
+
+      // Gross + Category are AND conditions
+      let grossCategoryMatch = true;
+
+      if (grossFilterActive) {
+        grossCategoryMatch = grossCategoryMatch && grossHoursMatch;
+      }
+
+      if (categoryFilterActive) {
+        grossCategoryMatch = grossCategoryMatch && categoryMatch;
+      }
+
+      // Final filter
       let combinedFilterMatch = true;
 
-      if (attendanceGroupActive && grossCategoryGroupActive) {
-        combinedFilterMatch = attendanceGroupMatch || grossCategoryGroupMatch;
+      // If Attendance filter is selected AND Gross/Category filters
+      // are selected, preserve OR between the two groups.
+      if (
+        attendanceGroupActive &&
+        (grossFilterActive || categoryFilterActive)
+      ) {
+        combinedFilterMatch = attendanceGroupMatch || grossCategoryMatch;
       } else if (attendanceGroupActive) {
         combinedFilterMatch = attendanceGroupMatch;
-      } else if (grossCategoryGroupActive) {
-        combinedFilterMatch = grossCategoryGroupMatch;
+      } else if (grossFilterActive || categoryFilterActive) {
+        combinedFilterMatch = grossCategoryMatch;
       }
 
       return (
@@ -721,6 +751,315 @@ const AttendanceSheet = () => {
     XLSX.writeFile(
       wb,
       `Attendance_Report_${selectedMonth}_${selectedYear}.xlsx`,
+    );
+  };
+
+  const exportPendingUpdatesToExcel = () => {
+    // Use exactly the records currently displayed in the UI.
+    // Do not apply any additional filters or generate new records here.
+    const sortedRecords = [...filteredRecords].sort(
+      (a, b) => new Date(a.date) - new Date(b.date),
+    );
+
+    if (sortedRecords.length === 0) {
+      alert("No records match the currently applied filters.");
+      return;
+    }
+
+    const headers = [
+      "Employee ID",
+      "Employee Name",
+      "Date",
+      "Day",
+      "Pending Update",
+      "In Time",
+      "System In Time",
+      "Delay Reason",
+      "Lunch Out",
+      "Lunch In",
+      "Out Time",
+      "Lunch Hours",
+      "Working Hours",
+      "Gross Hours",
+      "Leave Type",
+      "Daily Leave Type",
+      "Site Comments",
+      "Permission",
+      "Hours",
+      "Category",
+      "Location",
+    ];
+
+    const getPendingUpdate = (record) => {
+      const pendingUpdates = [];
+
+      // 1. Missing In / Out / Both / Full-day attendance
+      if (punchFilter !== "all") {
+        const isHoliday = !!record.holidayName;
+        const isLeave = !!record.leaveType ;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const recordDate = new Date(record.date);
+        recordDate.setHours(0, 0, 0, 0);
+
+        const isToday = recordDate.getTime() === today.getTime();
+
+        if (!isHoliday && !isLeave) {
+          const missingIn = isMissingTime(record.inTime);
+          const missingOut = isMissingTime(record.outTime);
+
+          if (punchFilter === "in" && missingIn) {
+            pendingUpdates.push("Missed In Time");
+          }
+
+          if (
+            punchFilter === "out" &&
+            (includeToday || !isToday) &&
+            missingOut
+          ) {
+            pendingUpdates.push("Missed Out Time");
+          }
+
+          if (
+            punchFilter === "both" &&
+            (includeToday || !isToday) &&
+            (missingIn || missingOut)
+          ) {
+            if (missingIn && missingOut) {
+              pendingUpdates.push("Missed Both");
+            } else if (missingIn) {
+              pendingUpdates.push("Missed In Time");
+            } else if (missingOut) {
+              pendingUpdates.push("Missed Out Time");
+            }
+          }
+        }
+
+        if (
+          punchFilter === "missing-day" &&
+          (includeToday || !isToday) &&
+          (record.missingAttendance ||
+            (!isHoliday &&
+              !isLeave &&
+              (isMissingTime(record.inTime) || isMissingTime(record.outTime))))
+        ) {
+          pendingUpdates.push("Employee Missed Attendance");
+        }
+      }
+
+      // 2. Gross Hours
+      if (isGrossHoursFilterActive && grossHoursLimit.trim() !== "") {
+        const hasInTime = !isMissingTime(record.inTime);
+        const hasOutTime = !isMissingTime(record.outTime);
+
+        if (hasInTime && hasOutTime) {
+          const lunchHours = calculateTimeDifference(
+            record.lunchOut,
+            record.lunchIn,
+          );
+
+          const workingHours = calculateNetWorkingHours(
+            record.inTime,
+            record.outTime,
+            record.lunchOut,
+            record.lunchIn,
+          );
+
+          const grossHours = computeGrossHours(lunchHours, workingHours);
+
+          const [hours, minutes] = grossHours.split(":").map(Number);
+          const grossTotalMinutes = hours * 60 + minutes;
+          const grossLimitMinutes = Number(grossHoursLimit) * 60;
+
+          const grossHoursPassed =
+            Number.isFinite(grossLimitMinutes) &&
+            grossLimitMinutes >= 0 &&
+            grossTotalMinutes <= grossLimitMinutes;
+
+          if (grossHoursPassed) {
+            pendingUpdates.push(`Gross Hours (Max: ${grossHoursLimit})`);
+          }
+        }
+      }
+
+      // 3. Category
+      if (selectedCategory !== "all") {
+       const leaveTypeValue = String(record.leaveType ?? "").trim();
+        const categoryPassed =
+          selectedCategory === "N/A"
+            ? !leaveTypeValue && !record.holidayName
+            : leaveTypeValue === selectedCategory;
+
+        if (categoryPassed) {
+          pendingUpdates.push(`Category: ${selectedCategory}`);
+        }
+      }
+
+      return pendingUpdates.length ? pendingUpdates.join(", ") : "—";
+    };
+
+    // Export the same fields and values displayed by the UI.
+    const rows = sortedRecords.map((record) => {
+      const isHoliday = !!record.holidayName;
+
+      const lunchHours = calculateTimeDifference(
+        record.lunchOut,
+        record.lunchIn,
+      );
+
+      const workingHours = calculateNetWorkingHours(
+        record.inTime,
+        record.outTime,
+        record.lunchOut,
+        record.lunchIn,
+      );
+
+      const grossHours = computeGrossHours(lunchHours, workingHours);
+
+      return {
+        "Employee ID": record.id || "",
+        "Employee Name": record.name || "",
+        Date: formatDate(record.date),
+        Day:
+          record.day ||
+          new Date(record.date).toLocaleDateString("en-US", {
+            weekday: "long",
+          }),
+        "Pending Update": getPendingUpdate(record),
+
+        "In Time": isHoliday ? "—" : record.inTime || "—",
+        "System In Time": isHoliday ? "—" : record.systemInTime || "—",
+        "Delay Reason": record.delayReason || "—",
+        "Lunch Out": isHoliday ? "—" : record.lunchOut || "—",
+        "Lunch In": isHoliday ? "—" : record.lunchIn || "—",
+        "Out Time": isHoliday ? "—" : record.outTime || "—",
+        "Lunch Hours": isHoliday ? "—" : lunchHours,
+        "Working Hours": isHoliday ? "—" : workingHours,
+        "Gross Hours": isHoliday ? "—" : grossHours,
+
+        "Leave Type": isHoliday
+          ? `Holiday: ${record.holidayName}`
+          : record.missingAttendance
+            ? "Employee Missed Attendance"
+            : getLeaveOrHoliday(record),
+
+        "Daily Leave Type": record.dailyLeaveType || "—",
+        "Site Comments": record.siteComments || "—",
+        Permission: record.permissionType || "—",
+        Hours: record.hours ?? "—",
+
+        Category: record.leaveType || "N/A",
+
+        Location: record.location || "N/A",
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(rows, {
+      header: headers,
+    });
+
+    // Column widths
+    worksheet["!cols"] = [
+      { wch: 15 },
+      { wch: 23 },
+      { wch: 14 },
+      { wch: 14 },
+      { wch: 35 },
+      { wch: 13 },
+      { wch: 16 },
+      { wch: 22 },
+      { wch: 13 },
+      { wch: 13 },
+      { wch: 13 },
+      { wch: 14 },
+      { wch: 16 },
+      { wch: 14 },
+      { wch: 30 },
+      { wch: 22 },
+      { wch: 30 },
+      { wch: 15 },
+      { wch: 12 },
+      { wch: 22 },
+      { wch: 18 },
+    ];
+
+    // Apply styling
+    const range = XLSX.utils.decode_range(worksheet["!ref"]);
+
+    for (let row = range.s.r; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const address = XLSX.utils.encode_cell({
+          r: row,
+          c: col,
+        });
+
+        if (!worksheet[address]) continue;
+
+        worksheet[address].s = {
+          font: {
+            name: "Aptos",
+            sz: 10,
+            bold: row === 0,
+            color: {
+              rgb: row === 0 ? "FFFFFF" : "243247",
+            },
+          },
+          fill: {
+            fgColor: {
+              rgb: row === 0 ? "1F4E78" : row % 2 === 0 ? "F3F7FC" : "FFFFFF",
+            },
+          },
+          alignment: {
+            horizontal: "center",
+            vertical: "center",
+            wrapText: true,
+          },
+          border: {
+            top: {
+              style: "thin",
+              color: { rgb: "D6DEE8" },
+            },
+            bottom: {
+              style: "thin",
+              color: { rgb: "D6DEE8" },
+            },
+            left: {
+              style: "thin",
+              color: { rgb: "D6DEE8" },
+            },
+            right: {
+              style: "thin",
+              color: { rgb: "D6DEE8" },
+            },
+          },
+        };
+      }
+    }
+
+    worksheet["!rows"] = [{ hpt: 30 }];
+
+    if (worksheet["!ref"]) {
+      worksheet["!autofilter"] = {
+        ref: worksheet["!ref"],
+      };
+    }
+
+    worksheet["!freeze"] = {
+      xSplit: 0,
+      ySplit: 1,
+    };
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Pending Updates");
+
+    XLSX.writeFile(
+      workbook,
+      `Pending_Updates_${selectedMonth || "AllMonths"}_${
+        selectedYear || "AllYears"
+      }.xlsx`,
     );
   };
 
@@ -1023,7 +1362,7 @@ const AttendanceSheet = () => {
                         <td>{isHoliday ? "—" : workH}</td>
                         <td>{isHoliday ? "—" : grossH}</td>
 
-                        <td>{record.dailyLeaveType || "—"}</td>
+                        <td>{record.leaveType || "—"}</td>
                         <td className="comment-cell">
                           {record.siteComments || "—"}
                         </td>
@@ -1053,9 +1392,35 @@ const AttendanceSheet = () => {
             </table>
           </div>
 
-          <div className="export-actions">
+          <div
+            className="export-actions"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "14px",
+              flexWrap: "wrap",
+              margin: "22px 0",
+            }}
+          >
             <button className="btn-excel" onClick={exportToExcel}>
               📥 Download Excel Report
+            </button>
+
+            <button
+              type="button"
+              onClick={exportPendingUpdatesToExcel}
+              style={{
+                background: "linear-gradient(135deg, #155eef, #0b3d91)",
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                padding: "12px 22px",
+                fontWeight: 600,
+                boxShadow: "0 4px 10px rgba(21, 94, 239, 0.22)",
+                cursor: "pointer",
+              }}
+            >
+              📊 Download Pending Updates
             </button>
           </div>
         </>
