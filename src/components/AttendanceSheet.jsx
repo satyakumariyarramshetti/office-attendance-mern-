@@ -177,6 +177,25 @@ const AttendanceSheet = () => {
       normalizedValue === "-"
     );
   };
+  const getAttendanceMissingLabel = (record) => {
+    const missingIn = isMissingTime(record.inTime);
+    const missingOut = isMissingTime(record.outTime);
+
+    if (missingIn && missingOut) {
+      return "Both In Time & Out Time Missing";
+    }
+
+    if (missingIn) {
+      return "In Time Missing";
+    }
+
+    if (missingOut) {
+      return "Out Time Missing";
+    }
+
+    return "";
+  };
+
   const isNoCategory = (record) => {
     const leaveType = String(record.leaveType ?? "")
       .trim()
@@ -416,8 +435,7 @@ const AttendanceSheet = () => {
 
         // Exclude leave and employee-specific holiday records.
         const hasLeaveOrHoliday = employeeRecords.some(
-          (record) =>
-            record.holidayName || record.leaveType ,
+          (record) => record.holidayName || record.leaveType,
         );
 
         if (hasLeaveOrHoliday) return;
@@ -548,7 +566,7 @@ const AttendanceSheet = () => {
       if (punchFilter !== "all") {
         const isHoliday = !!record.holidayName;
 
-        const isLeave = !!record.leaveType ;
+        const isLeave = !!record.leaveType;
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -796,7 +814,7 @@ const AttendanceSheet = () => {
       // 1. Missing In / Out / Both / Full-day attendance
       if (punchFilter !== "all") {
         const isHoliday = !!record.holidayName;
-        const isLeave = !!record.leaveType ;
+        const isLeave = !!record.leaveType;
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -811,7 +829,7 @@ const AttendanceSheet = () => {
           const missingOut = isMissingTime(record.outTime);
 
           if (punchFilter === "in" && missingIn) {
-            pendingUpdates.push("Missed In Time");
+            pendingUpdates.push("In Time Missing");
           }
 
           if (
@@ -819,7 +837,7 @@ const AttendanceSheet = () => {
             (includeToday || !isToday) &&
             missingOut
           ) {
-            pendingUpdates.push("Missed Out Time");
+            pendingUpdates.push("Out Time Missing");
           }
 
           if (
@@ -828,11 +846,11 @@ const AttendanceSheet = () => {
             (missingIn || missingOut)
           ) {
             if (missingIn && missingOut) {
-              pendingUpdates.push("Missed Both");
+              pendingUpdates.push("Both In Time & Out Time Missing");
             } else if (missingIn) {
-              pendingUpdates.push("Missed In Time");
+              pendingUpdates.push("In Time Missing");
             } else if (missingOut) {
-              pendingUpdates.push("Missed Out Time");
+              pendingUpdates.push("Out Time Missing");
             }
           }
         }
@@ -886,7 +904,7 @@ const AttendanceSheet = () => {
 
       // 3. Category
       if (selectedCategory !== "all") {
-       const leaveTypeValue = String(record.leaveType ?? "").trim();
+        const leaveTypeValue = String(record.leaveType ?? "").trim();
         const categoryPassed =
           selectedCategory === "N/A"
             ? !leaveTypeValue && !record.holidayName
@@ -938,12 +956,13 @@ const AttendanceSheet = () => {
         "Lunch Hours": isHoliday ? "—" : lunchHours,
         "Working Hours": isHoliday ? "—" : workingHours,
         "Gross Hours": isHoliday ? "—" : grossHours,
-
         "Leave Type": isHoliday
           ? `Holiday: ${record.holidayName}`
           : record.missingAttendance
             ? "Employee Missed Attendance"
-            : getLeaveOrHoliday(record),
+            : punchFilter !== "all" && !record.leaveType
+              ? getAttendanceMissingLabel(record)
+              : getLeaveOrHoliday(record),
 
         "Daily Leave Type": record.dailyLeaveType || "—",
         "Site Comments": record.siteComments || "—",
@@ -1175,9 +1194,9 @@ const AttendanceSheet = () => {
               onChange={(e) => setPunchFilter(e.target.value)}
             >
               <option value="all">All Records</option>
-              <option value="in">Missed In Time</option>
-              <option value="out">Missed Out Time</option>
-              <option value="both">Missed Both</option>
+              <option value="in">In Time Missing</option>
+              <option value="out">Out Time Missing</option>
+              <option value="both">Both In Time & Out Time Missing</option>
               <option value="missing-day">Employee Missed Attendance</option>
             </select>
           </div>
@@ -1374,7 +1393,9 @@ const AttendanceSheet = () => {
                             ? `Holiday: ${record.holidayName}`
                             : record.missingAttendance
                               ? "Employee Missed Attendance"
-                              : getLeaveOrHoliday(record)}
+                              : punchFilter !== "all" && !record.leaveType
+                                ? getAttendanceMissingLabel(record)
+                                : getLeaveOrHoliday(record)}
                         </td>
 
                         <td>{record.location || "N/A"}</td>
