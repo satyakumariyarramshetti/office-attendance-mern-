@@ -3,6 +3,7 @@ import "./AttendanceSheet.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import XLSX from "xlsx-js-style";
+import { calculateWorkingDays } from "../utils/workingDays";
 
 const calculateTimeDifference = (startTime, endTime) => {
   if (!startTime || !endTime || startTime === "N/A" || endTime === "N/A")
@@ -208,84 +209,13 @@ const AttendanceSheet = () => {
 
   // Calculate the selected month's calendar and working days.
   const workingDaysSummary = useMemo(() => {
-    const month = Number(selectedMonth);
-    const year = Number(selectedYear);
-
-    if (!month || !year) {
-      return {
-        totalDays: 0,
-        holidays: 0,
-        workingDays: 0,
-        holidayDates: [],
-      };
-    }
-
-    const totalDays = new Date(year, month, 0).getDate();
-    const holidayMap = new Map();
-
-    // Use the holiday information already returned by the API.
-    records.forEach((record) => {
-      const date = new Date(record.date);
-      if (
-        date.getFullYear() !== year ||
-        date.getMonth() + 1 !== month ||
-        !record.holidayName
-      ) {
-        return;
-      }
-
-      const key = `${year}-${String(month).padStart(2, "0")}-${String(
-        date.getDate(),
-      ).padStart(2, "0")}`;
-
-      holidayMap.set(key, record.holidayName);
-    });
-
-    // Add festival holidays returned by the dedicated holiday endpoint.
-    festivalHolidays.forEach((holiday) => {
-      if (!holiday.date || !holiday.name) return;
-
-      // Holiday dates are stored as YYYY-MM-DD.
-      const [holidayYear, holidayMonth, holidayDay] = holiday.date
-        .split("-")
-        .map(Number);
-
-      if (holidayYear !== year || holidayMonth !== month || !holidayDay) {
-        return;
-      }
-
-      const key = holiday.date;
-
-      // Preserve an existing holiday name if one is already recorded.
-      holidayMap.set(key, holidayMap.get(key) || holiday.name);
-    });
-
-    // Add weekly offs. Sunday and second Saturday are excluded.
-    for (let day = 1; day <= totalDays; day++) {
-      const date = new Date(year, month - 1, day);
-      const key = `${year}-${String(month).padStart(2, "0")}-${String(
-        day,
-      ).padStart(2, "0")}`;
-
-      if (date.getDay() === 0) {
-        holidayMap.set(key, holidayMap.get(key) || "SUNDAY");
-      } else if (date.getDay() === 6 && Math.ceil(day / 7) === 2) {
-        holidayMap.set(key, holidayMap.get(key) || "2nd SATURDAY");
-      }
-    }
-
-    // Ensure October 2026 public and festival holidays are counted.
-
-    const holidays = holidayMap.size;
-
-    return {
-      totalDays,
-      holidays,
-      workingDays: totalDays - holidays,
-      holidayDates: [...holidayMap.entries()],
-    };
+    return calculateWorkingDays(
+      records,
+      festivalHolidays,
+      selectedMonth,
+      selectedYear,
+    );
   }, [records, festivalHolidays, selectedMonth, selectedYear]);
-
   // Generate missing attendance only from each employee's joining date.
   const missingAttendanceRecords = useMemo(() => {
     const attendanceMap = new Map();
