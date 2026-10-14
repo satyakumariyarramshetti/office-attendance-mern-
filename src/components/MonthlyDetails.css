@@ -90,3 +90,13 @@
   background-color: #f2f2f2;
   z-index: 1;
 }
+/* Employee attendance shortage */
+.admin-table tbody tr.attendance-shortage-row {
+  background-color: #fee2e2 !important;
+}
+
+.admin-table tbody tr.attendance-shortage-row td {
+  background-color: #fee2e2 !important;
+  color: #b91c1c;
+  font-weight: 600;
+}

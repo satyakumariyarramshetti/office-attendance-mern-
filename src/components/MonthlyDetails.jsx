@@ -260,7 +260,15 @@ const MonthlyDetails = () => {
                 <tbody>
                   {monthlyReport.length > 0 ? (
                     monthlyReport.map((report) => (
-                      <tr key={report.employee_id}>
+                      <tr
+                        key={report.employee_id}
+                        className={
+                          report.employee_working_days + report.no_of_leaves <
+                          report.working_days_till_date
+                            ? "attendance-shortage-row"
+                            : ""
+                        }
+                      >
                         <td>{report.employee_id}</td>
                         <td>{report.employee_name}</td>
                         <td>{report.no_of_days}</td>
