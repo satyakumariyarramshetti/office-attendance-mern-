@@ -994,6 +994,33 @@ const Interface = () => {
     }
 
     let leaveType = formData.leaveType;
+    // Prevent submitting a leave whose balance is now 0
+    if (leaveType === "Casual Leave" && !canSelectCasual) {
+      alert("Casual Leave balance is 0. Please select another leave type.");
+      setFormData((prev) => ({
+        ...prev,
+        leaveType: "",
+      }));
+      return;
+    }
+
+    if (leaveType === "Sick Leave" && !canSelectSick) {
+      alert("Sick Leave balance is 0. Please select another leave type.");
+      setFormData((prev) => ({
+        ...prev,
+        leaveType: "",
+      }));
+      return;
+    }
+
+    if (leaveType === "Privilege Leave" && !canSelectPrivilege) {
+      alert("Privilege Leave is not available for the selected date.");
+      setFormData((prev) => ({
+        ...prev,
+        leaveType: "",
+      }));
+      return;
+    }
     // Validate half-day reason
     if (
       (leaveType === "First Half Leave" || leaveType === "Second Half Leave") &&
@@ -1117,6 +1144,26 @@ const Interface = () => {
       resetInactivityTimer();
     }, 500);
   };
+
+  // Clear leave selection if its balance becomes unavailable
+  useEffect(() => {
+    if (!formData.leaveType) return;
+
+    const selectedLeave = formData.leaveType;
+
+    const isInvalidSelection =
+      (selectedLeave === "Sick Leave" && !canSelectSick) ||
+      (selectedLeave === "Casual Leave" && !canSelectCasual) ||
+      (selectedLeave === "Privilege Leave" && !canSelectPrivilege);
+
+    if (isInvalidSelection) {
+      setFormData((prev) => ({
+        ...prev,
+        leaveType: "",
+      }));
+      setHalfDayReason("");
+    }
+  }, [formData.leaveType, canSelectSick, canSelectCasual, canSelectPrivilege]);
 
   return (
     <div className="main-wrapper">
@@ -1734,7 +1781,7 @@ const Interface = () => {
                             </span>
                           </div>
                         </div>
-                        {leaveBalances?.role === "senior" &&
+                        {/* {leaveBalances?.role === "senior" &&
                           leaveBalances?.nextPrivilegeLeave && (
                             <div
                               className="mb-3 px-2 py-2 border rounded"
@@ -1767,7 +1814,7 @@ const Interface = () => {
                                 })}
                               </strong>
                             </div>
-                          )}
+                          )} */}
 
                         {/* Note: ID input is still present so the user can easily see their ID. */}
                         <StaffIdInput
@@ -1815,7 +1862,7 @@ const Interface = () => {
                           <select
                             id="leaveType"
                             className="form-control"
-                            value={formData.leaveType}
+                            value={formData.leaveType || ""}
                             onChange={handleLeaveTypeChange}
                             onFocus={handleLeaveTypeFocus}
                             onBlur={handleLeaveTypeBlur}
@@ -1823,7 +1870,7 @@ const Interface = () => {
                             required
                             disabled={!formData.date}
                           >
-                            <option disabled value="">
+                            <option value="" disabled>
                               {!formData.date
                                 ? "Select Date First"
                                 : "Select Leave Type"}

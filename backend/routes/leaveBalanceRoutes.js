@@ -4,53 +4,6 @@ const router = express.Router();
 const LeaveBalance = require("../models/LeaveBalance");
 const Staff = require("../models/Staff");
 
-// Calculate the date on which the next PL will be earned.
-// Working days = Monday-Friday.
-const getNextPrivilegeLeaveInfo = (
-  promotionDate,
-  plCreditHistory = [],
-  workingDaysRequired = 20,
-) => {
-  if (!promotionDate) return null;
-
-  // Start from the most recent PL credit date if available.
-  // Otherwise start from the senior promotion date.
-  let startDate = new Date(promotionDate);
-
-  if (plCreditHistory.length > 0) {
-    const latestCredit = [...plCreditHistory]
-      .filter((item) => item?.creditedOn)
-      .sort(
-        (a, b) =>
-          new Date(b.creditedOn).getTime() - new Date(a.creditedOn).getTime(),
-      )[0];
-
-    if (latestCredit) {
-      startDate = new Date(latestCredit.creditedOn);
-    }
-  }
-
-  startDate.setHours(0, 0, 0, 0);
-
-  let completedWorkingDays = 0;
-  const nextDate = new Date(startDate);
-
-  while (completedWorkingDays < workingDaysRequired) {
-    nextDate.setDate(nextDate.getDate() + 1);
-
-    const day = nextDate.getDay();
-
-    // Monday-Friday only
-    if (day !== 0 && day !== 6) {
-      completedWorkingDays++;
-    }
-  }
-
-  return {
-    nextPrivilegeLeaveDate: nextDate,
-    workingDaysRequired,
-  };
-};
 
 // GET: Fetch all leave balance records
 router.get("/", async (req, res) => {
@@ -197,21 +150,7 @@ router.get("/employee/:employeeId", async (req, res) => {
         message: "Employee not found",
       });
     }
-
-    let nextPrivilegeLeave = null;
-
-    if (employee.role === "senior" && employee.seniorPromotionDate) {
-      nextPrivilegeLeave = getNextPrivilegeLeaveInfo(
-        employee.seniorPromotionDate,
-        employee.plCreditHistory || [],
-        20,
-      );
-    }
-
-    res.status(200).json({
-      ...employee,
-      nextPrivilegeLeave,
-    });
+    res.status(200).json(employee);
   } catch (error) {
     console.error("Error fetching employee leave balance:", error);
 
@@ -257,19 +196,8 @@ router.post("/my-leave-balance", async (req, res) => {
       });
     }
 
-    let nextPrivilegeLeave = null;
-
-    if (balance.role === "senior" && balance.seniorPromotionDate) {
-      nextPrivilegeLeave = getNextPrivilegeLeaveInfo(
-        balance.seniorPromotionDate,
-        balance.plCreditHistory || [],
-        20,
-      );
-    }
-    res.status(200).json({
-      ...balance,
-      nextPrivilegeLeave,
-    });
+    
+    res.status(200).json(balance);
   } catch (error) {
     console.error("Error fetching balance by identification:", error);
     res.status(500).json({ message: "Internal server error" });
