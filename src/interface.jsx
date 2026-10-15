@@ -1734,6 +1734,40 @@ const Interface = () => {
                             </span>
                           </div>
                         </div>
+                        {leaveBalances?.role === "senior" &&
+                          leaveBalances?.nextPrivilegeLeave && (
+                            <div
+                              className="mb-3 px-2 py-2 border rounded"
+                              style={{
+                                background: "#eef7ff",
+                                borderColor: "#b8dcff",
+                                fontSize: "0.82rem",
+                                color: "#174a7c",
+                              }}
+                            >
+                              <strong>Next Privilege Leave:</strong> 1 PL will
+                              be added after completing{" "}
+                              <strong>
+                                {
+                                  leaveBalances.nextPrivilegeLeave
+                                    .workingDaysRequired
+                                }
+                              </strong>{" "}
+                              working days.
+                              <br />
+                              Expected date:{" "}
+                              <strong>
+                                {new Date(
+                                  leaveBalances.nextPrivilegeLeave
+                                    .nextPrivilegeLeaveDate,
+                                ).toLocaleDateString("en-IN", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                })}
+                              </strong>
+                            </div>
+                          )}
 
                         {/* Note: ID input is still present so the user can easily see their ID. */}
                         <StaffIdInput
