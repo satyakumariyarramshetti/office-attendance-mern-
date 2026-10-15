@@ -2,9 +2,6 @@
 require('dotenv').config();
 
 // Log environment variables
-console.log('SMTP_USER:', process.env.SMTP_USER ? 'Set' : 'Not Set');
-console.log('SMTP_PASS:', process.env.SMTP_PASS ? 'Set' : 'Not Set');
-console.log('ATLAS_URI:', process.env.ATLAS_URI ? 'Set' : 'Not Set');
 
 
 

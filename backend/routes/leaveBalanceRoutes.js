@@ -1,7 +1,10 @@
+//backend/routes/leaveBalanceRoutes.js
 const express = require('express');
 const router = express.Router();
 const LeaveBalance = require('../models/LeaveBalance');
 const Staff = require('../models/Staff');
+
+
 
 // GET: Fetch all leave balance records
 router.get('/', async (req, res) => {
