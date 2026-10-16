@@ -136,6 +136,8 @@ const Interface = () => {
   const inactivityTimeoutRef = useRef(null);
   const countdownIntervalRef = useRef(null);
   const leaveSelectionActiveRef = useRef(false);
+  const [existingLeave, setExistingLeave] = useState(null);
+  const [isLeaveDateLocked, setIsLeaveDateLocked] = useState(false);
 
   const resetAttendancePage = useCallback(() => {
     // Clear all ID inputs
@@ -191,6 +193,8 @@ const Interface = () => {
     setLeaveIdentification("");
     setLeaveBalances(null);
     setIsLeaveAuthenticated(false);
+    setExistingLeave(null);
+    setIsLeaveDateLocked(false);
     setLeaveAuthMessage({ text: "", type: "" });
 
     setMissingActivities([]);
@@ -261,6 +265,94 @@ const Interface = () => {
       } catch (err) {
         console.log(err);
         setMissingActivities([]);
+      }
+    },
+    [API_BASE],
+  );
+
+  const checkExistingLeave = useCallback(
+    async (employeeId, date) => {
+      if (!employeeId || !date) {
+        setExistingLeave(null);
+        setIsLeaveDateLocked(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/attendance/getByIdDate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: employeeId,
+            date,
+          }),
+        });
+
+        if (!res.ok) {
+          setExistingLeave(null);
+          setIsLeaveDateLocked(false);
+          return;
+        }
+
+        const data = await res.json();
+
+        /*
+         * Your attendance API already returns leaveType.
+         * We use that existing value to determine whether
+         * leave has already been applied for this date.
+         */
+        if (data.leaveType) {
+          let existingType = data.leaveType;
+          let existingReason = "";
+
+          // Handle half-day leave
+          if (
+            existingType === "First Half Leave" ||
+            existingType === "Second Half Leave"
+          ) {
+            existingReason = data.halfDayReason || "";
+          }
+
+          setExistingLeave({
+            leaveType: existingType,
+            halfDayReason: existingReason,
+          });
+
+          setIsLeaveDateLocked(true);
+
+          // Automatically select the already-applied leave
+          setFormData((prev) => ({
+            ...prev,
+            leaveType: existingType,
+          }));
+
+          // Automatically restore half-day reason
+          if (
+            existingType === "First Half Leave" ||
+            existingType === "Second Half Leave"
+          ) {
+            setHalfDayReason(existingReason);
+          } else {
+            setHalfDayReason("");
+          }
+        } else {
+          setExistingLeave(null);
+          setIsLeaveDateLocked(false);
+
+          setFormData((prev) => ({
+            ...prev,
+            leaveType: "",
+          }));
+
+          setHalfDayReason("");
+        }
+      } catch (error) {
+        console.error("Error checking existing leave:", error);
+
+        setExistingLeave(null);
+        setIsLeaveDateLocked(false);
       }
     },
     [API_BASE],
@@ -662,13 +754,19 @@ const Interface = () => {
     }
   };
 
-  const handleDateChange = (e) => {
+  const handleDateChange = async (e) => {
     const selectedDate = e.target.value;
+
     setFormData((prev) => ({
       ...prev,
       date: selectedDate,
       day: getCurrentDay(selectedDate),
     }));
+
+    // Only check existing leave when the Leave card is authenticated
+    if (activeSideCard === "leave" && isLeaveAuthenticated && formData.id) {
+      await checkExistingLeave(formData.id, selectedDate);
+    }
   };
 
   const handleChange = (e) => {
@@ -929,6 +1027,13 @@ const Interface = () => {
           ...prev,
           leave: rawId,
         }));
+        const fullEmployeeId = data.employeeId.startsWith(PS_PREFIX)
+          ? data.employeeId
+          : `${PS_PREFIX}${data.employeeId}`;
+
+        const selectedDate = formData.date || getCurrentDate();
+
+        await checkExistingLeave(fullEmployeeId, selectedDate);
 
         // Keep the existing useEffect behavior
         // to fetch employee name/attendance details.
@@ -1076,6 +1181,14 @@ const Interface = () => {
     e.preventDefault();
     if (staffNotFound || !formData.id) {
       alert("Please enter a valid Staff ID before submitting.");
+      return;
+    }
+    if (isLeaveDateLocked && existingLeave) {
+      alert(
+        `Leave is already applied for ${formData.date}.\n\n` +
+          `Existing Leave: ${existingLeave.leaveType}\n\n` +
+          `You cannot update another leave for this date.`,
+      );
       return;
     }
 
@@ -1943,7 +2056,7 @@ const Interface = () => {
                           onBlur={handleLeaveTypeBlur}
                           onMouseDown={handleLeaveTypeFocus}
                           required
-                          disabled={!formData.date}
+                          disabled={!formData.date || isLeaveDateLocked}
                         >
                           <option value="" disabled>
                             {!formData.date
@@ -2019,6 +2132,34 @@ const Interface = () => {
                           </option>
                           <option value="LOP Leave">LOP Leave</option>
                         </select>
+
+                        {isLeaveDateLocked && existingLeave && (
+                          <div
+                            className="mt-2 px-2 py-2 border rounded"
+                            style={{
+                              backgroundColor: "#fff3cd",
+                              borderColor: "#ffc107",
+                              color: "#856404",
+                              fontSize: "0.85rem",
+                            }}
+                          >
+                            <strong>Leave already applied.</strong>
+                            <br />
+                            {existingLeave.leaveType}
+
+                            {existingLeave.halfDayReason && (
+                              <>
+                                <br />
+                                Reason: {existingLeave.halfDayReason}
+                              </>
+                            )}
+
+                            <br />
+                            <small>
+                              Leave selection is locked for this date.
+                            </small>
+                          </div>
+                        )}
                       </div>
 
                       {(formData.leaveType === "First Half Leave" ||
