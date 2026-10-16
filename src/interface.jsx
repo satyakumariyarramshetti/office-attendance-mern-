@@ -136,6 +136,7 @@ const Interface = () => {
   const inactivityTimeoutRef = useRef(null);
   const countdownIntervalRef = useRef(null);
   const leaveSelectionActiveRef = useRef(false);
+  const datePickerActiveRef = useRef(false);
   const [existingLeave, setExistingLeave] = useState(null);
   const [isLeaveDateLocked, setIsLeaveDateLocked] = useState(false);
 
@@ -617,7 +618,6 @@ const Interface = () => {
 
   // --- NEW: INACTIVITY TIMER LOGIC ---
   const resetInactivityTimer = useCallback(() => {
-    // Only run if the leave card is active and authenticated
     if (activeSideCard !== "leave" || !isLeaveAuthenticated) return;
 
     clearTimeout(inactivityTimeoutRef.current);
@@ -625,21 +625,31 @@ const Interface = () => {
 
     setLeaveInactivityWarning(0);
 
-    // If user is currently interacting with the Leave Type dropdown,
-    // don't start the inactivity countdown.
-    if (leaveSelectionActiveRef.current) {
+    // Leave type dropdown is active
+    if (leaveSelectionActiveRef.current || datePickerActiveRef.current) {
       return;
     }
 
-    // Start inactivity timer
+    // Date picker is active
+    if (datePickerActiveRef.current) {
+      return;
+    }
+
     inactivityTimeoutRef.current = setTimeout(() => {
       let seconds = 5;
 
       setLeaveInactivityWarning(seconds);
 
       countdownIntervalRef.current = setInterval(() => {
-        // If user became active again, stop countdown
+        // Leave dropdown active
         if (leaveSelectionActiveRef.current) {
+          clearInterval(countdownIntervalRef.current);
+          setLeaveInactivityWarning(0);
+          return;
+        }
+
+        // Date picker active
+        if (datePickerActiveRef.current) {
           clearInterval(countdownIntervalRef.current);
           setLeaveInactivityWarning(0);
           return;
@@ -649,8 +659,6 @@ const Interface = () => {
 
         if (seconds <= 0) {
           clearInterval(countdownIntervalRef.current);
-
-          // Auto-close and completely reset the page
           resetAttendancePage();
         } else {
           setLeaveInactivityWarning(seconds);
@@ -658,7 +666,6 @@ const Interface = () => {
       }, 1000);
     }, 5000);
   }, [activeSideCard, isLeaveAuthenticated, resetAttendancePage]);
-
   // Trigger timer when the card opens/authenticates
   useEffect(() => {
     if (activeSideCard === "leave" && isLeaveAuthenticated) {
@@ -1322,6 +1329,68 @@ const Interface = () => {
     clearInterval(countdownIntervalRef.current);
 
     setLeaveInactivityWarning(0);
+  };
+
+  const handleDateFocus = () => {
+    datePickerActiveRef.current = true;
+
+    clearTimeout(inactivityTimeoutRef.current);
+    clearInterval(countdownIntervalRef.current);
+
+    setLeaveInactivityWarning(0);
+  };
+
+  const handleDateChangeForLeave = async (e) => {
+    const selectedDate = e.target.value;
+
+    // Date has now been selected
+    datePickerActiveRef.current = false;
+
+    clearTimeout(inactivityTimeoutRef.current);
+    clearInterval(countdownIntervalRef.current);
+
+    setLeaveInactivityWarning(0);
+
+    setFormData((prev) => ({
+      ...prev,
+      date: selectedDate,
+      day: getCurrentDay(selectedDate),
+    }));
+
+    if (activeSideCard === "leave" && isLeaveAuthenticated && formData.id) {
+      await checkExistingLeave(formData.id, selectedDate);
+    }
+
+    setTimeout(() => {
+      resetInactivityTimer();
+    }, 500);
+  };
+
+  const handleCOffDateFocus = () => {
+    datePickerActiveRef.current = true;
+
+    clearTimeout(inactivityTimeoutRef.current);
+    clearInterval(countdownIntervalRef.current);
+
+    setLeaveInactivityWarning(0);
+  };
+
+  const handleCOffDateChange = (e) => {
+    const selectedDate = e.target.value;
+
+    datePickerActiveRef.current = false;
+
+    clearTimeout(inactivityTimeoutRef.current);
+    clearInterval(countdownIntervalRef.current);
+
+    setLeaveInactivityWarning(0);
+
+    setCOffEarnedDate(selectedDate);
+
+    // Restart inactivity timer after date selection
+    setTimeout(() => {
+      resetInactivityTimer();
+    }, 500);
   };
 
   const handleLeaveTypeBlur = () => {
@@ -2030,7 +2099,10 @@ const Interface = () => {
                             type="date"
                             className="form-control"
                             value={formData.date}
-                            onChange={handleDateChange}
+                            onChange={handleDateChangeForLeave}
+                            onFocus={handleDateFocus}
+                            onClick={handleDateFocus}
+                            onMouseDown={handleDateFocus}
                             max={getCurrentDate()}
                           />
                         </div>
@@ -2216,12 +2288,16 @@ const Interface = () => {
                           <label htmlFor="cOffEarnedDate">
                             C-Off Earned On
                           </label>
+
                           <input
                             type="date"
                             id="cOffEarnedDate"
                             className="form-control"
                             value={cOffEarnedDate}
-                            onChange={(e) => setCOffEarnedDate(e.target.value)}
+                            onChange={handleCOffDateChange}
+                            onFocus={handleCOffDateFocus}
+                            onClick={handleCOffDateFocus}
+                            onMouseDown={handleCOffDateFocus}
                             required
                           />
                         </div>
