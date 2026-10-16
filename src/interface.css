@@ -549,3 +549,190 @@ select.form-control:focus {
     }
 }
 
+/* =========================================================
+   Leave Identification Code - INSIDE EXISTING LEAVE CARD
+   ========================================================= */
+
+.leave-identification-inline {
+    width: 100%;
+    max-width: 280px;
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+}
+
+/* Label */
+.leave-identification-inline label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-align: left;
+    margin: 0;
+}
+
+/* Input */
+.leave-code-input {
+    width: 100%;
+    height: 42px;
+    padding: 9px 12px;
+    border: 1px solid #dbe3ef;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: var(--text-dark);
+    font-size: 0.85rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.leave-code-input::placeholder {
+    color: #94a3b8;
+}
+
+.leave-code-input:focus {
+    background: #ffffff;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(5, 99, 250, 0.08);
+}
+
+/* Verify Button */
+.leave-verify-btn {
+    width: 100%;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: var(--primary-blue);
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.leave-verify-btn:hover:not(:disabled) {
+    background: #0455d8;
+    transform: translateY(-1px);
+}
+
+.leave-verify-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.leave-verify-btn:disabled {
+    background: #cbd5e1;
+    color: #ffffff;
+    cursor: not-allowed;
+}
+
+/* Verification message */
+.leave-auth-message {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin: 0;
+    text-align: left;
+}
+
+.leave-auth-message.text-success {
+    color: #16a34a;
+}
+
+.leave-auth-message.text-error {
+    color: #dc2626;
+}
+
+
+/* =========================================================
+   EXISTING LEAVE STUB - KEEP EVERYTHING INSIDE IT
+   ========================================================= */
+
+.stubs-wrapper .card-stub:nth-child(2) {
+    overflow: hidden;
+}
+
+/* When identification section is present,
+   don't let the old Manage pseudo button appear */
+.stubs-wrapper .card-stub:nth-child(2)::after {
+    display: none;
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 992px) {
+    .leave-identification-inline {
+        max-width: 250px;
+        margin-top: 15px;
+    }
+
+    .leave-code-input {
+        height: 40px;
+        font-size: 0.82rem;
+    }
+
+    .leave-verify-btn {
+        height: 38px;
+        font-size: 0.8rem;
+    }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+    .leave-identification-inline {
+        width: 100%;
+        max-width: 220px;
+        margin-top: 12px;
+        gap: 6px;
+    }
+
+    .leave-identification-inline label {
+        font-size: 0.7rem;
+    }
+
+    .leave-code-input {
+        height: 38px;
+        padding: 8px 10px;
+        font-size: 0.78rem;
+        border-radius: 9px;
+    }
+
+    .leave-verify-btn {
+        height: 36px;
+        font-size: 0.76rem;
+        border-radius: 9px;
+    }
+
+    .leave-auth-message {
+        font-size: 0.68rem;
+    }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+    .leave-identification-inline {
+        max-width: 100%;
+        margin-top: 10px;
+    }
+
+    .leave-code-input {
+        height: 36px;
+        padding: 7px 9px;
+        font-size: 0.75rem;
+    }
+
+    .leave-verify-btn {
+        height: 35px;
+        font-size: 0.74rem;
+    }
+}

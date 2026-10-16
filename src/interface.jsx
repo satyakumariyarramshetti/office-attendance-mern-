@@ -809,7 +809,6 @@ const Interface = () => {
     }
   };
 
-  // ✅ NEW: Leave Authentication Function (Updated Flow)
   const authenticateLeave = async () => {
     if (!leaveIdentification) {
       setLeaveAuthMessage({
@@ -820,44 +819,61 @@ const Interface = () => {
     }
 
     try {
-      setLeaveAuthMessage({ text: "Authenticating...", type: "info" });
+      setLeaveAuthMessage({
+        text: "Authenticating...",
+        type: "info",
+      });
+
       const res = await fetch(
         `${API_BASE}/api/leave-balance/my-leave-balance`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ identification: leaveIdentification }),
+          body: JSON.stringify({
+            identification: leaveIdentification,
+          }),
         },
       );
 
       const data = await res.json();
 
       if (res.ok) {
+        // Keep the existing leave balance functionality
         setLeaveBalances(data);
         setIsLeaveAuthenticated(true);
+
         setLeaveAuthMessage({
           text: "Verified Successfully!",
           type: "success",
         });
 
-        // Auto-fill the Employee ID input!
-        // We slice off the "PS-" prefix so the reusable StaffIdInput component works correctly
+        // Keep Leave as the active card
+        setActiveSideCard("leave");
+
+        // Auto-fill Employee ID
         const rawId = data.employeeId.startsWith(PS_PREFIX)
           ? data.employeeId.slice(PS_PREFIX.length)
           : data.employeeId;
 
-        setIdInputs((prev) => ({ ...prev, leave: rawId }));
-        // Note: The existing useEffect will detect this ID change and automatically fetch Name, Dates, etc.
+        setIdInputs((prev) => ({
+          ...prev,
+          leave: rawId,
+        }));
+
+        // Keep the existing useEffect behavior
+        // to fetch employee name/attendance details.
       } else {
         setLeaveAuthMessage({
           text: data.message || "Invalid identification code.",
           type: "danger",
         });
+
         setIsLeaveAuthenticated(false);
         setLeaveBalances(null);
       }
     } catch (error) {
       console.error("Auth error:", error);
+
       setLeaveAuthMessage({
         text: "Error connecting to server.",
         type: "danger",
@@ -1705,83 +1721,47 @@ const Interface = () => {
                     onKeyDown={resetInactivityTimer}
                     onClick={resetInactivityTimer}
                   >
-                    {!isLeaveAuthenticated ? (
-                      <div className="verification-section my-auto">
-                        <div className="text-center mb-3">
-                          <small className="text-muted">
-                            Authenticate to access your leave portal
-                          </small>
-                        </div>
-                        <div className="form-group mb-2">
-                          <label>Identification Code</label>
-                          <input
-                            type="password"
-                            className="form-control text-center"
-                            placeholder="Enter Code"
-                            value={leaveIdentification}
-                            onChange={(e) =>
-                              setLeaveIdentification(e.target.value)
-                            }
-                          />
-                        </div>
-                        {leaveAuthMessage.text && (
-                          <small
-                            className={`text-${leaveAuthMessage.type} d-block mb-2 text-center`}
+                    <form
+                      className="d-flex flex-column h-100 fade-in"
+                      onSubmit={handleLeaveSubmit}
+                    >
+                      {/* ✅ Clean, one-line balance summary with large text and no LOP */}
+                      <div className="d-flex justify-content-around align-items-center mb-3 p-2 bg-light border rounded">
+                        <div>
+                          <span
+                            className="text-muted fw-bold me-1"
+                            style={{ fontSize: "0.85rem" }}
                           >
-                            {leaveAuthMessage.text}
-                          </small>
-                        )}
-                        <button
-                          type="button"
-                          className="btn btn-secondary btn-block mt-3"
-                          onClick={authenticateLeave}
-                          disabled={!leaveIdentification}
-                        >
-                          Verify Code
-                        </button>
-                      </div>
-                    ) : (
-                      <form
-                        className="d-flex flex-column h-100 fade-in"
-                        onSubmit={handleLeaveSubmit}
-                      >
-                        {/* ✅ Clean, one-line balance summary with large text and no LOP */}
-                        <div className="d-flex justify-content-around align-items-center mb-3 p-2 bg-light border rounded">
-                          <div>
-                            <span
-                              className="text-muted fw-bold me-1"
-                              style={{ fontSize: "0.85rem" }}
-                            >
-                              CASUAL:
-                            </span>
-                            <span className="fs-5 fw-bold text-dark">
-                              {leaveBalances.casualLeaves}
-                            </span>
-                          </div>
-                          <div>
-                            <span
-                              className="text-muted fw-bold me-1"
-                              style={{ fontSize: "0.85rem" }}
-                            >
-                              SICK:
-                            </span>
-                            <span className="fs-5 fw-bold text-dark">
-                              {leaveBalances.sickLeaves}
-                            </span>
-                          </div>
-                          <div>
-                            <span
-                              className="text-muted fw-bold me-1"
-                              style={{ fontSize: "0.85rem" }}
-                            >
-                              PRIVILEGE:
-                            </span>
-                            <span className="fs-5 fw-bold text-dark">
-                              {leaveBalances.privilegeLeaves}
-                            </span>
-                          </div>
+                            CASUAL:
+                          </span>
+                          <span className="fs-5 fw-bold text-dark">
+                            {leaveBalances.casualLeaves}
+                          </span>
                         </div>
-                        {/* {leaveBalances?.role === "senior" &&
+                        <div>
+                          <span
+                            className="text-muted fw-bold me-1"
+                            style={{ fontSize: "0.85rem" }}
+                          >
+                            SICK:
+                          </span>
+                          <span className="fs-5 fw-bold text-dark">
+                            {leaveBalances.sickLeaves}
+                          </span>
+                        </div>
+                        <div>
+                          <span
+                            className="text-muted fw-bold me-1"
+                            style={{ fontSize: "0.85rem" }}
+                          >
+                            PRIVILEGE:
+                          </span>
+                          <span className="fs-5 fw-bold text-dark">
+                            {leaveBalances.privilegeLeaves}
+                          </span>
+                        </div>
+                      </div>
+                      {/* {leaveBalances?.role === "senior" &&
                           leaveBalances?.nextPrivilegeLeave && (
                             <div
                               className="mb-3 px-2 py-2 border rounded"
@@ -1816,67 +1796,152 @@ const Interface = () => {
                             </div>
                           )} */}
 
-                        {/* Note: ID input is still present so the user can easily see their ID. */}
-                        <StaffIdInput
-                          inputId="idLeave"
-                          value={idInputs.leave}
-                          onChange={(e) => handleIdChange(e, "leave")}
-                          staffNotFound={staffNotFound}
-                        />
+                      {/* Note: ID input is still present so the user can easily see their ID. */}
+                      <StaffIdInput
+                        inputId="idLeave"
+                        value={idInputs.leave}
+                        onChange={(e) => handleIdChange(e, "leave")}
+                        staffNotFound={staffNotFound}
+                      />
 
-                        <div className="form-group mb-2">
-                          <label>Name</label>
+                      <div className="form-group mb-2">
+                        <label>Name</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.name}
+                          readOnly
+                        />
+                      </div>
+
+                      {/* ✅ Compact Date and Day Side-by-Side */}
+                      <div className="form-row d-flex gap-2 mb-2">
+                        <div className="form-group w-50">
+                          <label>Date</label>
+                          <input
+                            type="date"
+                            className="form-control"
+                            value={formData.date}
+                            onChange={handleDateChange}
+                            max={getCurrentDate()}
+                          />
+                        </div>
+                        <div className="form-group w-50">
+                          <label>Day</label>
                           <input
                             type="text"
                             className="form-control"
-                            value={formData.name}
+                            value={formData.day}
                             readOnly
                           />
                         </div>
+                      </div>
 
-                        {/* ✅ Compact Date and Day Side-by-Side */}
-                        <div className="form-row d-flex gap-2 mb-2">
-                          <div className="form-group w-50">
-                            <label>Date</label>
-                            <input
-                              type="date"
-                              className="form-control"
-                              value={formData.date}
-                              onChange={handleDateChange}
-                              max={getCurrentDate()}
-                            />
-                          </div>
-                          <div className="form-group w-50">
-                            <label>Day</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              value={formData.day}
-                              readOnly
-                            />
-                          </div>
-                        </div>
+                      <div className="form-group mb-2">
+                        <label htmlFor="leaveType">Leave Type</label>
+                        <select
+                          id="leaveType"
+                          className="form-control"
+                          value={formData.leaveType || ""}
+                          onChange={handleLeaveTypeChange}
+                          onFocus={handleLeaveTypeFocus}
+                          onBlur={handleLeaveTypeBlur}
+                          onMouseDown={handleLeaveTypeFocus}
+                          required
+                          disabled={!formData.date}
+                        >
+                          <option value="" disabled>
+                            {!formData.date
+                              ? "Select Date First"
+                              : "Select Leave Type"}
+                          </option>
 
-                        <div className="form-group mb-2">
-                          <label htmlFor="leaveType">Leave Type</label>
-                          <select
-                            id="leaveType"
-                            className="form-control"
-                            value={formData.leaveType || ""}
-                            onChange={handleLeaveTypeChange}
-                            onFocus={handleLeaveTypeFocus}
-                            onBlur={handleLeaveTypeBlur}
-                            onMouseDown={handleLeaveTypeFocus}
-                            required
-                            disabled={!formData.date}
+                          {/* ✅ Styled disabled options to look grayed out */}
+                          <option
+                            value="Sick Leave"
+                            disabled={!canSelectSick}
+                            style={{
+                              color: !canSelectSick ? "#a0a0a0" : "inherit",
+                            }}
                           >
-                            <option value="" disabled>
-                              {!formData.date
-                                ? "Select Date First"
-                                : "Select Leave Type"}
-                            </option>
+                            Sick Leave {!canSelectSick && "(0 Balance)"}
+                          </option>
+                          <option
+                            value="Casual Leave"
+                            disabled={!canSelectCasual}
+                            style={{
+                              color: !canSelectCasual ? "#a0a0a0" : "inherit",
+                            }}
+                          >
+                            Casual Leave {!canSelectCasual && "(0 Balance)"}
+                          </option>
 
-                            {/* ✅ Styled disabled options to look grayed out */}
+                          {/* ✅ Privilege Leave with dynamic date-based error message */}
+                          <option
+                            value="Privilege Leave"
+                            disabled={!canSelectPrivilege}
+                            style={{
+                              color: !canSelectPrivilege
+                                ? "#a0a0a0"
+                                : "inherit",
+                            }}
+                          >
+                            Privilege Leave{" "}
+                            {!canSelectPrivilege && plErrorMessage}
+                          </option>
+
+                          <option value="C-Off Leave">C-Off Leave</option>
+
+                          <option
+                            value="First Half Leave"
+                            disabled={!hasAnyBalanceForHalfDay}
+                            style={{
+                              color: !hasAnyBalanceForHalfDay
+                                ? "#a0a0a0"
+                                : "inherit",
+                            }}
+                          >
+                            First Half Leave
+                          </option>
+                          <option
+                            value="Second Half Leave"
+                            disabled={!hasAnyBalanceForHalfDay}
+                            style={{
+                              color: !hasAnyBalanceForHalfDay
+                                ? "#a0a0a0"
+                                : "inherit",
+                            }}
+                          >
+                            Second Half Leave
+                          </option>
+
+                          <option value="Travel Leave">Travel Leave</option>
+                          <option value="Client/Site Visit">
+                            Client/Site Visit
+                          </option>
+                          <option value="Over-Time Leave">
+                            Over-Time Leave
+                          </option>
+                          <option value="LOP Leave">LOP Leave</option>
+                        </select>
+                      </div>
+
+                      {(formData.leaveType === "First Half Leave" ||
+                        formData.leaveType === "Second Half Leave") && (
+                        <div className="form-group mb-2">
+                          <label htmlFor="halfDayReason">
+                            Reason for Half Day
+                          </label>
+                          <select
+                            id="halfDayReason"
+                            className="form-control"
+                            value={halfDayReason}
+                            onChange={handleChange}
+                            required
+                          >
+                            <option disabled value="">
+                              Select Reason
+                            </option>
                             <option
                               value="Sick Leave"
                               disabled={!canSelectSick}
@@ -1895,8 +1960,6 @@ const Interface = () => {
                             >
                               Casual Leave {!canSelectCasual && "(0 Balance)"}
                             </option>
-
-                            {/* ✅ Privilege Leave with dynamic date-based error message */}
                             <option
                               value="Privilege Leave"
                               disabled={!canSelectPrivilege}
@@ -1909,123 +1972,35 @@ const Interface = () => {
                               Privilege Leave{" "}
                               {!canSelectPrivilege && plErrorMessage}
                             </option>
-
-                            <option value="C-Off Leave">C-Off Leave</option>
-
-                            <option
-                              value="First Half Leave"
-                              disabled={!hasAnyBalanceForHalfDay}
-                              style={{
-                                color: !hasAnyBalanceForHalfDay
-                                  ? "#a0a0a0"
-                                  : "inherit",
-                              }}
-                            >
-                              First Half Leave
-                            </option>
-                            <option
-                              value="Second Half Leave"
-                              disabled={!hasAnyBalanceForHalfDay}
-                              style={{
-                                color: !hasAnyBalanceForHalfDay
-                                  ? "#a0a0a0"
-                                  : "inherit",
-                              }}
-                            >
-                              Second Half Leave
-                            </option>
-
-                            <option value="Travel Leave">Travel Leave</option>
-                            <option value="Client/Site Visit">
-                              Client/Site Visit
-                            </option>
-                            <option value="Over-Time Leave">
-                              Over-Time Leave
-                            </option>
-                            <option value="LOP Leave">LOP Leave</option>
                           </select>
                         </div>
-
-                        {(formData.leaveType === "First Half Leave" ||
-                          formData.leaveType === "Second Half Leave") && (
-                          <div className="form-group mb-2">
-                            <label htmlFor="halfDayReason">
-                              Reason for Half Day
-                            </label>
-                            <select
-                              id="halfDayReason"
-                              className="form-control"
-                              value={halfDayReason}
-                              onChange={handleChange}
-                              required
-                            >
-                              <option disabled value="">
-                                Select Reason
-                              </option>
-                              <option
-                                value="Sick Leave"
-                                disabled={!canSelectSick}
-                                style={{
-                                  color: !canSelectSick ? "#a0a0a0" : "inherit",
-                                }}
-                              >
-                                Sick Leave {!canSelectSick && "(0 Balance)"}
-                              </option>
-                              <option
-                                value="Casual Leave"
-                                disabled={!canSelectCasual}
-                                style={{
-                                  color: !canSelectCasual
-                                    ? "#a0a0a0"
-                                    : "inherit",
-                                }}
-                              >
-                                Casual Leave {!canSelectCasual && "(0 Balance)"}
-                              </option>
-                              <option
-                                value="Privilege Leave"
-                                disabled={!canSelectPrivilege}
-                                style={{
-                                  color: !canSelectPrivilege
-                                    ? "#a0a0a0"
-                                    : "inherit",
-                                }}
-                              >
-                                Privilege Leave{" "}
-                                {!canSelectPrivilege && plErrorMessage}
-                              </option>
-                            </select>
-                          </div>
-                        )}
-                        {formData.leaveType === "C-Off Leave" && (
-                          <div className="form-group mb-2">
-                            <label htmlFor="cOffEarnedDate">
-                              C-Off Earned On
-                            </label>
-                            <input
-                              type="date"
-                              id="cOffEarnedDate"
-                              className="form-control"
-                              value={cOffEarnedDate}
-                              onChange={(e) =>
-                                setCOffEarnedDate(e.target.value)
-                              }
-                              required
-                            />
-                          </div>
-                        )}
-
-                        <div className="mt-auto pt-2">
-                          <button
-                            className="btn btn-primary btn-block"
-                            type="submit"
-                            disabled={staffNotFound || !formData.id}
-                          >
-                            Submit Leave
-                          </button>
+                      )}
+                      {formData.leaveType === "C-Off Leave" && (
+                        <div className="form-group mb-2">
+                          <label htmlFor="cOffEarnedDate">
+                            C-Off Earned On
+                          </label>
+                          <input
+                            type="date"
+                            id="cOffEarnedDate"
+                            className="form-control"
+                            value={cOffEarnedDate}
+                            onChange={(e) => setCOffEarnedDate(e.target.value)}
+                            required
+                          />
                         </div>
-                      </form>
-                    )}
+                      )}
+
+                      <div className="mt-auto pt-2">
+                        <button
+                          className="btn btn-primary btn-block"
+                          type="submit"
+                          disabled={staffNotFound || !formData.id}
+                        >
+                          Submit Leave
+                        </button>
+                      </div>
+                    </form>
                   </div>
                 </div>
               ) : (
@@ -2039,14 +2014,53 @@ const Interface = () => {
                     </div>
                     <span className="stub-title">Permission</span>
                   </div>
-                  <div
-                    className="card-stub"
-                    onClick={() => setActiveSideCard("leave")}
-                  >
+                  <div className="card-stub leave-card-stub">
                     <div className="stub-icon">
                       <FaCalendarAlt />
                     </div>
+
                     <span className="stub-title">Leave</span>
+
+                    <div className="leave-identification-inline">
+                      <label htmlFor="leaveIdentificationStub">
+                        Identification Code
+                      </label>
+
+                      <input
+                        id="leaveIdentificationStub"
+                        type="password"
+                        className="leave-code-input"
+                        placeholder="Enter Code"
+                        value={leaveIdentification}
+                        onChange={(e) => {
+                          setLeaveIdentification(e.target.value);
+                          setLeaveAuthMessage({ text: "", type: "" });
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && leaveIdentification) {
+                            e.preventDefault();
+                            authenticateLeave();
+                          }
+                        }}
+                      />
+
+                      {leaveAuthMessage.text && (
+                        <small
+                          className={`leave-auth-message text-${leaveAuthMessage.type}`}
+                        >
+                          {leaveAuthMessage.text}
+                        </small>
+                      )}
+
+                      <button
+                        type="button"
+                        className="leave-verify-btn"
+                        onClick={authenticateLeave}
+                        disabled={!leaveIdentification}
+                      >
+                        Verify
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
