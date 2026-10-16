@@ -137,6 +137,80 @@ const Interface = () => {
   const countdownIntervalRef = useRef(null);
   const leaveSelectionActiveRef = useRef(false);
 
+  const resetAttendancePage = useCallback(() => {
+    // Clear all ID inputs
+    setIdInputs({
+      inTime: "",
+      lunch: "",
+      outTime: "",
+      permission: "",
+      leave: "",
+    });
+
+    // Clear all shared form data
+    setFormData({
+      id: "",
+      name: "",
+      date: "",
+      day: "",
+      inTime: "",
+      systemInTime: "",
+      lunchIn: "",
+      lunchOut: "",
+      outTime: "",
+      systemOutTime: "",
+      permissionType: "",
+      hours: "",
+      dailyLeaveType: "",
+      siteComments: "",
+      leaveType: "",
+      location: "",
+      delayReason: "",
+    });
+
+    // Clear other UI/state values
+    setInTimeMethod("");
+    setActiveSideCard(null);
+
+    setLunchSubmitEnabled(false);
+    setMessage("");
+    setStaffNotFound(false);
+
+    setLunchMessage({ text: "", type: "" });
+    setOutTimeMessage({ text: "", type: "" });
+
+    setCOffEarnedDate("");
+    setIsOTElligible(false);
+    setDelayInfoMessage("");
+    setOutPermissionInfoMessage("");
+    setHalfDayReason("");
+
+    setIsInTimeLocked(false);
+    setIsOutTimeLocked(false);
+
+    setLeaveIdentification("");
+    setLeaveBalances(null);
+    setIsLeaveAuthenticated(false);
+    setLeaveAuthMessage({ text: "", type: "" });
+
+    setMissingActivities([]);
+    setAllMissingActivities([]);
+    setShowMissingFull(false);
+    setMissingTotalCount(0);
+
+    // Stop leave inactivity timers
+    clearTimeout(inactivityTimeoutRef.current);
+    clearInterval(countdownIntervalRef.current);
+
+    inactivityTimeoutRef.current = null;
+    countdownIntervalRef.current = null;
+
+    setLeaveInactivityWarning(0);
+
+    // Reset dropdown activity state
+    leaveSelectionActiveRef.current = false;
+  }, []);
+
   // --- HELPER FUNCTIONS ---
   const getCurrentDate = () => new Date().toISOString().split("T")[0];
   const getCurrentTime = () => new Date().toTimeString().slice(0, 5);
@@ -484,18 +558,14 @@ const Interface = () => {
         if (seconds <= 0) {
           clearInterval(countdownIntervalRef.current);
 
-          // Auto-close and logout
-          setActiveSideCard(null);
-          setIsLeaveAuthenticated(false);
-          setLeaveIdentification("");
-          setLeaveBalances(null);
-          setLeaveInactivityWarning(0);
+          // Auto-close and completely reset the page
+          resetAttendancePage();
         } else {
           setLeaveInactivityWarning(seconds);
         }
       }, 1000);
     }, 5000);
-  }, [activeSideCard, isLeaveAuthenticated]);
+  }, [activeSideCard, isLeaveAuthenticated, resetAttendancePage]);
 
   // Trigger timer when the card opens/authenticates
   useEffect(() => {
@@ -1675,15 +1745,7 @@ const Interface = () => {
                 >
                   <button
                     className="close-btn"
-                    onClick={() => {
-                      setActiveSideCard(null);
-                      setIsLeaveAuthenticated(false);
-                      setLeaveIdentification("");
-                      setLeaveBalances(null);
-                      setLeaveAuthMessage({ text: "", type: "" });
-                      setLeaveInactivityWarning(0);
-                      setIdInputs((prev) => ({ ...prev, leave: "" })); // Clears the ID input
-                    }}
+                    onClick={resetAttendancePage}
                     style={{
                       position: "absolute",
                       right: "15px",
@@ -1735,18 +1797,18 @@ const Interface = () => {
                             CASUAL:
                           </span>
                           <span className="fs-5 fw-bold text-dark">
-                            {leaveBalances.casualLeaves}
+                            {leaveBalances?.casualLeaves ?? 0}
                           </span>
                         </div>
                         <div>
                           <span
-                            className="text-muted fw-bold me-1"
+                            className="text-muted fw-bold me-2"
                             style={{ fontSize: "0.85rem" }}
                           >
                             SICK:
                           </span>
                           <span className="fs-5 fw-bold text-dark">
-                            {leaveBalances.sickLeaves}
+                            {leaveBalances?.sickLeaves ?? 0}
                           </span>
                         </div>
                         <div>
@@ -1757,7 +1819,7 @@ const Interface = () => {
                             PRIVILEGE:
                           </span>
                           <span className="fs-5 fw-bold text-dark">
-                            {leaveBalances.privilegeLeaves}
+                            {leaveBalances?.privilegeLeaves ?? 0}
                           </span>
                         </div>
                       </div>
@@ -1797,12 +1859,45 @@ const Interface = () => {
                           )} */}
 
                       {/* Note: ID input is still present so the user can easily see their ID. */}
-                      <StaffIdInput
-                        inputId="idLeave"
-                        value={idInputs.leave}
-                        onChange={(e) => handleIdChange(e, "leave")}
-                        staffNotFound={staffNotFound}
-                      />
+                      <div className="form-group mb-2">
+                        <label htmlFor="idLeave">Enter your ID</label>
+
+                        <div className="input-group">
+                          <div className="input-group-prepend">
+                            <span className="input-group-text">
+                              {PS_PREFIX}
+                            </span>
+                          </div>
+
+                          <input
+                            type="text"
+                            id="idLeave"
+                            className="form-control"
+                            value={idInputs.leave}
+                            onChange={(e) => handleIdChange(e, "leave")}
+                            maxLength={6}
+                            pattern="[A-Z0-9]*"
+                            inputMode="text"
+                            autoComplete="off"
+                            placeholder="0000"
+                            readOnly={isLeaveAuthenticated}
+                            style={
+                              isLeaveAuthenticated
+                                ? {
+                                    backgroundColor: "#e9ecef",
+                                    cursor: "not-allowed",
+                                  }
+                                : {}
+                            }
+                          />
+                        </div>
+
+                        {staffNotFound && (
+                          <small className="text-danger">
+                            Staff ID not found. Please check your ID.
+                          </small>
+                        )}
+                      </div>
 
                       <div className="form-group mb-2">
                         <label>Name</label>
