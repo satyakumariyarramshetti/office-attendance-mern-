@@ -94,22 +94,25 @@ async function updateLeaveBalance(employeeId, leaveType, options = {}) {
 
     /* -------------------------------------------------------------
        HALF DAY LEAVES (First / Second Half)
-       Reason must be: Sick Leave / Casual Leave / Privilege Leave
+       Reason must be: Sick Leave / Casual Leave / Privilege Leave / LOP Leave
     --------------------------------------------------------------*/
     if (leaveType === "First Half Leave" || leaveType === "Second Half Leave") {
       if (
         !halfDayReason ||
-        !["Sick Leave", "Casual Leave", "Privilege Leave"].includes(halfDayReason)
+        !["Sick Leave", "Casual Leave", "Privilege Leave", "LOP Leave"].includes(halfDayReason)
       ) {
         return {
           success: false,
-          message: "Half-day reason must be Sick Leave, Casual Leave or Privilege Leave."
+          message: "Half-day reason must be Sick Leave, Casual Leave, Privilege Leave or LOP Leave."
         };
       }
 
-      // let result;
-
-      if (halfDayReason === "Sick Leave") {
+      if (halfDayReason === "LOP Leave") {
+        applyLOP(b, leaveToDeduct);
+        isLOP = true;
+        deductedFrom = 'LOP Leave';
+        message = `0.5 day recorded as Loss of Pay (LOP).`;
+      } else if (halfDayReason === "Sick Leave") {
         if (b.sickLeaves >= leaveToDeduct) {
           b.sickLeaves -= leaveToDeduct;
           deductedFrom = 'Sick Leave';
@@ -171,6 +174,7 @@ async function updateLeaveBalance(employeeId, leaveType, options = {}) {
           sickLeaves: b.sickLeaves,
           privilegeLeaves: b.privilegeLeaves,
           monthlyLeaveStatus: b.monthlyLeaveStatus,
+          lopLeaves: b.lopLeaves,
         }
       };
     }

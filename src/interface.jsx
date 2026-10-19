@@ -1233,7 +1233,7 @@ const Interface = () => {
       !halfDayReason
     ) {
       alert(
-        "Please select reason (Sick / Casual / Privilege) for half-day leave.",
+        "Please select a reason (Sick / Casual / Privilege / LOP) for half-day leave.",
       );
       return;
     }
@@ -1316,9 +1316,6 @@ const Interface = () => {
     }
   }
 
-  // If they have absolutely no leaves to deduct from, hide half-day options too
-  const hasAnyBalanceForHalfDay =
-    canSelectSick || canSelectCasual || canSelectPrivilege;
   // ----------------------------------------
 
   const handleLeaveTypeFocus = () => {
@@ -2172,26 +2169,10 @@ const Interface = () => {
 
                           <option value="C-Off Leave">C-Off Leave</option>
 
-                          <option
-                            value="First Half Leave"
-                            disabled={!hasAnyBalanceForHalfDay}
-                            style={{
-                              color: !hasAnyBalanceForHalfDay
-                                ? "#a0a0a0"
-                                : "inherit",
-                            }}
-                          >
+                          <option value="First Half Leave">
                             First Half Leave
                           </option>
-                          <option
-                            value="Second Half Leave"
-                            disabled={!hasAnyBalanceForHalfDay}
-                            style={{
-                              color: !hasAnyBalanceForHalfDay
-                                ? "#a0a0a0"
-                                : "inherit",
-                            }}
-                          >
+                          <option value="Second Half Leave">
                             Second Half Leave
                           </option>
 
@@ -2280,6 +2261,7 @@ const Interface = () => {
                               Privilege Leave{" "}
                               {!canSelectPrivilege && plErrorMessage}
                             </option>
+                            <option value="LOP Leave">LOP Leave</option>
                           </select>
                         </div>
                       )}
