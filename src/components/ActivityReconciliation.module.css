@@ -1,0 +1,448 @@
+/* src/components/ActivityReconciliation.module.css */
+
+/* ======================================================== */
+/* 1. TOP COMPACT PILL WIDGET (Inside InTime Card)          */
+/* ======================================================== */
+.actrecon_top_pill {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 6px 10px !important;
+  border-radius: 8px !important;
+  border: 1px solid transparent !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+  user-select: none !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.actrecon_top_pill:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12) !important;
+}
+
+.actrecon_pill_danger {
+  background: linear-gradient(90deg, #fff1f0 0%, #ffe8e6 100%) !important;
+  border-color: #ffa39e !important;
+}
+
+.actrecon_pill_success {
+  background: linear-gradient(90deg, #f6ffed 0%, #e6f4ea 100%) !important;
+  border-color: #b7eb8f !important;
+}
+
+.actrecon_pill_left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  overflow: hidden !important;
+}
+
+.actrecon_icon_danger {
+  color: #e02424 !important;
+  flex-shrink: 0 !important;
+  font-size: 15px !important;
+  animation: actrecon_pulse 1.8s infinite !important;
+}
+
+.actrecon_icon_success {
+  color: #16a34a !important;
+  flex-shrink: 0 !important;
+  font-size: 15px !important;
+}
+
+.actrecon_text_danger {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #b91c1c !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.actrecon_text_success {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #15803d !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.actrecon_text_loading {
+  font-size: 11px !important;
+  color: #6b7280 !important;
+}
+
+.actrecon_view_badge_danger {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  padding: 3px 8px !important;
+  border-radius: 9999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  flex-shrink: 0 !important;
+}
+
+.actrecon_view_badge_success {
+  background-color: #f0fdf4 !important;
+  color: #16a34a !important;
+  border: 1px solid #bbf7d0 !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  padding: 3px 8px !important;
+  border-radius: 9999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  flex-shrink: 0 !important;
+}
+
+@keyframes actrecon_pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.8; }
+}
+
+/* ======================================================== */
+/* 2. FULLSCREEN CENTERED MODAL DIALOG                      */
+/* ======================================================== */
+.actrecon_modal_overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: rgba(15, 23, 42, 0.7) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  z-index: 999999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20px !important;
+  box-sizing: border-box !important;
+  animation: actrecon_fade 0.2s ease-out forwards !important;
+}
+
+.actrecon_modal_container {
+  background: #ffffff !important;
+  border-radius: 12px !important;
+  width: min(94vw, 1100px) !important; /* Wide space */
+  max-height: 88vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important;
+  overflow: hidden !important;
+  margin: auto !important;
+  animation: actrecon_zoomIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+@keyframes actrecon_fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes actrecon_zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Header */
+.actrecon_modal_header {
+  padding: 14px 20px !important;
+  background-color: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+}
+
+.actrecon_header_title_box {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.actrecon_header_icon {
+  color: #0284c7 !important;
+  font-size: 22px !important;
+}
+
+.actrecon_header_h6 {
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  margin: 0 !important;
+  line-height: 1.2 !important;
+}
+
+.actrecon_header_sub {
+  font-size: 12px !important;
+  color: #64748b !important;
+  margin: 2px 0 0 0 !important;
+}
+
+.actrecon_btn_close {
+  background: transparent !important;
+  border: none !important;
+  font-size: 26px !important;
+  line-height: 1 !important;
+  color: #64748b !important;
+  cursor: pointer !important;
+  padding: 2px 8px !important;
+  border-radius: 6px !important;
+  transition: background 0.15s, color 0.15s !important;
+}
+
+.actrecon_btn_close:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Modal Body */
+.actrecon_modal_body {
+  padding: 16px 20px !important;
+  overflow-y: auto !important;
+  flex: 1 !important;
+  background-color: #ffffff !important;
+}
+
+/* Controls Bar */
+.actrecon_controls_bar {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-bottom: 14px !important;
+}
+
+.actrecon_select_wrap {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.actrecon_select_label {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #334155 !important;
+  margin: 0 !important;
+}
+
+.actrecon_month_dropdown {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: 5px 28px 5px 10px !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  cursor: pointer !important;
+  outline: none !important;
+}
+
+.actrecon_summary_row {
+  display: flex !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.actrecon_badge_stat {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+  border: 1px solid transparent !important;
+}
+
+.actrecon_stat_danger {
+  background-color: #fef2f2 !important;
+  border-color: #fecaca !important;
+  color: #dc2626 !important;
+}
+
+.actrecon_stat_warning {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+  color: #d97706 !important;
+}
+
+.actrecon_stat_success {
+  background-color: #f0fdf4 !important;
+  border-color: #bbf7d0 !important;
+  color: #16a34a !important;
+}
+
+/* Tabs */
+.actrecon_tab_group {
+  display: inline-flex !important;
+  border-radius: 8px !important;
+  padding: 3px !important;
+  background-color: #f1f5f9 !important;
+  margin-bottom: 12px !important;
+}
+
+.actrecon_tab_btn {
+  border: none !important;
+  background: transparent !important;
+  padding: 5px 14px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #64748b !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.actrecon_tab_active_dark {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+
+.actrecon_tab_active_danger {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+.actrecon_tab_active_warning {
+  background-color: #f59e0b !important;
+  color: #ffffff !important;
+}
+
+/* Table Area */
+.actrecon_table_card {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  overflow-x: auto !important;
+  max-height: 420px !important;
+  background: #ffffff !important;
+}
+
+.actrecon_custom_table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  font-size: 13px !important;
+  text-align: left !important;
+  margin: 0 !important;
+}
+
+.actrecon_custom_table thead {
+  position: sticky !important;
+  top: 0 !important;
+  background-color: #f8fafc !important;
+  z-index: 5 !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+}
+
+.actrecon_custom_table th {
+  padding: 10px 14px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #64748b !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border: none !important;
+}
+
+.actrecon_custom_table td {
+  padding: 10px 14px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  border-top: none !important;
+  vertical-align: middle !important;
+  color: #334155 !important;
+}
+
+.actrecon_row_activity_missed {
+  background-color: #fff7f7 !important;
+}
+
+.actrecon_row_punch_missed {
+  background-color: #fffdf5 !important;
+}
+
+.actrecon_date_text {
+  font-weight: 700 !important;
+  color: #0f172a !important;
+}
+
+.actrecon_time_detail {
+  font-size: 11px !important;
+  color: #64748b !important;
+  margin-top: 2px !important;
+}
+
+.actrecon_pill_status {
+  display: inline-block !important;
+  padding: 3px 8px !important;
+  border-radius: 4px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+}
+
+.actrecon_pill_status_danger {
+  background-color: #fee2e2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fca5a5 !important;
+}
+
+.actrecon_pill_status_warning {
+  background-color: #fef3c7 !important;
+  color: #b45309 !important;
+  border: 1px solid #fcd34d !important;
+}
+
+.actrecon_pill_status_success {
+  background-color: #dcfce7 !important;
+  color: #15803d !important;
+  border: 1px solid #86efac !important;
+}
+
+.actrecon_empty_state {
+  text-align: center !important;
+  padding: 35px 20px !important;
+  background-color: #f8fafc !important;
+  border: 1px dashed #cbd5e1 !important;
+  border-radius: 8px !important;
+}
+
+/* Footer */
+.actrecon_modal_footer {
+  padding: 12px 20px !important;
+  background-color: #f8fafc !important;
+  border-top: 1px solid #e2e8f0 !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  flex-shrink: 0 !important;
+}
+
+.actrecon_btn_done {
+  background-color: #475569 !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: 6px 18px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: background 0.15s !important;
+}
+
+.actrecon_btn_done:hover {
+  background-color: #334155 !important;
+}

@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import "./interface.css";
 import { Link } from "react-router-dom";
+import ActivityReconciliation from "./components/ActivityReconciliation";
 // I added FaCalendarAlt here
 import {
   FaClock,
@@ -127,11 +128,6 @@ const Interface = () => {
     type: "",
   });
 
-  const [missingActivities, setMissingActivities] = useState([]);
-  const [allMissingActivities, setAllMissingActivities] = useState([]);
-  const [showMissingFull, setShowMissingFull] = useState(false);
-  const [missingTotalCount, setMissingTotalCount] = useState(0);
-
   const [leaveInactivityWarning, setLeaveInactivityWarning] = useState(0);
   const inactivityTimeoutRef = useRef(null);
   const countdownIntervalRef = useRef(null);
@@ -198,10 +194,6 @@ const Interface = () => {
     setIsLeaveDateLocked(false);
     setLeaveAuthMessage({ text: "", type: "" });
 
-    setMissingActivities([]);
-    setAllMissingActivities([]);
-    setShowMissingFull(false);
-    setMissingTotalCount(0);
 
     // Stop leave inactivity timers
     clearTimeout(inactivityTimeoutRef.current);
@@ -245,31 +237,6 @@ const Interface = () => {
     return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
   };
 
-  const checkMissingActivities = useCallback(
-    async (employeeId) => {
-      if (!employeeId) return;
-
-      try {
-        const res = await fetch(
-          `${API_BASE}/api/activity-reminder/missing-activities?employeeId=${employeeId}`,
-        );
-
-        const data = await res.json();
-
-        // only recent 3 days for UI
-        setMissingActivities(data.recentMissingDays || []);
-
-        // complete list for View Full
-        setAllMissingActivities(data.data || []);
-
-        setMissingTotalCount(data.totalMissingDays || 0);
-      } catch (err) {
-        console.log(err);
-        setMissingActivities([]);
-      }
-    },
-    [API_BASE],
-  );
 
   const checkExistingLeave = useCallback(
     async (employeeId, date) => {
@@ -475,19 +442,13 @@ const Interface = () => {
           delayReason: attendanceData.delayReason || prev.delayReason || "",
         }));
 
-        if (
-          context === "inTime" ||
-          context === "lunch" ||
-          context === "outTime"
-        ) {
-          checkMissingActivities(fullId);
-        }
+       
       } catch (err) {
         console.error("Error fetching attendance:", err);
         setFormData((prev) => ({ ...prev, id: fullId, name: staffName }));
       }
     },
-    [API_BASE, checkMissingActivities],
+    [API_BASE],
   );
 
   // --- useEffects (no changes needed here) ---
@@ -967,10 +928,6 @@ const Interface = () => {
         setActiveSideCard(null);
         setIsInTimeLocked(false);
         setIsOutTimeLocked(false);
-        setMissingActivities([]);
-        setAllMissingActivities([]);
-        setMissingTotalCount(0);
-        setShowMissingFull(false);
         setLeaveIdentification("");
         setLeaveBalances(null);
         setIsLeaveAuthenticated(false);
@@ -1477,6 +1434,16 @@ const Interface = () => {
                   <FaClock className="text-primary fs-4 mt-1" />
                 </div>
               </h5>
+
+               {formData.id && (
+                <div className="mb-2">
+                  <ActivityReconciliation
+                    employeeId={formData.id}
+                    apiBase={API_BASE}
+                  />
+                </div>
+              )}
+
               <form
                 id="inTimeForm"
                 className="d-flex flex-column h-100"
@@ -1595,29 +1562,7 @@ const Interface = () => {
                     </div>
                   )}
 
-                {missingTotalCount > 0 && (
-                  <div className="activity-alert">
-                    <b>⚠️ Activity Sheet Pending</b>
-
-                    <p>Total Missing Days : {missingTotalCount}</p>
-
-                    <ul>
-                      {missingActivities.map((item, index) => (
-                        <li key={index}>{item.missingActivityDate}</li>
-                      ))}
-                    </ul>
-
-                    {missingTotalCount > 3 && (
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-primary"
-                        onClick={() => setShowMissingFull(true)}
-                      >
-                        View Full
-                      </button>
-                    )}
-                  </div>
-                )}
+               
 
                 <div className="mt-auto">
                   <button
@@ -2362,50 +2307,6 @@ const Interface = () => {
           </div>
         </div>
       </div>
-      {showMissingFull && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              background: "#fff",
-              padding: "20px",
-              borderRadius: "10px",
-              width: "400px",
-              maxHeight: "80vh",
-              overflowY: "auto",
-            }}
-          >
-            <h5>Complete Missing Activity Dates</h5>
-
-            <p>Total : {missingTotalCount} Days</p>
-
-            <ul>
-              {allMissingActivities.map((item, index) => (
-                <li key={index}>{item.missingActivityDate}</li>
-              ))}
-            </ul>
-
-            <button
-              className="btn btn-danger"
-              onClick={() => setShowMissingFull(false)}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
