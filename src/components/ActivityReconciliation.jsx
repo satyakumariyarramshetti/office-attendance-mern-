@@ -103,7 +103,10 @@ const ActivityReconciliation = ({ employeeId, apiBase }) => {
 
   // Modal Table records & filter
   const modalRecords = (data?.records || []).filter((item) => {
+    if (item.status === "COMPLETED") return false;
+
     if (activeTab === "ALL") return true;
+
     return item.status === activeTab;
   });
 
@@ -132,7 +135,7 @@ const ActivityReconciliation = ({ employeeId, apiBase }) => {
                   Activity Sheet & Attendance Breakdown
                 </h6>
                 <p className={styles.actrecon_header_sub}>
-                  Accumulated reconciliation starting from September 2026
+                  starting from September 2026
                 </p>
               </div>
             </div>
@@ -184,11 +187,7 @@ const ActivityReconciliation = ({ employeeId, apiBase }) => {
                 >
                   Selected Period Missed: <b>{modalViewActivityMissed}</b>
                 </span>
-                <span
-                  className={`${styles.actrecon_badge_stat} ${styles.actrecon_stat_success}`}
-                >
-                  Completed: <b>{data?.summary?.totalCompleted || 0}</b>
-                </span>
+                
               </div>
             </div>
 
@@ -239,7 +238,7 @@ const ActivityReconciliation = ({ employeeId, apiBase }) => {
             ) : modalRecords.length === 0 ? (
               <div className={styles.actrecon_empty_state}>
                 <FaCheckCircle className="text-success fs-3 mb-2" />
-                <div className="fw-bold text-dark">No discrepancies found</div>
+                <div className="fw-bold text-dark">No data found</div>
                 <small className="text-muted">
                   Everything matches for this period.
                 </small>
@@ -327,13 +326,7 @@ const ActivityReconciliation = ({ employeeId, apiBase }) => {
                                 Punch Missed
                               </span>
                             )}
-                            {row.status === "COMPLETED" && (
-                              <span
-                                className={`${styles.actrecon_pill_status} ${styles.actrecon_pill_status_success}`}
-                              >
-                                Completed
-                              </span>
-                            )}
+                           
                             {/* 🌟 NEW: IN PROGRESS BADGE FOR TODAY */}
                             {row.status === "IN_PROGRESS" && (
                               <span

@@ -5,8 +5,6 @@ const Attendance = require("../models/Attendance");
 const EmployeeDailyActivity = require("../models/EmployeeDailyActivity");
 const Staff = require("../models/Staff");
 
-
-
 // Helper to format Date object into YYYY-MM-DD safely
 const toDateString = (dateObj) => {
   const d = new Date(dateObj);
@@ -29,8 +27,18 @@ router.get("/activity-month-options", (req, res) => {
     const currentMonth = currentDate.getMonth() + 1;
 
     const monthNames = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
     ];
 
     // Option to view all accumulated records
@@ -39,20 +47,20 @@ router.get("/activity-month-options", (req, res) => {
         label: "All (Since Sep 2026)",
         month: "ALL",
         year: "ALL",
-        value: "ALL"
-      }
+        value: "ALL",
+      },
     ];
 
     for (let y = currentYear; y >= startYear; y--) {
-      const endM = (y === currentYear) ? currentMonth : 12;
-      const beginM = (y === startYear) ? startMonth : 1;
+      const endM = y === currentYear ? currentMonth : 12;
+      const beginM = y === startYear ? startMonth : 1;
 
       for (let m = endM; m >= beginM; m--) {
         options.push({
           label: `${monthNames[m - 1]} ${y}`,
           month: m,
           year: y,
-          value: `${y}-${String(m).padStart(2, "0")}`
+          value: `${y}-${String(m).padStart(2, "0")}`,
         });
       }
     }
@@ -82,9 +90,16 @@ router.get("/monthly-activity-reconciliation", async (req, res) => {
     if (staff.activityRequired === false) {
       return res.json({
         activityRequired: false,
-        accumulatedSummary: { totalActivityMissed: 0, totalAttendanceMissed: 0 },
-        summary: { totalActivityMissed: 0, totalAttendanceMissed: 0, totalCompleted: 0 },
-        records: []
+        accumulatedSummary: {
+          totalActivityMissed: 0,
+          totalAttendanceMissed: 0,
+        },
+        summary: {
+          totalActivityMissed: 0,
+          totalAttendanceMissed: 0,
+          totalCompleted: 0,
+        },
+        records: [],
       });
     }
 
@@ -100,8 +115,8 @@ router.get("/monthly-activity-reconciliation", async (req, res) => {
       id: employeeId,
       date: {
         $gte: ACCUMULATION_START_STR,
-        $lte: todayStr
-      }
+        $lte: todayStr,
+      },
     }).lean();
 
     // 2. Fetch Activity Sheet from Sep 1, 2026 to Today
@@ -112,8 +127,8 @@ router.get("/monthly-activity-reconciliation", async (req, res) => {
       employeeId: employeeId.toUpperCase(),
       date: {
         $gte: ACCUMULATION_START_DATE,
-        $lte: endOfToday
-      }
+        $lte: endOfToday,
+      },
     }).lean();
 
     // Map Attendance by "YYYY-MM-DD"
@@ -150,9 +165,11 @@ router.get("/monthly-activity-reconciliation", async (req, res) => {
       const hasInTime = att && att.inTime && att.inTime.trim() !== "";
       const hasOutTime = att && att.outTime && att.outTime.trim() !== "";
       const hasActivity = act && act.totalHours > 0;
-      const isToday = (dateStr === todayStr);
+      const isToday = dateStr === todayStr;
 
-      const attendanceHours = att ? (att.hours || (hasInTime ? "Punched" : "-")) : "Not Marked";
+      const attendanceHours = att
+        ? att.hours || (hasInTime ? "Punched" : "-")
+        : "Not Marked";
       const activityHours = act ? `${act.totalHours} hrs` : "0 hrs";
 
       let status = "COMPLETED";
@@ -184,15 +201,17 @@ router.get("/monthly-activity-reconciliation", async (req, res) => {
         totalAccCompleted++;
       }
 
-      allReconciledRecords.push({
-        date: dateStr,
-        attendanceInTime: att ? att.inTime : null,
-        attendanceOutTime: att ? att.outTime : null,
-        workingHours: attendanceHours,
-        activityHours: activityHours,
-        status,
-        remarks
-      });
+      if (status !== "COMPLETED") {
+        allReconciledRecords.push({
+          date: dateStr,
+          attendanceInTime: att ? att.inTime : null,
+          attendanceOutTime: att ? att.outTime : null,
+          workingHours: attendanceHours,
+          activityHours: activityHours,
+          status,
+          remarks,
+        });
+      }
     });
 
     // 3. Filter records for the selected month/year view in the modal
@@ -203,11 +222,19 @@ router.get("/monthly-activity-reconciliation", async (req, res) => {
 
     if (month && month !== "ALL" && year && year !== "ALL") {
       const monthPrefix = `${year}-${String(month).padStart(2, "0")}`;
-      displayRecords = allReconciledRecords.filter((r) => r.date.startsWith(monthPrefix));
+      displayRecords = allReconciledRecords.filter((r) =>
+        r.date.startsWith(monthPrefix),
+      );
 
-      monthActivityMissed = displayRecords.filter((r) => r.status === "ACTIVITY_MISSED").length;
-      monthAttendanceMissed = displayRecords.filter((r) => r.status === "ATTENDANCE_MISSED").length;
-      monthCompleted = displayRecords.filter((r) => r.status === "COMPLETED").length;
+      monthActivityMissed = displayRecords.filter(
+        (r) => r.status === "ACTIVITY_MISSED",
+      ).length;
+      monthAttendanceMissed = displayRecords.filter(
+        (r) => r.status === "ATTENDANCE_MISSED",
+      ).length;
+      monthCompleted = displayRecords.filter(
+        (r) => r.status === "COMPLETED",
+      ).length;
     }
 
     return res.json({
@@ -218,15 +245,15 @@ router.get("/monthly-activity-reconciliation", async (req, res) => {
         totalAttendanceMissed: totalAccAttendanceMissed,
         totalCompleted: totalAccCompleted,
         totalDiscrepancies: totalAccActivityMissed + totalAccAttendanceMissed,
-        since: "Sep 2026"
+        since: "Sep 2026",
       },
       summary: {
         totalActivityMissed: monthActivityMissed,
         totalAttendanceMissed: monthAttendanceMissed,
         totalCompleted: monthCompleted,
-        totalDiscrepancies: monthActivityMissed + monthAttendanceMissed
+        totalDiscrepancies: monthActivityMissed + monthAttendanceMissed,
       },
-      records: displayRecords
+      records: displayRecords,
     });
   } catch (error) {
     console.error("Reconciliation error:", error);
