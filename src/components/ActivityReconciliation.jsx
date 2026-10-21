@@ -187,7 +187,6 @@ const ActivityReconciliation = ({ employeeId, apiBase }) => {
                 >
                   Selected Period Missed: <b>{modalViewActivityMissed}</b>
                 </span>
-                
               </div>
             </div>
 
@@ -326,7 +325,7 @@ const ActivityReconciliation = ({ employeeId, apiBase }) => {
                                 Punch Missed
                               </span>
                             )}
-                           
+
                             {/* 🌟 NEW: IN PROGRESS BADGE FOR TODAY */}
                             {row.status === "IN_PROGRESS" && (
                               <span
@@ -392,11 +391,7 @@ const ActivityReconciliation = ({ employeeId, apiBase }) => {
           )}
 
           <div>
-            {loading ? (
-              <span className={styles.actrecon_text_loading}>
-                Checking activities...
-              </span>
-            ) : totalAccIssues > 0 ? (
+            {totalAccIssues > 0 ? (
               <span className={styles.actrecon_text_danger}>
                 {accActivityMissed > 0
                   ? `${accActivityMissed} Day(s) Activity Missed`
