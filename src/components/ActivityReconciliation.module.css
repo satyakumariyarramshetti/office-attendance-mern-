@@ -446,3 +446,8 @@
 .actrecon_btn_done:hover {
   background-color: #334155 !important;
 }
+.actrecon_pill_loading {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #6b7280;
+}

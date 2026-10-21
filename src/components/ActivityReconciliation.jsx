@@ -17,6 +17,7 @@ const ActivityReconciliation = ({ employeeId, apiBase }) => {
   const [selectedMonthYear, setSelectedMonthYear] = useState("");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [showFullModal, setShowFullModal] = useState(false);
   const [activeTab, setActiveTab] = useState("ALL"); // ALL | ACTIVITY_MISSED | ATTENDANCE_MISSED
 
@@ -76,16 +77,29 @@ const ActivityReconciliation = ({ employeeId, apiBase }) => {
 
     const fetchData = async () => {
       setLoading(true);
+      setHasLoaded(false);
+
       try {
         const res = await fetch(
           `${BASE_URL}/api/activity-reminder/monthly-activity-reconciliation?employeeId=${encodeURIComponent(
             employeeId,
           )}&${queryParam}`,
         );
+
         const result = await res.json();
+
+        if (!res.ok) {
+          throw new Error(
+            result?.message || "Failed to load reconciliation data",
+          );
+        }
+
         setData(result);
+        setHasLoaded(true);
       } catch (err) {
         console.error("Failed to load reconciliation data:", err);
+        setData(null);
+        setHasLoaded(false);
       } finally {
         setLoading(false);
       }
@@ -372,37 +386,45 @@ const ActivityReconciliation = ({ employeeId, apiBase }) => {
       <div
         onClick={() => setShowFullModal(true)}
         className={`${styles.actrecon_top_pill} ${
-          totalAccIssues > 0
-            ? styles.actrecon_pill_danger
-            : styles.actrecon_pill_success
+          !hasLoaded
+            ? styles.actrecon_pill_loading
+            : totalAccIssues > 0
+              ? styles.actrecon_pill_danger
+              : styles.actrecon_pill_success
         }`}
         title="Click to view activity breakdown starting from September 2026"
       >
         <div className={styles.actrecon_pill_left}>
-          {loading ? (
-            <div
-              className="spinner-border spinner-border-sm text-secondary"
-              role="status"
-            ></div>
-          ) : totalAccIssues > 0 ? (
-            <FaExclamationCircle className={styles.actrecon_icon_danger} />
-          ) : (
-            <FaCheckCircle className={styles.actrecon_icon_success} />
-          )}
+          {!hasLoaded ? (
+            <>
+              <div
+                className="spinner-border spinner-border-sm text-secondary"
+                role="status"
+              ></div>
 
-          <div>
-            {totalAccIssues > 0 ? (
+              <span className={styles.actrecon_text_loading}>
+                Checking activities...
+              </span>
+            </>
+          ) : totalAccIssues > 0 ? (
+            <>
+              <FaExclamationCircle className={styles.actrecon_icon_danger} />
+
               <span className={styles.actrecon_text_danger}>
                 {accActivityMissed > 0
                   ? `${accActivityMissed} Day(s) Activity Missed`
                   : `${accPunchMissed} Day(s) Punch Missed`}
               </span>
-            ) : (
+            </>
+          ) : (
+            <>
+              <FaCheckCircle className={styles.actrecon_icon_success} />
+
               <span className={styles.actrecon_text_success}>
                 Activities Up to Date (Since Sep 2026)
               </span>
-            )}
-          </div>
+            </>
+          )}
         </div>
 
         <span
