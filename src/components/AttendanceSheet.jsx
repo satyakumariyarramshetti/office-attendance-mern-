@@ -1370,7 +1370,7 @@ const AttendanceSheet = () => {
                         <td>{isHoliday ? "—" : workH}</td>
                         <td>{isHoliday ? "—" : grossH}</td>
 
-                        <td>{record.leaveType || "—"}</td>
+                       <td>{record.dailyLeaveType || "—"}</td>
                         <td className="comment-cell">
                           {record.siteComments || "—"}
                         </td>
