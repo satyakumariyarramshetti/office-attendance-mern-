@@ -453,7 +453,9 @@ const AttendanceSheet = () => {
           ? true
           : selectedCategory === "N/A"
             ? isNoCategory(record)
-            : leaveTypeValue === selectedCategory;
+            : selectedCategory === "C-off Leave"
+              ? leaveTypeValue.toLowerCase().startsWith("c-off leave")
+              : leaveTypeValue === selectedCategory;
 
       // Gross Hours
       let grossHoursMatch = true;
@@ -1039,10 +1041,16 @@ const AttendanceSheet = () => {
     records.forEach((record) => {
       const category = String(record.leaveType || "").trim();
 
-      if (category) {
-        categories.add(category);
-      }
+      if (!category) return;
+
+      // Keep all C-off Leave variations out of dynamic options.
+      if (category.toLowerCase().startsWith("c-off leave")) return;
+
+      categories.add(category);
     });
+
+    // Add exactly one standard C-off Leave option.
+    categories.add("C-off Leave");
 
     return [...categories].sort((a, b) => a.localeCompare(b));
   }, [records]);
@@ -1370,7 +1378,7 @@ const AttendanceSheet = () => {
                         <td>{isHoliday ? "—" : workH}</td>
                         <td>{isHoliday ? "—" : grossH}</td>
 
-                       <td>{record.dailyLeaveType || "—"}</td>
+                        <td>{record.dailyLeaveType || "—"}</td>
                         <td className="comment-cell">
                           {record.siteComments || "—"}
                         </td>
