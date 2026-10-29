@@ -499,6 +499,52 @@ router.get('/holidays/all', async (req, res) => {
   res.json(holidays);
 });
 
+router.patch('/time', async (req, res) => {
+  const { id, date, name, day, inTime, lunchOut, lunchIn, outTime } = req.body;
+  const timeFields = { inTime, lunchOut, lunchIn, outTime };
+
+  if (!id || !date || !name || !day) {
+    return res.status(400).json({ error: 'ID, date, name, and day are required' });
+  }
+
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+    Number.isNaN(new Date(`${date}T00:00:00`).getTime())
+  ) {
+    return res.status(400).json({ error: 'A valid date is required' });
+  }
+
+  for (const [field, value] of Object.entries(timeFields)) {
+    if (
+      typeof value !== 'string' ||
+      (value !== '' && !/^([01]\d|2[0-3]):[0-5]\d$/.test(value))
+    ) {
+      return res.status(400).json({ error: `Invalid ${field} value` });
+    }
+  }
+
+  try {
+    const updatedAttendance = await Attendance.findOneAndUpdate(
+      { id: String(id).trim(), date },
+      {
+        $set: Object.fromEntries(
+          Object.entries(timeFields).map(([field, value]) => [
+            field,
+            value || null,
+          ]),
+        ),
+        $setOnInsert: { name, day },
+      },
+      { new: true, upsert: true, runValidators: true },
+    );
+
+    res.json(updatedAttendance);
+  } catch (error) {
+    console.error('Error updating attendance times:', error);
+    res.status(500).json({ error: 'Failed to update attendance times' });
+  }
+});
+
 /* ------------------------------------------------------------------
    ADMIN: GET ALL ATTENDANCE (WITH DYNAMIC CALENDAR & HOLIDAYS)
 ------------------------------------------------------------------ */
