@@ -67,6 +67,17 @@ const AttendanceSheet = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [holidayData, setHolidayData] = useState({ date: "", name: "" });
   const [grossHoursLimit, setGrossHoursLimit] = useState("6");
+  const [leaveColor, setLeaveColor] = useState(
+  () => localStorage.getItem("exportLeaveColor") || "#26015b",
+);
+const [missingColor, setMissingColor] = useState(
+  () => localStorage.getItem("exportMissingColor") || "#da0202",
+);
+
+useEffect(() => {
+  localStorage.setItem("exportLeaveColor", leaveColor);
+  localStorage.setItem("exportMissingColor", missingColor);
+}, [leaveColor, missingColor]);
   const [isGrossHoursFilterActive, setIsGrossHoursFilterActive] =
     useState(false);
   // --- Auth Check ---
@@ -609,16 +620,14 @@ const AttendanceSheet = () => {
   ]);
 
   const exportToExcel = () => {
-    // 1. డేటాను సార్ట్ చేయడం (1st to Last Date)
+    const toKey = (v) => String(v || "").slice(0, 10);
+
     const sortedRecords = [...filteredRecords].sort(
       (a, b) => new Date(a.date) - new Date(b.date),
     );
 
-    const allRows = sortedRecords.map((record) => {
-      const lunchHours = calculateTimeDifference(
-        record.lunchOut,
-        record.lunchIn,
-      );
+    const buildRow = (record) => {
+      const lunchHours = calculateTimeDifference(record.lunchOut, record.lunchIn);
       const workingHours = calculateNetWorkingHours(
         record.inTime,
         record.outTime,
@@ -650,57 +659,133 @@ const AttendanceSheet = () => {
         Hours: record.hours || "N/A",
         "Leave Type": isHoliday
           ? `Holiday - ${record.holidayName}`
-          : record.missingAttendance
-            ? "Employee Missed Attendance"
-            : getLeaveOrHoliday(record),
+          : getLeaveOrHoliday(record),
       };
-    });
+    };
+
+    // Month motham fill cheyyali ante: month+year select chesi, vere filters lekapovali
+    const canFillMonth =
+      selectedMonth &&
+      selectedYear &&
+      !selectedDate &&
+      punchFilter === "all" &&
+      !isGrossHoursFilterActive &&
+      selectedCategory === "all";
+
+    const todayKey = toKeyFromDate(new Date());
+    function toKeyFromDate(d) {
+      return [
+        d.getFullYear(),
+        String(d.getMonth() + 1).padStart(2, "0"),
+        String(d.getDate()).padStart(2, "0"),
+      ].join("-");
+    }
+    const hexToRgb = (hex) => hex.replace("#", "").toUpperCase();
 
     const wb = XLSX.utils.book_new();
-    const uniqueIds = [...new Set(allRows.map((row) => row.ID))].sort(); // Tabs Order Wise
+    const uniqueIds = [...new Set(sortedRecords.map((r) => r.id))].sort();
 
     uniqueIds.forEach((empId) => {
-      const empData = allRows.filter((row) => row.ID === empId);
-      const ws = XLSX.utils.json_to_sheet(empData);
+      const empRecords = sortedRecords.filter(
+        (r) => String(r.id) === String(empId),
+      );
 
-      // --- స్టైలింగ్ లాజిక్ (Borders & Alignment) ---
+      // 1. Existing records -> status tag
+      const entries = empRecords.map((r) => ({
+        dateKey: toKey(r.date),
+        row: buildRow(r),
+        status: r.holidayName
+          ? "holiday"
+          : r.leaveType && !isNoCategory(r)
+            ? "leave"
+            : "normal",
+      }));
+
+      // 2. Record lekapothe aa dates ni red row ga add cheyyadam
+      if (canFillMonth) {
+        const year = Number(selectedYear);
+        const month = Number(selectedMonth);
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const existing = new Set(entries.map((e) => e.dateKey));
+        const staff = staffRecords.find((s) => String(s.id).trim() === String(empId).trim());
+        const joining = staff?.onboardingDate ? toKey(staff.onboardingDate) : "";
+        const empName = empRecords[0]?.name || staff?.name || "";
+
+        for (let d = 1; d <= daysInMonth; d++) {
+          const dateKey = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+          if (existing.has(dateKey)) continue;
+          if (dateKey > todayKey) continue; // future dates skip
+          if (dateKey === todayKey && !includeToday) continue; // today skip
+          if (joining && dateKey < joining) continue; // joining mundu skip
+
+          const dt = new Date(`${dateKey}T00:00:00`);
+          entries.push({
+            dateKey,
+            status: "missing",
+            row: {
+              ID: empId,
+              Name: empName,
+              Date: formatDate(dateKey),
+              Day: dt.toLocaleDateString("en-US", { weekday: "long" }),
+              "In Time": "—",
+              "System In Time": "—",
+              "Delay Reason": "",
+              "Lunch Out": "—",
+              "Lunch In": "—",
+              "Out Time": "—",
+              "System Out Time": "—",
+              "Lunch Hours": "—",
+              "Working Hours": "—",
+              "Gross Hours": "—",
+              "Daily Leave Type": "N/A",
+              "Site Comments": "",
+              Permission: "N/A",
+              Hours: "N/A",
+              "Leave Type": "No Data",
+            },
+          });
+        }
+        entries.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+      }
+
+      const ws = XLSX.utils.json_to_sheet(entries.map((e) => e.row));
+
+      // 3. Styling
       const range = XLSX.utils.decode_range(ws["!ref"]);
       for (let R = range.s.r; R <= range.e.r; ++R) {
-        for (let C = range.s.c; C <= range.e.c; ++C) {
-          const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
-          if (!ws[cell_address]) continue;
+        const status = R === 0 ? "header" : entries[R - 1]?.status;
 
-          // సెల్ స్టైల్ సెట్ చేయడం
-          ws[cell_address].s = {
-            alignment: {
-              horizontal: "center",
-              vertical: "center",
-              wrapText: true,
-            },
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+          const addr = XLSX.utils.encode_cell({ r: R, c: C });
+          if (!ws[addr]) continue;
+
+          const style = {
+            alignment: { horizontal: "center", vertical: "center", wrapText: true },
             border: {
               top: { style: "thin", color: { rgb: "000000" } },
               bottom: { style: "thin", color: { rgb: "000000" } },
               left: { style: "thin", color: { rgb: "000000" } },
               right: { style: "thin", color: { rgb: "000000" } },
             },
-            font: R === 0 ? { bold: true } : {}, // మొదటి రో (Headers) ని బోల్డ్ చేయడం
+            font: R === 0 ? { bold: true } : {},
           };
+
+
+if (status === "leave") {
+  style.font = { bold: true, color: { rgb: hexToRgb(leaveColor) } };
+} else if (status === "missing") {
+  style.font = { bold: true, color: { rgb: hexToRgb(missingColor) } };
+}
+
+          ws[addr].s = style;
         }
       }
 
-      // కాలమ్ వెడల్పు ఆటోమేటిక్‌గా అడ్జస్ట్ చేయడం
-      const colWidths = Object.keys(empData[0] || {}).map((key) => ({
-        wch: 15,
-      }));
-      ws["!cols"] = colWidths;
-
+      ws["!cols"] = Object.keys(entries[0]?.row || {}).map(() => ({ wch: 15 }));
       XLSX.utils.book_append_sheet(wb, ws, String(empId).slice(0, 31));
     });
 
-    XLSX.writeFile(
-      wb,
-      `Attendance_Report_${selectedMonth}_${selectedYear}.xlsx`,
-    );
+    XLSX.writeFile(wb, `Attendance_Report_${selectedMonth}_${selectedYear}.xlsx`);
   };
 
   const exportPendingUpdatesToExcel = () => {
@@ -1021,8 +1106,7 @@ const AttendanceSheet = () => {
 
     XLSX.writeFile(
       workbook,
-      `Pending_Updates_${selectedMonth || "AllMonths"}_${
-        selectedYear || "AllYears"
+      `Pending_Updates_${selectedMonth || "AllMonths"}_${selectedYear || "AllYears"
       }.xlsx`,
     );
   };
@@ -1204,9 +1288,8 @@ const AttendanceSheet = () => {
 
               <button
                 type="button"
-                className={`gross-toggle ${
-                  isGrossHoursFilterActive ? "active" : ""
-                }`}
+                className={`gross-toggle ${isGrossHoursFilterActive ? "active" : ""
+                  }`}
                 onClick={() =>
                   setIsGrossHoursFilterActive((previous) => !previous)
                 }
@@ -1412,6 +1495,28 @@ const AttendanceSheet = () => {
               margin: "22px 0",
             }}
           >
+<div style={{ display: "flex", gap: "16px", alignItems: "center", flexWrap: "wrap" }}>
+  <label style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 600 }}>
+    Leave Colour
+    <input
+      type="color"
+      value={leaveColor}
+      onChange={(e) => setLeaveColor(e.target.value)}
+      style={{ width: "40px", height: "32px", cursor: "pointer" }}
+    />
+  </label>
+
+  <label style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 600 }}>
+    No Data Colour
+    <input
+      type="color"
+      value={missingColor}
+      onChange={(e) => setMissingColor(e.target.value)}
+      style={{ width: "40px", height: "32px", cursor: "pointer" }}
+    />
+  </label>
+</div>
+
             <button className="btn-excel" onClick={exportToExcel}>
               📥 Download Excel Report
             </button>

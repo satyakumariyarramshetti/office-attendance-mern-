@@ -1464,6 +1464,17 @@ const Interface = () => {
                     readOnly
                   />
                 </div>
+
+                {/* <div className="form-group mb-2">
+  <label>Date</label>
+  <input
+    type="date"
+    className="form-control"
+    value={formData.date}
+    onChange={handleDateChange}
+    max={getCurrentDate()}
+  />
+</div>   */}
               <div className="form-group mb-2">
   <label>Date</label>
   <input
@@ -1472,7 +1483,7 @@ const Interface = () => {
     value={formData.date}
     readOnly
   />
-</div>
+</div>  
                 <div className="form-group mb-2">
                   <label>Day</label>
                   <input
