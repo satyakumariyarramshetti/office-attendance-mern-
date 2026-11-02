@@ -3,6 +3,7 @@ import "./AttendanceSheet.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import XLSX from "xlsx-js-style";
+import { FaEdit, FaSave, FaTimes } from "react-icons/fa";
 import { calculateWorkingDays } from "../utils/workingDays";
 
 const calculateTimeDifference = (startTime, endTime) => {
@@ -80,6 +81,9 @@ useEffect(() => {
 }, [leaveColor, missingColor]);
   const [isGrossHoursFilterActive, setIsGrossHoursFilterActive] =
     useState(false);
+  const [editingRecordKey, setEditingRecordKey] = useState(null);
+  const [editingTimes, setEditingTimes] = useState({});
+  const [savingRecordKey, setSavingRecordKey] = useState(null);
   // --- Auth Check ---
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("adminToken");
@@ -188,6 +192,53 @@ useEffect(() => {
       normalizedValue === "—" ||
       normalizedValue === "-"
     );
+  };
+
+  const getRecordKey = (record) => `${record.id}_${record.date}`;
+
+  const handleEditTimes = (record) => {
+    setEditingRecordKey(getRecordKey(record));
+    setEditingTimes({
+      inTime: isMissingTime(record.inTime) ? "" : record.inTime,
+      lunchOut: isMissingTime(record.lunchOut) ? "" : record.lunchOut,
+      lunchIn: isMissingTime(record.lunchIn) ? "" : record.lunchIn,
+      outTime: isMissingTime(record.outTime) ? "" : record.outTime,
+    });
+  };
+
+  const handleSaveTimes = async (record) => {
+    const recordKey = getRecordKey(record);
+    setSavingRecordKey(recordKey);
+
+    try {
+      const response = await axios.patch(`${API_BASE}/api/attendance/time`, {
+        id: record.id,
+        date: record.date,
+        name: record.name,
+        day: record.day,
+        ...editingTimes,
+      });
+
+      setRecords((previousRecords) => {
+        const hasRecord = previousRecords.some(
+          (item) => getRecordKey(item) === recordKey,
+        );
+
+        return hasRecord
+          ? previousRecords.map((item) =>
+              getRecordKey(item) === recordKey
+                ? { ...item, ...response.data }
+                : item,
+            )
+          : [...previousRecords, response.data];
+      });
+      setEditingRecordKey(null);
+      setEditingTimes({});
+    } catch (err) {
+      alert(err.response?.data?.error || "Error updating attendance times");
+    } finally {
+      setSavingRecordKey(null);
+    }
   };
   const getAttendanceMissingLabel = (record) => {
     const missingIn = isMissingTime(record.inTime);
@@ -464,7 +515,9 @@ useEffect(() => {
           ? true
           : selectedCategory === "N/A"
             ? isNoCategory(record)
-            : leaveTypeValue === selectedCategory;
+            : selectedCategory === "C-off Leave"
+              ? leaveTypeValue.toLowerCase().startsWith("c-off leave")
+              : leaveTypeValue === selectedCategory;
 
       // Gross Hours
       let grossHoursMatch = true;
@@ -1123,10 +1176,16 @@ if (status === "leave") {
     records.forEach((record) => {
       const category = String(record.leaveType || "").trim();
 
-      if (category) {
-        categories.add(category);
-      }
+      if (!category) return;
+
+      // Keep all C-off Leave variations out of dynamic options.
+      if (category.toLowerCase().startsWith("c-off leave")) return;
+
+      categories.add(category);
     });
+
+    // Add exactly one standard C-off Leave option.
+    categories.add("C-off Leave");
 
     return [...categories].sort((a, b) => a.localeCompare(b));
   }, [records]);
@@ -1393,6 +1452,7 @@ if (status === "leave") {
             <table className="table table-bordered admin-table">
               <thead>
                 <tr>
+                  <th>Actions</th>
                   <th>ID</th>
                   <th>Name</th>
                   <th>Date</th>
@@ -1430,30 +1490,149 @@ if (status === "leave") {
                     );
                     const grossH = computeGrossHours(lunchH, workH);
                     const isHoliday = !!record.holidayName;
+                    const recordKey = getRecordKey(record);
+                    const isEditing = editingRecordKey === recordKey;
+                    const isSaving = savingRecordKey === recordKey;
 
                     return (
                       <tr
-                        key={idx}
+                        key={recordKey || idx}
                         className={record.isLOP ? "lop-leave-row" : ""}
                       >
+                        <td className="attendance-row-actions">
+                          {isEditing ? (
+                            <>
+                              <button
+                                type="button"
+                                className="attendance-row-action save"
+                                aria-label={`Save times for ${record.name} on ${formatDate(record.date)}`}
+                                title="Save times"
+                                disabled={isSaving}
+                                onClick={() => handleSaveTimes(record)}
+                              >
+                                <FaSave />
+                              </button>
+                              <button
+                                type="button"
+                                className="attendance-row-action cancel"
+                                aria-label="Cancel time editing"
+                                title="Cancel"
+                                disabled={isSaving}
+                                onClick={() => {
+                                  setEditingRecordKey(null);
+                                  setEditingTimes({});
+                                }}
+                              >
+                                <FaTimes />
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              className="attendance-row-action edit"
+                              aria-label={`Edit times for ${record.name} on ${formatDate(record.date)}`}
+                              title={
+                                isHoliday
+                                  ? "Holiday times cannot be edited"
+                                  : "Edit times"
+                              }
+                              disabled={isHoliday || editingRecordKey !== null}
+                              onClick={() => handleEditTimes(record)}
+                            >
+                              <FaEdit />
+                            </button>
+                          )}
+                        </td>
                         <td>{record.id}</td>
                         <td>{record.name}</td>
                         <td>{formatDate(record.date)}</td>
                         <td>{record.day}</td>
 
                         {/* Attendance fields check for holiday */}
-                        <td>{isHoliday ? "—" : record.inTime || "—"}</td>
+                        <td>
+                          {isEditing ? (
+                            <input
+                              type="time"
+                              aria-label={`In Time for ${record.name} on ${formatDate(record.date)}`}
+                              value={editingTimes.inTime}
+                              onChange={(e) =>
+                                setEditingTimes((previous) => ({
+                                  ...previous,
+                                  inTime: e.target.value,
+                                }))
+                              }
+                            />
+                          ) : isHoliday ? (
+                            "—"
+                          ) : (
+                            record.inTime || "—"
+                          )}
+                        </td>
                         <td>{isHoliday ? "—" : record.systemInTime || "—"}</td>
                         <td>{record.delayReason || "—"}</td>
-                        <td>{isHoliday ? "—" : record.lunchOut || "—"}</td>
-                        <td>{isHoliday ? "—" : record.lunchIn || "—"}</td>
-                        <td>{isHoliday ? "—" : record.outTime || "—"}</td>
+                        <td>
+                          {isEditing ? (
+                            <input
+                              type="time"
+                              aria-label={`Lunch Out for ${record.name} on ${formatDate(record.date)}`}
+                              value={editingTimes.lunchOut}
+                              onChange={(e) =>
+                                setEditingTimes((previous) => ({
+                                  ...previous,
+                                  lunchOut: e.target.value,
+                                }))
+                              }
+                            />
+                          ) : isHoliday ? (
+                            "—"
+                          ) : (
+                            record.lunchOut || "—"
+                          )}
+                        </td>
+                        <td>
+                          {isEditing ? (
+                            <input
+                              type="time"
+                              aria-label={`Lunch In for ${record.name} on ${formatDate(record.date)}`}
+                              value={editingTimes.lunchIn}
+                              onChange={(e) =>
+                                setEditingTimes((previous) => ({
+                                  ...previous,
+                                  lunchIn: e.target.value,
+                                }))
+                              }
+                            />
+                          ) : isHoliday ? (
+                            "—"
+                          ) : (
+                            record.lunchIn || "—"
+                          )}
+                        </td>
+                        <td>
+                          {isEditing ? (
+                            <input
+                              type="time"
+                              aria-label={`Out Time for ${record.name} on ${formatDate(record.date)}`}
+                              value={editingTimes.outTime}
+                              onChange={(e) =>
+                                setEditingTimes((previous) => ({
+                                  ...previous,
+                                  outTime: e.target.value,
+                                }))
+                              }
+                            />
+                          ) : isHoliday ? (
+                            "—"
+                          ) : (
+                            record.outTime || "—"
+                          )}
+                        </td>
                         <td>{isHoliday ? "—" : record.systemOutTime || "—"}</td>
                         <td>{isHoliday ? "—" : lunchH}</td>
                         <td>{isHoliday ? "—" : workH}</td>
                         <td>{isHoliday ? "—" : grossH}</td>
 
-                        <td>{record.leaveType || "—"}</td>
+                        <td>{record.dailyLeaveType || "—"}</td>
                         <td className="comment-cell">
                           {record.siteComments || "—"}
                         </td>
@@ -1476,7 +1655,7 @@ if (status === "leave") {
                   })
                 ) : (
                   <tr>
-                    <td colSpan="19" className="text-center">
+                    <td colSpan="20" className="text-center">
                       No matching records found.
                     </td>
                   </tr>
