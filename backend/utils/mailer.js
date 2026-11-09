@@ -37,7 +37,7 @@ async function sendLeaveStatusEmail(to, subject, text, html = null) {
 
     await apiInstance.sendTransacEmail(emailData);
 
-    console.log("📩 Email sent successfully to:", to);
+    // console.log("📩 Email sent successfully to:", to);
     return true;
   } catch (error) {
     console.error("❌ Brevo Email Send Error:", error.message);

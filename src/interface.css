@@ -736,3 +736,37 @@ select.form-control:focus {
         font-size: 0.74rem;
     }
 }
+
+
+/* Highlight for required field that was left empty */
+select.form-control.input-error,
+input.form-control.input-error {
+    border: 2px solid #dc2626 !important;
+    background-color: #fef2f2 !important;
+    animation: errorPulse 1.2s ease-in-out infinite;
+}
+
+.error-text {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #dc2626;
+}
+
+@keyframes errorPulse {
+    0%, 100% {
+        transform: translateX(0);
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.35);
+    }
+    25% {
+        transform: translateX(-2px);
+    }
+    50% {
+        transform: translateX(0);
+        box-shadow: 0 0 0 6px rgba(220, 38, 38, 0.15);
+    }
+    75% {
+        transform: translateX(2px);
+    }
+}

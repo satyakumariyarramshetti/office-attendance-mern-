@@ -204,6 +204,7 @@ const Interface = () => {
 
     setLeaveInactivityWarning(0);
 
+
     // Reset dropdown activity state
     leaveSelectionActiveRef.current = false;
   }, []);
@@ -442,7 +443,7 @@ const Interface = () => {
           delayReason: attendanceData.delayReason || prev.delayReason || "",
         }));
 
-       
+
       } catch (err) {
         console.error("Error fetching attendance:", err);
         setFormData((prev) => ({ ...prev, id: fullId, name: staffName }));
@@ -1078,13 +1079,11 @@ const Interface = () => {
       const totalMinutes = h * 60 + m;
       const sixPm = 18 * 60;
 
-      // Auto-assign Casual Type if time >= 18:00
-      if (totalMinutes >= sixPm) {
-        formData.dailyLeaveType = "Casual Type";
-      }
+      // 6 PM tarvata aithe auto ga "Casual Type", lekapothe user select chesindi
+      const finalDailyLeaveType =
+        totalMinutes >= sixPm ? "Casual Type" : formData.dailyLeaveType;
 
-      if (totalMinutes < sixPm && !formData.dailyLeaveType) {
-        alert("Please select a permission type for out-time before 18:00.");
+      if (totalMinutes < sixPm && !finalDailyLeaveType) {
         return;
       }
 
@@ -1096,7 +1095,7 @@ const Interface = () => {
         String(systemOutNow.getDate()).padStart(2, "0"),
       ].join("-");
       payload.systemOutTime = `${systemOutDate} ${systemOutNow.toTimeString().slice(0, 5)}`;
-      payload.dailyLeaveType = formData.dailyLeaveType;
+      payload.dailyLeaveType = finalDailyLeaveType;
       payload.siteComments = formData.siteComments;
       submitData(payload, "outTime");
       return;
@@ -1150,8 +1149,8 @@ const Interface = () => {
     if (isLeaveDateLocked && existingLeave) {
       alert(
         `Leave is already applied for ${formData.date}.\n\n` +
-          `Existing Leave: ${existingLeave.leaveType}\n\n` +
-          `You cannot update another leave for this date.`,
+        `Existing Leave: ${existingLeave.leaveType}\n\n` +
+        `You cannot update another leave for this date.`,
       );
       return;
     }
@@ -1367,6 +1366,8 @@ const Interface = () => {
     }, 500);
   };
 
+
+
   // Clear leave selection if its balance becomes unavailable
   useEffect(() => {
     if (!formData.leaveType) return;
@@ -1386,6 +1387,13 @@ const Interface = () => {
       setHalfDayReason("");
     }
   }, [formData.leaveType, canSelectSick, canSelectCasual, canSelectPrivilege]);
+
+  // Out time 6 PM kanna mundu unte, permission type tappanisari
+  const isBeforeSixPm =
+    !!formData.outTime && timeToMinutes(formData.outTime) < 18 * 60;
+
+  const permissionMissing =
+    isBeforeSixPm && !formData.dailyLeaveType && !isOutTimeLocked;
 
   return (
     <div className="main-wrapper">
@@ -1435,7 +1443,7 @@ const Interface = () => {
                 </div>
               </h5>
 
-               {formData.id && (
+              {formData.id && (
                 <div className="mb-2">
                   <ActivityReconciliation
                     employeeId={formData.id}
@@ -1475,15 +1483,15 @@ const Interface = () => {
     max={getCurrentDate()}
   />
 </div>   */}
-              <div className="form-group mb-2">
-  <label>Date</label>
-  <input
-    type="date"
-    className="form-control"
-    value={formData.date}
-    readOnly
-  />
-</div>  
+                <div className="form-group mb-2">
+                  <label>Date</label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={formData.date}
+                    readOnly
+                  />
+                </div>
                 <div className="form-group mb-2">
                   <label>Day</label>
                   <input
@@ -1572,7 +1580,7 @@ const Interface = () => {
                     </div>
                   )}
 
-               
+
 
                 <div className="mt-auto">
                   <button
@@ -1704,11 +1712,16 @@ const Interface = () => {
                     }
                   />
                 </div>
-                <div className="form-group mb-3">
-                  <label htmlFor="dailyLeaveType">Permission Type</label>
+                               <div className="form-group mb-3">
+                  <label
+                    htmlFor="dailyLeaveType"
+                    style={permissionMissing ? { color: "#dc2626" } : {}}
+                  >
+                    Permission Type
+                  </label>
                   <select
                     id="dailyLeaveType"
-                    className="form-control"
+                    className={`form-control ${permissionMissing ? "input-error" : ""}`}
                     value={formData.dailyLeaveType}
                     onChange={handleChange}
                     disabled={isOutTimeLocked}
@@ -1734,7 +1747,11 @@ const Interface = () => {
                     <option value="WFH">WFH</option>
                     <option value="Casual Type">Casual Type</option>
                   </select>
-
+                                   {permissionMissing && (
+                    <small className="text-danger error-text">
+                      Please select a permission type (out time is before 6:00 PM).
+                    </small>
+                  )}
                   {outPermissionInfoMessage && (
                     <div
                       className="mt-1 px-2 py-1"
@@ -1758,10 +1775,15 @@ const Interface = () => {
                   </div>
                 )}
                 <div className="mt-auto">
-                  <button
+                                   <button
                     className="btn btn-primary btn-block"
                     type="submit"
-                    disabled={staffNotFound || !formData.id || isOutTimeLocked}
+                    disabled={
+                      staffNotFound ||
+                      !formData.id ||
+                      isOutTimeLocked ||
+                      permissionMissing
+                    }
                   >
                     Submit
                   </button>
@@ -2018,9 +2040,9 @@ const Interface = () => {
                             style={
                               isLeaveAuthenticated
                                 ? {
-                                    backgroundColor: "#e9ecef",
-                                    cursor: "not-allowed",
-                                  }
+                                  backgroundColor: "#e9ecef",
+                                  cursor: "not-allowed",
+                                }
                                 : {}
                             }
                           />
@@ -2172,54 +2194,54 @@ const Interface = () => {
 
                       {(formData.leaveType === "First Half Leave" ||
                         formData.leaveType === "Second Half Leave") && (
-                        <div className="form-group mb-2">
-                          <label htmlFor="halfDayReason">
-                            Reason for Half Day
-                          </label>
-                          <select
-                            id="halfDayReason"
-                            className="form-control"
-                            value={halfDayReason}
-                            onChange={handleChange}
-                            required
-                          >
-                            <option disabled value="">
-                              Select Reason
-                            </option>
-                            <option
-                              value="Sick Leave"
-                              disabled={!canSelectSick}
-                              style={{
-                                color: !canSelectSick ? "#a0a0a0" : "inherit",
-                              }}
+                          <div className="form-group mb-2">
+                            <label htmlFor="halfDayReason">
+                              Reason for Half Day
+                            </label>
+                            <select
+                              id="halfDayReason"
+                              className="form-control"
+                              value={halfDayReason}
+                              onChange={handleChange}
+                              required
                             >
-                              Sick Leave {!canSelectSick && "(0 Balance)"}
-                            </option>
-                            <option
-                              value="Casual Leave"
-                              disabled={!canSelectCasual}
-                              style={{
-                                color: !canSelectCasual ? "#a0a0a0" : "inherit",
-                              }}
-                            >
-                              Casual Leave {!canSelectCasual && "(0 Balance)"}
-                            </option>
-                            <option
-                              value="Privilege Leave"
-                              disabled={!canSelectPrivilege}
-                              style={{
-                                color: !canSelectPrivilege
-                                  ? "#a0a0a0"
-                                  : "inherit",
-                              }}
-                            >
-                              Privilege Leave{" "}
-                              {!canSelectPrivilege && plErrorMessage}
-                            </option>
-                            <option value="LOP Leave">LOP Leave</option>
-                          </select>
-                        </div>
-                      )}
+                              <option disabled value="">
+                                Select Reason
+                              </option>
+                              <option
+                                value="Sick Leave"
+                                disabled={!canSelectSick}
+                                style={{
+                                  color: !canSelectSick ? "#a0a0a0" : "inherit",
+                                }}
+                              >
+                                Sick Leave {!canSelectSick && "(0 Balance)"}
+                              </option>
+                              <option
+                                value="Casual Leave"
+                                disabled={!canSelectCasual}
+                                style={{
+                                  color: !canSelectCasual ? "#a0a0a0" : "inherit",
+                                }}
+                              >
+                                Casual Leave {!canSelectCasual && "(0 Balance)"}
+                              </option>
+                              <option
+                                value="Privilege Leave"
+                                disabled={!canSelectPrivilege}
+                                style={{
+                                  color: !canSelectPrivilege
+                                    ? "#a0a0a0"
+                                    : "inherit",
+                                }}
+                              >
+                                Privilege Leave{" "}
+                                {!canSelectPrivilege && plErrorMessage}
+                              </option>
+                              <option value="LOP Leave">LOP Leave</option>
+                            </select>
+                          </div>
+                        )}
                       {formData.leaveType === "C-Off Leave" && (
                         <div className="form-group mb-2">
                           <label htmlFor="cOffEarnedDate">
