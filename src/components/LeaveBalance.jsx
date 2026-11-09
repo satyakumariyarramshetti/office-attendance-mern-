@@ -21,8 +21,11 @@ const LeaveBalance = () => {
   const [plDetails, setPlDetails] = useState([]);
   const [plLoading, setPlLoading] = useState(false);
   const [plError, setPlError] = useState('');
+    const [plViewMode, setPlViewMode] = useState('active');   // ✅ NEW
 
 
+ const [viewMode, setViewMode] = useState('active'); // 'active' | 'inactive'
+const [inactiveBalances, setInactiveBalances] = useState([]);
   // Fetch leave balances from deployed backend API
   const fetchBalances = async () => {
     try {
@@ -33,7 +36,16 @@ const LeaveBalance = () => {
     }
   };
 
-  useEffect(() => { fetchBalances(); }, []);
+  const fetchInactiveBalances = async () => {
+  try {
+    const res = await axios.get(`${API_BASE_URL}/api/leave-balance/inactive`);
+    setInactiveBalances(res.data);
+  } catch (error) {
+    console.error("Error fetching inactive leave balances:", error);
+  }
+};
+
+  useEffect(() => { fetchBalances(); fetchInactiveBalances(); }, []);
 
   const handleAddFormChange = (e) => {
   let { name, value } = e.target;
@@ -100,6 +112,7 @@ const LeaveBalance = () => {
     try {
       await axios.put(`${API_BASE_URL}/api/leave-balance/edit/${editingMember._id}`, editingMember);
       fetchBalances();
+      fetchInactiveBalances(); 
       setShowEditModal(false);
       setEditingMember(null);
     } catch (error) {
@@ -113,6 +126,7 @@ const LeaveBalance = () => {
       try {
         await axios.delete(`${API_BASE_URL}/api/leave-balance/remove/${id}`);
         fetchBalances();
+        fetchInactiveBalances();
       } catch (error) {
         console.error("Error removing member:", error);
       }
@@ -125,6 +139,7 @@ const LeaveBalance = () => {
         const res = await axios.post(`${API_BASE_URL}/api/leave-balance/reset-monthly`);
         alert(res.data.message);
         fetchBalances();
+        fetchInactiveBalances();
       } catch (error) {
         const msg = error.response ? error.response.data.message : "An error occurred.";
         console.error("Error resetting monthly leaves:", error);
@@ -133,11 +148,19 @@ const LeaveBalance = () => {
     }
   };
 
-  const filteredBalances = balances.filter(balance =>
-    balance.employeeId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    balance.name.toLowerCase().includes(searchTerm.toLowerCase())
+ const currentList = viewMode === 'active' ? balances : inactiveBalances;
+
+const filteredBalances = currentList.filter(balance =>
+  balance.employeeId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  balance.name.toLowerCase().includes(searchTerm.toLowerCase())
+);
+
+  const filteredPlDetails = plDetails.filter((d) =>
+    plViewMode === 'active' ? !d.isInactive : d.isInactive
   );
 
+ 
+ 
 
   const handleResetLOP = async () => {
   const confirmReset = window.confirm(
@@ -181,16 +204,18 @@ const LeaveBalance = () => {
 </button>
 
             <button
-              className="reset-leaves-btn"
-              onClick={() => {
-                setShowPLModal(true);
-                fetchPrivilegeLeaveDetails();
-              }}
-              title="Shows detailed Privilege Leave accrual info for senior employees."
-              style={{ marginLeft: '8px' }}
-            >
-              Privilege Leave Info
-            </button>
+  className="reset-leaves-btn"
+  onClick={() => {
+    setPlViewMode('active');      // ✅ NEW
+    setShowPLModal(true);
+    fetchPrivilegeLeaveDetails();
+  }}
+  title="Shows detailed Privilege Leave accrual info for senior employees."
+  style={{ marginLeft: '8px' }}
+>
+  Privilege Leave Info
+</button>
+
 
             <button className="add-member-btn" onClick={() => setShowAddModal(true)}>
               + Add Member
@@ -198,6 +223,21 @@ const LeaveBalance = () => {
           </div>
 
         </div>
+
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+  <button
+    className={viewMode === 'active' ? 'add-member-btn' : 'reset-leaves-btn'}
+    onClick={() => setViewMode('active')}
+  >
+    Active ({balances.length})
+  </button>
+  <button
+    className={viewMode === 'inactive' ? 'add-member-btn' : 'reset-leaves-btn'}
+    onClick={() => setViewMode('inactive')}
+  >
+    Inactive ({inactiveBalances.length})
+  </button>
+</div>
         
         <div className="search-container">
           <input
@@ -362,14 +402,31 @@ const LeaveBalance = () => {
 <div className="modal-content pl-modal">
             <h3>Privilege Leave Accrual Details (Seniors)</h3>
 
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+  <button
+    type="button"
+    className={plViewMode === 'active' ? 'add-member-btn' : 'reset-leaves-btn'}
+    onClick={() => setPlViewMode('active')}
+  >
+    Active ({plDetails.filter((d) => !d.isInactive).length})
+  </button>
+  <button
+    type="button"
+    className={plViewMode === 'inactive' ? 'add-member-btn' : 'reset-leaves-btn'}
+    onClick={() => setPlViewMode('inactive')}
+  >
+    Inactive ({plDetails.filter((d) => d.isInactive).length})
+  </button>
+</div>
+
             {plLoading && <p>Loading...</p>}
             {plError && <p style={{ color: 'red' }}>{plError}</p>}
 
-            {!plLoading && !plError && plDetails.length === 0 && (
-              <p>No senior employees found or no working days recorded yet.</p>
-            )}
+            {!plLoading && !plError && filteredPlDetails.length === 0 && (
+  <p>No {plViewMode} senior employees found.</p>
+)}
 
-            {!plLoading && !plError && plDetails.length > 0 && (
+{!plLoading && !plError && filteredPlDetails.length > 0 && (
               <div className="table-container" style={{ maxHeight: '400px', overflow: 'auto' }}>
                 <table>
                   <thead>
@@ -385,8 +442,8 @@ const LeaveBalance = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {plDetails.map((d) => (
-                      <tr key={d.employeeId}>
+{filteredPlDetails.map((d) => (
+                        <tr key={d.employeeId}>
                         <td>{d.employeeId}</td>
                         <td>{d.name}</td>
                         <td>{d.totalWorkingDays}</td>

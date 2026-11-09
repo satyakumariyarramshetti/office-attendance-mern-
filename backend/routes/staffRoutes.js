@@ -40,7 +40,7 @@ router.get('/seed', async (req, res) => {
     res.status(500).json({ error: "Error seeding staff" });
   }
 });
-
+const LeaveBalance = require('../models/LeaveBalance');
 
 router.post('/', async (req, res) => {
   try {
@@ -55,6 +55,22 @@ const newStaff = new Staff({
   ]
 });
   await newStaff.save();
+
+  try {
+    const alreadyExists = await LeaveBalance.findOne({ employeeId: newStaff.id });
+    if (!alreadyExists) {
+      await LeaveBalance.create({
+        employeeId: newStaff.id,
+        name: newStaff.name,
+        role: "junior",
+        monthlyLeaveStatus: 1,
+      });
+    }
+  } catch (lbError) {
+    // Leave balance fail ayina staff creation fail kakoodadu
+    console.error("⚠️ LeaveBalance auto-create failed:", lbError.message);
+  }
+
     res.json({ message: "✅ Staff added successfully!" });
   } catch (error) {
     console.error("❌ Error adding staff:", error);
@@ -219,8 +235,18 @@ router.put("/:id", async (req, res) => {
     if (dob) staff.dob = dob;
     if (onboardingDate) staff.onboardingDate = onboardingDate;
 
-    // 6. సేవ్ చేయడం
+       // 6. సేవ్ చేయడం
     await staff.save();
+
+    // ✅ NEW: Keep LeaveBalance name in sync with Staff name
+    try {
+      await LeaveBalance.updateOne(
+        { employeeId: staff.id },
+        { $set: { name: staff.name } }
+      );
+    } catch (lbError) {
+      console.error("⚠️ LeaveBalance name sync failed:", lbError.message);
+    }
 
     res.json({
       message: "✅ Staff updated successfully!",

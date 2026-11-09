@@ -901,9 +901,18 @@ async function recalcPrivilegeLeaveForAllSeniors() {
 router.get('/privilege-leaves/details', async (req, res) => {
   try {
     const data = await recalcPrivilegeLeaveForAllSeniors();
+
+    // ✅ NEW: mark each senior as inactive or active
+    const inactiveStaff = await Staff.find({ status: "Inactive employee" }).select("id");
+    const inactiveIds = new Set(inactiveStaff.map((s) => s.id));
+    const dataWithStatus = data.map((d) => ({
+      ...d,
+      isInactive: inactiveIds.has(d.employeeId),
+    }));
+
     res.status(200).json({
       message: 'Privilege Leave accrual recalculated successfully.',
-      data,
+      data: dataWithStatus,
     });
   } catch (err) {
     console.error('Error in /privilege-leaves/details:', err);

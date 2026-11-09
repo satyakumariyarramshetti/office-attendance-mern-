@@ -8,19 +8,43 @@ const Staff = require("../models/Staff");
 // GET: Fetch all leave balance records
 router.get("/", async (req, res) => {
   try {
-    const balances = await LeaveBalance.find({});
+    // Inactive staff IDs teesukovali
+    const inactiveStaff = await Staff.find({ status: "Inactive employee" }).select("id");
+    const inactiveIds = inactiveStaff.map((s) => s.id);
+
+    // Active vallu mathrame (inactive vallani exclude chesthundi)
+    const balances = await LeaveBalance.find({
+      employeeId: { $nin: inactiveIds },
+    });
     res.status(200).json(balances);
   } catch (error) {
     res.status(500).json({ message: "Error fetching leave balances", error });
   }
 });
 
+// GET: Inactive employees' leave balances (separate)
+router.get("/inactive", async (req, res) => {
+  try {
+    const inactiveStaff = await Staff.find({ status: "Inactive employee" }).select("id");
+    const inactiveIds = inactiveStaff.map((s) => s.id);
+
+    const balances = await LeaveBalance.find({
+      employeeId: { $in: inactiveIds },
+    });
+    res.status(200).json(balances);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching inactive leave balances", error: error.message });
+  }
+});
+
 // --- THIS IS THE CORRECT ROUTE FOR YOUR LOGIC ----//
 router.post("/reset-monthly", async (req, res) => {
   try {
-    // Add 1 casual leave to all juniors
+    const inactiveStaff = await Staff.find({ status: "Inactive employee" }).select("id");
+    const inactiveIds = inactiveStaff.map((s) => s.id);
+
     const result = await LeaveBalance.updateMany(
-      { role: "junior" },
+      { role: "junior", employeeId: { $nin: inactiveIds } },
       { $inc: { casualLeaves: 1 } },
     );
 
@@ -201,6 +225,44 @@ router.post("/my-leave-balance", async (req, res) => {
   } catch (error) {
     console.error("Error fetching balance by identification:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// POST: One-time sync, copy Staff names into LeaveBalance (matched by ID)
+router.post("/sync-names", async (req, res) => {
+  try {
+    const staffList = await Staff.find({}).select("id name");
+    const balances = await LeaveBalance.find({}).select("employeeId name");
+
+    const staffMap = new Map(staffList.map((s) => [s.id, s.name]));
+
+    const ops = [];
+    const changed = [];
+
+    for (const b of balances) {
+      const staffName = staffMap.get(b.employeeId);
+      if (staffName && staffName !== b.name) {
+        ops.push({
+          updateOne: {
+            filter: { _id: b._id },
+            update: { $set: { name: staffName } },
+          },
+        });
+        changed.push({ employeeId: b.employeeId, from: b.name, to: staffName });
+      }
+    }
+
+    if (ops.length > 0) {
+      await LeaveBalance.bulkWrite(ops);
+    }
+
+    res.status(200).json({
+      message: `${ops.length} name(s) updated.`,
+      changed,
+    });
+  } catch (error) {
+    console.error("Error syncing names:", error);
+    res.status(500).json({ message: "Error syncing names", error: error.message });
   }
 });
 
