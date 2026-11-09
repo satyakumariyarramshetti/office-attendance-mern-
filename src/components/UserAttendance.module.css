@@ -4,6 +4,7 @@
   background-color: #f4f7f6;
   min-height: 100vh;
   padding: 2rem 1rem;
+  font-size: 13px;
 }
 
 .container {
@@ -190,4 +191,85 @@
   font-size: 0.8rem;
   font-weight: 600;
   border: 1px solid #ffa39e;
+}
+
+
+/* ---- Compact font sizes ---- */
+.pageTitle {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.backBtn {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.8rem;
+}
+
+.formControl {
+  font-size: 0.8rem;
+  padding: 0.55rem 0.7rem;
+}
+
+.getAttendanceBtn {
+  font-size: 0.8rem;
+}
+
+.staffInfoCard h4 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.staffInfoCard span {
+  font-size: 0.75rem;
+}
+
+.selectWrapper label {
+  font-size: 0.7rem;
+}
+
+.selectWrapper select {
+  font-size: 0.78rem;
+  padding: 0.4rem 0.6rem;
+}
+
+.attendanceTable th {
+  font-size: 0.68rem;
+  padding: 0.6rem 0.5rem;
+}
+
+.attendanceTable td {
+  font-size: 0.75rem;
+  padding: 7px 6px;
+}
+
+.attendanceTable td small {
+  font-size: 0.68rem;
+}
+
+.statusBadge,
+.holidayBadge {
+  font-size: 0.68rem;
+  padding: 3px 6px;
+}
+
+.noData {
+  font-size: 0.8rem;
+}
+
+
+/* Table rows data anni center */
+.attendanceTable th,
+.attendanceTable td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.attendanceTable td small {
+  display: block;
+  text-align: center;
+}
+
+.attendanceTable td:first-child {
+  white-space: nowrap;
 }

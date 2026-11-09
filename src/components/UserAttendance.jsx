@@ -152,8 +152,7 @@ const UserAttendance = () => {
   let lunch = (lOutM && lInM) ? lInM - lOutM : 0;
   let net = (gross !== null) ? gross - lunch : null;
 
-  const isLate = record.inTime && record.inTime > "09:15";
-  const isHoliday = !!record.holidayName; 
+const isLate = record.delayReason === "Late Mark";  const isHoliday = !!record.holidayName; 
 
                  return (
     <tr key={index} 
