@@ -68,8 +68,7 @@ const Wishflow = () => {
   const handleSave = async () => {
     setSaveStatus('Saving...');
     try {
-      await axios.put(`{API_BASE}/api/celebrations/${activeTab}`, {
-        messageBody: templates[activeTab]
+await axios.put(`${API_BASE}/api/celebrations/${activeTab}`, {        messageBody: templates[activeTab]
       });
       setSaveStatus('Saved successfully!');
       setTimeout(() => setSaveStatus(''), 3000);

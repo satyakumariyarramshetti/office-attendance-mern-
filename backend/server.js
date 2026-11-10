@@ -28,6 +28,8 @@ const startCelebrationCron = require('./utils/celebrationCron');
 const { sendCelebrationMail } = require('./utils/celebrationMailer');
 const { buildBirthdayEmail, buildAnniversaryEmail } = require('./utils/celebrationEmailTemplate');
 
+const path = require('path');
+
 // Express setup
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -63,6 +65,8 @@ app.use(
  activityReminderRoutes
 );
 app.use('/api/celebrations', celebrationRoutes);
+app.use('/email-assets', express.static(path.join(__dirname, 'assets/email')));
+
 
 // Put this after your API routes (before DB connect)
 app.get("/test-mail", async (req, res) => {
