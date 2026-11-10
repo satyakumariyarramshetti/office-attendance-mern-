@@ -26,6 +26,7 @@ const staffSchema = new mongoose.Schema({
   onboardingDate: { type: Date },  
   status: { type: String, default: "Active Employee" } ,
   inactivationDate: { type: Date }, 
+  noticePeriodStartDate: { type: Date, default: null },
   activityRequired: {
     type: Boolean,
     default: true

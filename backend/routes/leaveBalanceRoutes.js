@@ -221,8 +221,17 @@ router.post("/my-leave-balance", async (req, res) => {
     }
 
     
-    res.status(200).json(balance);
-  } catch (error) {
+    // ✅ NEW: notice period info
+    let inNoticePeriod = false;
+    let noticePeriodStartDate = null;
+    if (staff.noticePeriodStartDate) {
+      noticePeriodStartDate = staff.noticePeriodStartDate;
+      const noticeStr = staff.noticePeriodStartDate.toISOString().split("T")[0];
+      const todayStr = new Date().toISOString().split("T")[0];
+      inNoticePeriod = noticeStr <= todayStr;
+    }
+
+    res.status(200).json({ ...balance, inNoticePeriod, noticePeriodStartDate });  } catch (error) {
     console.error("Error fetching balance by identification:", error);
     res.status(500).json({ message: "Internal server error" });
   }

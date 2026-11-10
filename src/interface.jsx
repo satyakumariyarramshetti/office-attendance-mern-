@@ -1216,19 +1216,18 @@ const Interface = () => {
   };
   // --- NEW: Dynamic Leave Options Logic ---
   const isJunior = leaveBalances?.role === "junior";
+    const inNotice = !!leaveBalances?.inNoticePeriod;   // ✅ ikkada
 
-  // Juniors use casualLeaves count for both Sick and Casual options
-  const canSelectSick = isJunior
+
+    const canSelectSick = !inNotice && (isJunior
     ? leaveBalances?.casualLeaves > 0
-    : leaveBalances?.sickLeaves > 0;
+    : leaveBalances?.sickLeaves > 0);
 
-  const canSelectCasual = leaveBalances?.casualLeaves > 0;
+  const canSelectCasual = !inNotice && leaveBalances?.casualLeaves > 0;
 
   // Base privilege check: must be senior and have balance > 0
-  let baseCanSelectPrivilege = !isJunior && leaveBalances?.privilegeLeaves > 0;
-  let canSelectPrivilege = baseCanSelectPrivilege;
-  let plErrorMessage = "(0 Balance)"; // Default error message
-
+  let baseCanSelectPrivilege = !inNotice && !isJunior && leaveBalances?.privilegeLeaves > 0;  let canSelectPrivilege = baseCanSelectPrivilege;
+  let plErrorMessage = inNotice ? "(Notice period)" : "(0 Balance)";
   // ✅ STRICT MONTH CHECK: If they have PL, verify it was earned IN OR BEFORE the selected month
   if (
     baseCanSelectPrivilege &&
@@ -1979,6 +1978,22 @@ const Interface = () => {
                           </span>
                         </div>
                       </div>
+{leaveBalances?.inNoticePeriod && (
+  <div
+    className="mb-2 px-2 py-2 border rounded"
+    style={{
+      backgroundColor: "#f8d7da",
+      borderColor: "#f5c2c7",
+      color: "#842029",
+      fontSize: "0.85rem",
+    }}
+  >
+   <strong>You are in notice period</strong> (since{" "}
+{new Date(leaveBalances.noticePeriodStartDate).toLocaleDateString("en-GB")}).
+Leave balances cannot be used. Any leave you take will be treated as LOP.
+  </div>
+)}
+
                       {/* {leaveBalances?.role === "senior" &&
                           leaveBalances?.nextPrivilegeLeave && (
                             <div
@@ -2118,8 +2133,7 @@ const Interface = () => {
                               color: !canSelectSick ? "#a0a0a0" : "inherit",
                             }}
                           >
-                            Sick Leave {!canSelectSick && "(0 Balance)"}
-                          </option>
+Sick Leave {!canSelectSick && (inNotice ? "(Notice period)" : "(0 Balance)")}                          </option>
                           <option
                             value="Casual Leave"
                             disabled={!canSelectCasual}
@@ -2127,8 +2141,8 @@ const Interface = () => {
                               color: !canSelectCasual ? "#a0a0a0" : "inherit",
                             }}
                           >
-                            Casual Leave {!canSelectCasual && "(0 Balance)"}
-                          </option>
+Casual Leave {!canSelectCasual && (inNotice ? "(Notice period)" : "(0 Balance)")}                       
+     </option>
 
                           {/* ✅ Privilege Leave with dynamic date-based error message */}
                           <option
@@ -2215,8 +2229,7 @@ const Interface = () => {
                                   color: !canSelectSick ? "#a0a0a0" : "inherit",
                                 }}
                               >
-                                Sick Leave {!canSelectSick && "(0 Balance)"}
-                              </option>
+Sick Leave {!canSelectSick && (inNotice ? "(Notice period)" : "(0 Balance)")}                              </option>
                               <option
                                 value="Casual Leave"
                                 disabled={!canSelectCasual}
@@ -2224,8 +2237,7 @@ const Interface = () => {
                                   color: !canSelectCasual ? "#a0a0a0" : "inherit",
                                 }}
                               >
-                                Casual Leave {!canSelectCasual && "(0 Balance)"}
-                              </option>
+Casual Leave {!canSelectCasual && (inNotice ? "(Notice period)" : "(0 Balance)")}                              </option>
                               <option
                                 value="Privilege Leave"
                                 disabled={!canSelectPrivilege}

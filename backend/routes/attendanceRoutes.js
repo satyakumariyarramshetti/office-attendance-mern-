@@ -324,7 +324,31 @@ const isOutTimeCard =
 
 
     let finalDailyLeaveType = isOutTimeCard ? dailyLeaveType : (typeof dailyLeaveType !== 'undefined' ? dailyLeaveType : undefined);
+        // ✅ Notice period: LOP / working types matrame allow
+    if (isLeaveCard) {
+      const noticeStaff = await Staff.findOne({ id: String(id).trim() }).select('noticePeriodStartDate');
+      const isAllowedType =
+        leaveType.startsWith('C-Off Leave') ||
+        ['Travel Leave', 'Client/Site Visit', 'Over-Time Leave', 'LOP Leave'].includes(leaveType);
+      const isHalfDay = leaveType === 'First Half Leave' || leaveType === 'Second Half Leave';
 
+      if (noticeStaff && noticeStaff.noticePeriodStartDate) {
+        const noticeStr = noticeStaff.noticePeriodStartDate.toISOString().split('T')[0];
+        if (date >= noticeStr) {
+          if (isHalfDay) {
+            if (halfDayReason !== 'LOP Leave') {
+              return res.status(403).json({
+                error: `🚫 You are in notice period (since ${noticeStr}). Leaves are not available, only LOP is allowed.`
+              });
+            }
+          } else if (!isAllowedType) {
+            return res.status(403).json({
+              error: `🚫 You are in notice period (since ${noticeStr}). Leaves are not available, only LOP is allowed.`
+            });
+          }
+        }
+      }
+    }
 
     let attendance = await Attendance.findOne({ id: String(id).trim(), date });
 
@@ -783,21 +807,26 @@ const WORKING_LEAVE_TYPES = new Set([
   'Client / Site Visit Leave',
   'Over-Time Leave'
 ]);
-// --- AttendanceRoutes.js లో చివర్లో ఉంటుంది ---
-// MODIFIED getWorkingDaysStats to accept a startDate
-async function getWorkingDaysStats(employeeId, startDate) { // No longer has a default
-  const endDate = new Date().toISOString().split('T')[0];
-  
+async function getWorkingDaysStats(employeeId, startDate, noticeStartDate = null) {
+  let endDate = new Date().toISOString().split('T')[0];
+
+  // ✅ NEW: Notice period start ki mundu roju varake count cheyyali
+  if (noticeStartDate) {
+    const d = new Date(noticeStartDate);
+    d.setUTCDate(d.getUTCDate() - 1);
+    const dayBefore = d.toISOString().split('T')[0];
+    if (dayBefore < endDate) endDate = dayBefore;
+  }
+
   const records = await Attendance.find({
     id: employeeId,
-    // Use the dynamic startDate passed to the function
     date: { $gte: startDate, $lte: endDate }
   }).sort({ date: 1 });
 
   let totalWorkingDays = 0;
   for (const rec of records) {
     if (rec.holidayName) continue;
-    
+
     if (rec.leaveType && WORKING_LEAVE_TYPES.has(rec.leaveType)) {
       totalWorkingDays += 1;
     } else if (rec.leaveType === 'First Half Leave' || rec.leaveType === 'Second Half Leave') {
@@ -849,8 +878,8 @@ async function ensurePrivilegeLeaveAccrualForEmployee(employeeId) {
   
   // Use seniorPromotionDate as the start date
   const startDate = lb.seniorPromotionDate.toISOString().split('T')[0];
-  const { totalWorkingDays, earnedPrivilegeLeaves } = await getWorkingDaysStats(employeeId, startDate);  
-  
+  const noticeStart = staff && staff.noticePeriodStartDate ? staff.noticePeriodStartDate : null;   // ✅ NEW
+  const { totalWorkingDays, earnedPrivilegeLeaves } = await getWorkingDaysStats(employeeId, startDate, noticeStart);  
   const alreadyCredited = lb.plCreditedFromWorkingDays || 0;
   const toCredit = earnedPrivilegeLeaves - alreadyCredited;
   

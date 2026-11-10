@@ -174,7 +174,8 @@ router.put("/:id", async (req, res) => {
       activityRequired,
       inactivationDate,
       dob,
-      onboardingDate 
+      onboardingDate,
+      noticePeriodStartDate
     } = req.body;
 
     // 1. Identification Unique చెక్ (ID వేరే వాళ్లకి ఉందో లేదో చూడటానికి)
@@ -234,6 +235,10 @@ router.put("/:id", async (req, res) => {
     
     if (dob) staff.dob = dob;
     if (onboardingDate) staff.onboardingDate = onboardingDate;
+        // ✅ NEW: Notice period (undefined ante touch cheyyadu, null/"" ante clear)
+    if (noticePeriodStartDate !== undefined) {
+      staff.noticePeriodStartDate = noticePeriodStartDate || null;
+    }
 
        // 6. సేవ్ చేయడం
     await staff.save();

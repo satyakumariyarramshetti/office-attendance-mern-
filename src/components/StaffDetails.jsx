@@ -28,6 +28,10 @@ const StaffDetails = () => {
 const [tempStaffData, setTempStaffData] = useState(null);
 const [selectedInactivateDate, setSelectedInactivateDate] = useState("");
 
+  const [showNoticeForm, setShowNoticeForm] = useState(false);
+  const [noticeStaff, setNoticeStaff] = useState(null);
+  const [noticeDate, setNoticeDate] = useState("");
+
   const fetchStaff = useCallback(async () => {
     try {
       const res = await fetch(`${API_BASE}/api/staffs`);
@@ -158,19 +162,41 @@ XLSX.writeFile(workbook, `staff-details-${viewMode}.xlsx`);
     return;
   }
 
-  const updatedStaff = {
-    ...tempStaffData,
-    status: "Inactive employee",
-    inactivationDate: selectedInactivateDate // ఇది backend కి వెళ్తుంది
+   
+ 
+
+ const updatedStaff = {
+      ...tempStaffData,
+      status: "Inactive employee",
+      inactivationDate: selectedInactivateDate // ఇది backend కి వెళ్తుంది
+    };
+
+    await handleUpdateStaff(updatedStaff);
+
+    // ఫార్మ్ క్లోజ్ చేసి డేటా క్లియర్ చేయి
+    setShowDateForm(false);
+    setTempStaffData(null);
+    setSelectedInactivateDate("");
   };
 
-  await handleUpdateStaff(updatedStaff);
-  
-  // ఫార్మ్ క్లోజ్ చేసి డేటా క్లియర్ చేయి
-  setShowDateForm(false);
-  setTempStaffData(null);
-  setSelectedInactivateDate("");
-};
+  const handleNoticeConfirm = async () => {
+    if (!noticeDate) {
+      alert("Please select the notice period start date.");
+      return;
+    }
+    await handleUpdateStaff({ ...noticeStaff, noticePeriodStartDate: noticeDate });
+    setShowNoticeForm(false);
+    setNoticeStaff(null);
+    setNoticeDate("");
+  };
+
+  const handleNoticeRemove = async () => {
+    if (!window.confirm("Remove notice period for this employee?")) return;
+    await handleUpdateStaff({ ...noticeStaff, noticePeriodStartDate: null });
+    setShowNoticeForm(false);
+    setNoticeStaff(null);
+    setNoticeDate("");
+  };
 
   return (
     <div className="staff-details-container">
@@ -278,6 +304,12 @@ XLSX.writeFile(workbook, `staff-details-${viewMode}.xlsx`);
   </span>
 )}
 
+{member.noticePeriodStartDate && (
+  <span style={{ color: "#e67e22", fontWeight: "600", marginTop: "4px" }}>
+    Notice from: {new Date(member.noticePeriodStartDate).toLocaleDateString('en-GB')}
+  </span>
+)}
+
   </div>
 </td>
 
@@ -303,6 +335,18 @@ XLSX.writeFile(workbook, `staff-details-${viewMode}.xlsx`);
 
                     <td>
                       <div className="action-group">
+
+                        <button
+  onClick={() => {
+    setNoticeStaff(member);
+    setNoticeDate(member.noticePeriodStartDate ? String(member.noticePeriodStartDate).split("T")[0] : "");
+    setShowNoticeForm(true);
+  }}
+  className="action-btn"
+  title="Notice Period"
+>
+  📝
+</button>
                         <button onClick={() => { setSelectedStaff(member); setEditModal(true); }} className="action-btn edit" title="Edit Staff">✏️</button>
                         <button onClick={() => handleRemove(member._id)} disabled={!!isDeleting[member._id]} className="action-btn delete" title="Remove Staff">
                           {isDeleting[member._id] ? "..." : "🗑️"}
@@ -359,6 +403,38 @@ XLSX.writeFile(workbook, `staff-details-${viewMode}.xlsx`);
     </div>
   </div>
 )}
+
+
+
+{/* ✅ NEW: Notice Period Form */}
+{showNoticeForm && (
+  <div className="modal-backdrop">
+    <div className="modal-content" style={{ maxWidth: "400px", padding: "25px" }}>
+      <h3 style={{ marginBottom: "15px" }}>Notice Period</h3>
+      <p>Employee: <strong>{noticeStaff?.name}</strong></p>
+
+      <div className="form-group" style={{ marginTop: "15px" }}>
+        <label>Notice Period Start Date</label>
+        <input
+          type="date"
+          className="form-control"
+          value={noticeDate}
+          onChange={(e) => setNoticeDate(e.target.value)}
+        />
+      </div>
+
+      <div className="modal-buttons" style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
+        <button onClick={handleNoticeConfirm} className="add-btn">Save</button>
+        {noticeStaff?.noticePeriodStartDate && (
+          <button onClick={handleNoticeRemove} className="cancel-btn">Remove Notice</button>
+        )}
+        <button onClick={() => setShowNoticeForm(false)} className="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+)}
+
+
 
 
     </div>
