@@ -3,7 +3,7 @@ require('dotenv').config();
 
 // Log environment variables
 
-
+const cron = require('node-cron');
 
 const express = require('express');
 const dns = require("dns");
@@ -41,6 +41,18 @@ app.get('/health', (req, res) => res.status(200).send('OK'));
 
 // API routes
 app.use('/api/attendance', attendanceRoutes);
+
+// Daily 6:00 AM IST: auto PL credit for all seniors
+cron.schedule('0 6 * * *', async () => {
+  try {
+    console.log('⏰ Running daily PL accrual...');
+    await attendanceRoutes.recalcPrivilegeLeaveForAllSeniors();
+    console.log('✅ Daily PL accrual done');
+  } catch (err) {
+    console.error('❌ Daily PL accrual failed:', err.message);
+  }
+}, { timezone: 'Asia/Kolkata' });
+
 app.use('/api/staffs', staffRoutes);
 // app.use('/api/payslip', payslipRoutes);
 app.use('/api/leave-balance', leaveBalanceRoutes);

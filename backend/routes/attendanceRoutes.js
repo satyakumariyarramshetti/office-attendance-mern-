@@ -1058,6 +1058,8 @@ router.get('/monthly-summary/:id', async (req, res) => {
 });
 
 
+router.recalcPrivilegeLeaveForAllSeniors = recalcPrivilegeLeaveForAllSeniors;
+
 
 
 
