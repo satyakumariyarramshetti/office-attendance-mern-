@@ -84,60 +84,84 @@ useEffect(() => {
   const [editingRecordKey, setEditingRecordKey] = useState(null);
   const [editingTimes, setEditingTimes] = useState({});
   const [savingRecordKey, setSavingRecordKey] = useState(null);
-  // --- Auth Check ---
+  const [historyStatus, setHistoryStatus] = useState("loading"); // loading | done | failed
+  const [visibleCount, setVisibleCount] = useState(50);  // --- Auth Check ---
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("adminToken");
     if (!isAuthenticated) navigate("/admin-login");
   }, [navigate]);
 
-  // --- Initial Fetch ---
-  useEffect(() => {
-    setLoading(true);
+   useEffect(() => {
+    let cancelled = false;
 
-    const fetchStaff = fetch(`${API_BASE}/api/staffs`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch staff");
-        return res.json();
-      })
-      .then((data) => {
-        setStaffRecords(Array.isArray(data) ? data : []);
-      })
-      .catch((err) => {
-        console.error("Staff fetch error:", err);
-        setStaffRecords([]);
-      });
+    const getJson = async (url) => {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Request failed: ${url}`);
+      return res.json();
+    };
 
-    const fetchAttendance = fetch(`${API_BASE}/api/attendance/all`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch attendance");
-        return res.json();
-      })
-      .then((data) => {
-        setRecords(Array.isArray(data) ? data : []);
-      });
+    const load = async () => {
+      setLoading(true);
+      setHistoryStatus("loading");
 
-    const fetchHolidays = fetch(`${API_BASE}/api/attendance/holidays/all`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch festival holidays");
-        return res.json();
-      })
-      .then((data) => {
-        setFestivalHolidays(Array.isArray(data) ? data : []);
-      })
-      .catch((err) => {
-        // Attendance can still load if the holiday request fails.
-        console.error("Festival holiday fetch error:", err);
-        setFestivalHolidays([]);
-      });
+      const today = new Date();
+      const monthStart = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-01`;
 
-    Promise.all([fetchAttendance, fetchHolidays, fetchStaff])
-      .catch((err) => {
+      // Staff + holidays chinnavi, parallel ga techukundam
+      const staffPromise = getJson(`${API_BASE}/api/staffs`)
+        .then((data) => {
+          if (!cancelled) setStaffRecords(Array.isArray(data) ? data : []);
+        })
+        .catch((err) => {
+          console.error("Staff fetch error:", err);
+          if (!cancelled) setStaffRecords([]);
+        });
+
+      const holidaysPromise = getJson(`${API_BASE}/api/attendance/holidays/all`)
+        .then((data) => {
+          if (!cancelled) setFestivalHolidays(Array.isArray(data) ? data : []);
+        })
+        .catch((err) => {
+          console.error("Festival holiday fetch error:", err);
+          if (!cancelled) setFestivalHolidays([]);
+        });
+
+      // PHASE 1: current month nunchi (fast)
+      try {
+        const recent = await getJson(
+          `${API_BASE}/api/attendance/all?from=${monthStart}`,
+        );
+        if (cancelled) return;
+        setRecords(Array.isArray(recent) ? recent : []);
+        await Promise.all([staffPromise, holidaysPromise]);
+      } catch (err) {
         console.error("Fetch error:", err);
-        setError("Failed to load attendance data");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+        if (!cancelled) {
+          setError("Failed to load attendance data");
+          setLoading(false);
+        }
+        return;
+      }
+
+      if (cancelled) return;
+      setLoading(false); // table ventane kanipistundi
+
+      // PHASE 2: motham history background lo
+      try {
+        const all = await getJson(`${API_BASE}/api/attendance/all`);
+        if (cancelled) return;
+        setRecords(Array.isArray(all) ? all : []);
+        setHistoryStatus("done");
+      } catch (err) {
+        console.error("Full history fetch error:", err);
+        if (!cancelled) setHistoryStatus("failed");
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
   }, [API_BASE]);
 
   const handleAddHoliday = async () => {
@@ -671,6 +695,27 @@ useEffect(() => {
     isGrossHoursFilterActive,
     selectedCategory,
   ]);
+  // Filters maarinappudu malli first 50 nunchi start
+  useEffect(() => {
+    setVisibleCount(50);
+  }, [
+    selectedMonth,
+    selectedYear,
+    selectedDate,
+    searchTerm,
+    punchFilter,
+    includeToday,
+    isGrossHoursFilterActive,
+    grossHoursLimit,
+    selectedCategory,
+  ]);
+
+  // Migatha rows ni konchem konchem ga add cheyyadam
+  useEffect(() => {
+    if (visibleCount >= filteredRecords.length) return;
+    const timer = setTimeout(() => setVisibleCount((c) => c * 2), 100);
+    return () => clearTimeout(timer);
+  }, [visibleCount, filteredRecords.length]);
 
   const exportToExcel = () => {
     const toKey = (v) => String(v || "").slice(0, 10);
@@ -1434,6 +1479,14 @@ if (status === "leave") {
       <div className="filter-result-count">
         <strong>{filteredRecords.length}</strong> records found
       </div>
+      {historyStatus === "loading" && (
+        <div className="history-note">⏳ Loading older records in background…</div>
+      )}
+      {historyStatus === "failed" && (
+        <div className="history-note error">
+          Older records could not be loaded. Please refresh the page.
+        </div>
+      )}      
       <div className="working-days-summary">
         <div className="summary-card">
           <span>Calendar Days</span>
@@ -1485,8 +1538,7 @@ if (status === "leave") {
               </thead>
               <tbody>
                 {filteredRecords.length > 0 ? (
-                  filteredRecords.map((record, idx) => {
-                    const lunchH = calculateTimeDifference(
+                  filteredRecords.slice(0, visibleCount).map((record, idx) => {                    const lunchH = calculateTimeDifference(
                       record.lunchOut,
                       record.lunchIn,
                     );
@@ -1703,14 +1755,17 @@ if (status === "leave") {
   </label>
 </div>
 
-            <button className="btn-excel" onClick={exportToExcel}>
-              📥 Download Excel Report
+<button
+              className="btn-excel"
+              onClick={exportToExcel}
+              disabled={historyStatus === "loading"}
+            >              📥 Download Excel Report
             </button>
 
             <button
               type="button"
-              onClick={exportPendingUpdatesToExcel}
-              style={{
+onClick={exportPendingUpdatesToExcel}
+              disabled={historyStatus === "loading"}              style={{
                 background: "linear-gradient(135deg, #155eef, #0b3d91)",
                 color: "#fff",
                 border: "none",

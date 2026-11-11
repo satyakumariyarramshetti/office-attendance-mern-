@@ -587,8 +587,13 @@ router.patch('/time', async (req, res) => {
 
 router.get('/all', async (req, res) => {
   try {
+    // Optional ?from=YYYY-MM-DD : aa date nunchi matrame records (fast first load)
+    const { from } = req.query;
+    const hasFrom = typeof from === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(from);
+
     const allStaff = await Staff.find({ status: { $ne: "Inactive employee" } });
-    let records = await Attendance.find().sort({ date: -1 });
+    const filter = hasFrom ? { date: { $gte: from } } : {};
+    let records = await Attendance.find(filter).sort({ date: -1 });
     const Holiday = require('../models/Holiday'); 
     const festivalHolidays = await Holiday.find();
 
@@ -601,8 +606,7 @@ router.get('/all', async (req, res) => {
     let finalList = [...records];
 
     // --- కేవలం ఈరోజు వరకు మాత్రమే రేంజ్ సెట్ చేయడం ---
-    const startDate = new Date(2024, 0, 1); // 2024 జనవరి 1 నుండి
-    const endDate = new Date(); // ఖచ్చితంగా ఈరోజు (Today) వరకు మాత్రమే
+    const startDate = hasFrom ? new Date(`${from}T00:00:00`) : new Date(2024, 0, 1);    const endDate = new Date(); // ఖచ్చితంగా ఈరోజు (Today) వరకు మాత్రమే
 
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
       const yyyy = d.getFullYear();
