@@ -820,12 +820,16 @@ const Interface = () => {
   };
 
   // --- SUBMISSION LOGIC ---
-  const submitData = async (payload, formType) => {
+   const submitData = async (payload, formType) => {
     try {
+      const finalPayload = {
+        ...payload,
+        submittedBy: localStorage.getItem("username") || null,
+      };
       const response = await fetch(`${API_BASE}/api/attendance/save`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(finalPayload),
       });
       const result = await response.json();
 

@@ -280,8 +280,9 @@ router.post('/save', async (req, res) => {
   inTimeMethod,
   systemInTime,
   systemOutTime,
-  delayReason,
-  halfDayReason
+    delayReason,
+  halfDayReason,
+  submittedBy
 } = req.body;
 
 hours = hours ? Number(hours) : null;
@@ -378,6 +379,10 @@ const isOutTimeCard =
       if (typeof delayReason !== 'undefined') {
         attendance.delayReason = delayReason || null;
       }
+            if (submittedBy && !attendance.submittedBy) {
+        attendance.submittedBy = submittedBy;
+      }
+
       // Ensure halfDayReason is also updated if present, even if not a new leave submission
       if (typeof halfDayReason !== 'undefined' && isLeaveCard) { // only if it's a leave card submission
           attendance.halfDayReason = halfDayReason || null;
@@ -479,7 +484,8 @@ const isOutTimeCard =
         leaveType: isLeaveCard ? leaveType : null,
         halfDayReason: isLeaveCard ? (halfDayReason || null) : null,
         location: address,
-        delayReason: delayReason || null,
+               delayReason: delayReason || null,
+        submittedBy: submittedBy || null,
         isLOP
       });
 

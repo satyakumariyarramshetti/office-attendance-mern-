@@ -19,6 +19,8 @@ const UserLogin = () => {
 if (data.success) {
   localStorage.setItem('userAuth', 'true');
   localStorage.setItem('userId', data.userId);
+    localStorage.setItem('username', data.username);
+
   window.location.href = "/";
 } else {
         alert("Invalid login details!");

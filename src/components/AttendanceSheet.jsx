@@ -710,9 +710,10 @@ useEffect(() => {
         "Site Comments": record.siteComments || "",
         Permission: record.permissionType || "N/A",
         Hours: record.hours || "N/A",
-        "Leave Type": isHoliday
+               "Leave Type": isHoliday
           ? `Holiday - ${record.holidayName}`
           : getLeaveOrHoliday(record),
+        "Submitted By": record.submittedBy || "—",
       };
     };
 
@@ -795,6 +796,7 @@ useEffect(() => {
               Permission: "N/A",
               Hours: "N/A",
               "Leave Type": "No Data",
+              "Submitted By": "—"
             },
           });
         }
@@ -886,8 +888,9 @@ if (status === "leave") {
       "Site Comments",
       "Permission",
       "Hours",
-      "Category",
+           "Category",
       "Location",
+      "Submitted By",
     ];
 
     const getPendingUpdate = (record) => {
@@ -1055,6 +1058,7 @@ if (status === "leave") {
         Category: record.leaveType || "N/A",
 
         Location: record.location || "N/A",
+                "Submitted By": record.submittedBy || "—",
       };
     });
 
@@ -1083,10 +1087,10 @@ if (status === "leave") {
       { wch: 30 },
       { wch: 15 },
       { wch: 12 },
-      { wch: 22 },
+            { wch: 22 },
+      { wch: 18 },
       { wch: 18 },
     ];
-
     // Apply styling
     const range = XLSX.utils.decode_range(worksheet["!ref"]);
 
@@ -1472,7 +1476,8 @@ if (status === "leave") {
                   <th>Permission</th>
                   <th>Hrs</th>
                   <th>Category</th>
-                  <th>Location</th>
+                                   <th>Location</th>
+                  <th>Submitted By</th>
                 </tr>
               </thead>
               <tbody>
@@ -1649,13 +1654,14 @@ if (status === "leave") {
                                 : getLeaveOrHoliday(record)}
                         </td>
 
-                        <td>{record.location || "N/A"}</td>
+                                               <td>{record.location || "N/A"}</td>
+                        <td>{record.submittedBy || "—"}</td>
                       </tr>
                     );
                   })
                 ) : (
                   <tr>
-                    <td colSpan="20" className="text-center">
+                    <td colSpan="21" className="text-center">
                       No matching records found.
                     </td>
                   </tr>
