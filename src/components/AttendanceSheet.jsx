@@ -713,7 +713,8 @@ useEffect(() => {
                "Leave Type": isHoliday
           ? `Holiday - ${record.holidayName}`
           : getLeaveOrHoliday(record),
-        "Submitted By": record.submittedBy || "—",
+               "In Time By": record.inTimeBy || "—",
+        "Out Time By": record.outTimeBy || "—",
       };
     };
 
@@ -796,7 +797,8 @@ useEffect(() => {
               Permission: "N/A",
               Hours: "N/A",
               "Leave Type": "No Data",
-              "Submitted By": "—"
+                           "In Time By": "—",
+              "Out Time By": "—",
             },
           });
         }
@@ -889,8 +891,9 @@ if (status === "leave") {
       "Permission",
       "Hours",
            "Category",
-      "Location",
-      "Submitted By",
+           "Location",
+      "In Time By",
+      "Out Time By",
     ];
 
     const getPendingUpdate = (record) => {
@@ -1058,8 +1061,8 @@ if (status === "leave") {
         Category: record.leaveType || "N/A",
 
         Location: record.location || "N/A",
-                "Submitted By": record.submittedBy || "—",
-      };
+        "In Time By": record.inTimeBy || "—",
+        "Out Time By": record.outTimeBy || "—",      };
     });
 
     const worksheet = XLSX.utils.json_to_sheet(rows, {
@@ -1088,6 +1091,7 @@ if (status === "leave") {
       { wch: 15 },
       { wch: 12 },
             { wch: 22 },
+      { wch: 18 },
       { wch: 18 },
       { wch: 18 },
     ];
@@ -1457,8 +1461,7 @@ if (status === "leave") {
               <thead>
                 <tr>
                   <th>Actions</th>
-                  <th>ID</th>
-                  <th>Name</th>
+                  <th className="sticky-id">ID</th>                  <th>Name</th>
                   <th>Date</th>
                   <th>Day</th>
                   <th>In Time</th>
@@ -1476,8 +1479,8 @@ if (status === "leave") {
                   <th>Permission</th>
                   <th>Hrs</th>
                   <th>Category</th>
-                                   <th>Location</th>
-                  <th>Submitted By</th>
+<th className="location-cell">Location</th>                                   <th>In Time By</th>
+                  <th>Out Time By</th>
                 </tr>
               </thead>
               <tbody>
@@ -1548,8 +1551,7 @@ if (status === "leave") {
                             </button>
                           )}
                         </td>
-                        <td>{record.id}</td>
-                        <td>{record.name}</td>
+                        <td className="sticky-id">{record.id}</td>                        <td>{record.name}</td>
                         <td>{formatDate(record.date)}</td>
                         <td>{record.day}</td>
 
@@ -1654,14 +1656,13 @@ if (status === "leave") {
                                 : getLeaveOrHoliday(record)}
                         </td>
 
-                                               <td>{record.location || "N/A"}</td>
-                        <td>{record.submittedBy || "—"}</td>
-                      </tr>
+<td className="location-cell">{record.location || "N/A"}</td>                        <td>{record.inTimeBy || "—"}</td>
+                        <td>{record.outTimeBy || "—"}</td>                      </tr>
                     );
                   })
                 ) : (
                   <tr>
-                    <td colSpan="21" className="text-center">
+                    <td colSpan="23" className="text-center">
                       No matching records found.
                     </td>
                   </tr>

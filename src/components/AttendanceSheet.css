@@ -675,6 +675,55 @@ label {
 
 
 /* =========================================================
+   FROZEN ID COLUMN
+========================================================= */
+
+/* Header cell: top + left rendu sticky */
+.admin-table thead th.sticky-id {
+  left: 0;
+  z-index: 20;
+  background: #1e293b;
+  box-shadow: 2px 0 4px rgba(15, 23, 42, 0.18);
+}
+
+/* Body cells */
+.admin-table td.sticky-id {
+  position: sticky;
+  left: 0;
+  z-index: 5;
+  background: #ffffff;
+  font-weight: 600;
+  box-shadow: 2px 0 4px rgba(15, 23, 42, 0.08);
+}
+
+/* Frozen cell ki row background match avvali, lekapothe pakka cells kinda kanipistayi */
+.admin-table tbody tr:nth-child(even) td.sticky-id {
+  background: #f8fafc;
+}
+
+.admin-table tbody tr:hover td.sticky-id {
+  background: #eff6ff;
+}
+
+
+/* =========================================================
+   WIDE LOCATION COLUMN
+========================================================= */
+
+.admin-table th.location-cell,
+.admin-table td.location-cell {
+  min-width: 320px;
+  max-width: 420px;
+}
+
+.admin-table td.location-cell {
+  white-space: normal;
+  word-break: break-word;
+  text-align: left;
+  line-height: 1.4;
+}
+
+/* =========================================================
    LOP / LEAVE ROW
 ========================================================= */
 

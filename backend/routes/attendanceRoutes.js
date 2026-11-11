@@ -379,8 +379,13 @@ const isOutTimeCard =
       if (typeof delayReason !== 'undefined') {
         attendance.delayReason = delayReason || null;
       }
-            if (submittedBy && !attendance.submittedBy) {
-        attendance.submittedBy = submittedBy;
+                 // In-time submit chesina login user
+      if (submittedBy && inTime && !attendance.inTimeBy) {
+        attendance.inTimeBy = submittedBy;
+      }
+      // Out-time submit chesina login user
+      if (submittedBy && outTime && !attendance.outTimeBy) {
+        attendance.outTimeBy = submittedBy;
       }
 
       // Ensure halfDayReason is also updated if present, even if not a new leave submission
@@ -485,8 +490,9 @@ const isOutTimeCard =
         halfDayReason: isLeaveCard ? (halfDayReason || null) : null,
         location: address,
                delayReason: delayReason || null,
-        submittedBy: submittedBy || null,
-        isLOP
+        inTimeBy: inTime ? (submittedBy || null) : null,
+        outTimeBy: outTime ? (submittedBy || null) : null,
+                isLOP
       });
 
       await newAttendance.save();

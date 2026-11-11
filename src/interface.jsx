@@ -548,32 +548,35 @@ const Interface = () => {
       .catch(() => setIsOTElligible(false));
   }, [formData.inTime, formData.date, formData.id, API_BASE]);
 
-  useEffect(() => {
-    const checkInterval = setInterval(async () => {
+    useEffect(() => {
+    const checkSession = async () => {
       const userId = localStorage.getItem("userId");
-      if (userId) {
-        try {
-          const res = await fetch(`${API_BASE}/api/users/check-status`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId }),
-          });
+      if (!userId) return;
 
-          if (res.ok) {
-            const data = await res.json();
-            if (data.active === false) {
-              alert(
-                "Your session has been terminated by the Admin. Please login again to continue.",
-              );
-              localStorage.clear();
-              window.location.href = "/";
-            }
+      try {
+        const res = await fetch(`${API_BASE}/api/users/check-status`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.active === false) {
+            alert(
+              "Your session has been terminated by the Admin. Please login again to continue.",
+            );
+            localStorage.clear();
+            window.location.href = "/";
           }
-        } catch (err) {
-          console.error("Session check failed:", err);
         }
+      } catch (err) {
+        console.error("Session check failed:", err);
       }
-    }, 10000);
+    };
+
+    checkSession(); // 👈 page open ayina ventane check (10s wait ledu)
+    const checkInterval = setInterval(checkSession, 10000);
 
     return () => clearInterval(checkInterval);
   }, [API_BASE]);

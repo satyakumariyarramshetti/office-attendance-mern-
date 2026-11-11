@@ -56,12 +56,21 @@ router.delete('/delete/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// 6. సెషన్ చెక్ (యూజర్ ఐడి ద్వారా)
 router.post('/check-status', async (req, res) => {
+  try {
     const { userId } = req.body;
     const user = await User.findById(userId);
-    if (user && !user.isLoggedIn) res.json({ active: false });
-    else res.json({ active: true });
+
+    // user delete ayinaa, logout ayinaa -> inactive
+    if (!user || !user.isLoggedIn) {
+      return res.json({ active: false });
+    }
+    res.json({ active: true });
+  } catch (err) {
+    // invalid id format -> inactive; migatha errors ki 500 (frontend ignore chesthundi)
+    if (err.name === 'CastError') return res.json({ active: false });
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

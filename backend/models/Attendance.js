@@ -22,8 +22,8 @@ const AttendanceSchema = new mongoose.Schema({
   leaveType: { type: String,default:null },
   halfDayReason: { type: String,default:null },
     location: { type: String },
-  submittedBy: { type: String, default: null },
-  // --- NEW FIELD ---
+  inTimeBy: { type: String, default: null },
+  outTimeBy: { type: String, default: null },  // --- NEW FIELD ---
   // This flag will be true if the leave was taken without a positive balance.
   isLOP: { type: Boolean, default: false },
 });
