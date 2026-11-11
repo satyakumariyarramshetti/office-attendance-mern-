@@ -1108,18 +1108,24 @@ const Interface = () => {
       return;
     }
 
-    if (formType === "permission") {
-      payload.permissionType = formData.permissionType;
-      payload.hours = formData.hours;
+   if (formType === "permission") {
+  payload.permissionType = formData.permissionType;
+  payload.hours = String(formData.hours || "").trim();
 
-      if (!formData.hours) {
-        alert("Please enter how many hours of permission you took.");
-        return;
-      }
+  if (!payload.hours) {
+    alert("Please enter how many hours of permission you took.");
+    return;
+  }
 
-      submitData(payload, "permission");
-      return;
-    }
+  // Must start with a number, e.g. 1, 1.5, 1.5H, 2 hrs
+  if (!/^\d+(\.\d+)?\s*(h|hr|hrs|hour|hours)?$/i.test(payload.hours)) {
+    alert("Please enter hours like 1, 1.5, 1.5H or 2 hrs.");
+    return;
+  }
+
+  submitData(payload, "permission");
+  return;
+}
   };
 
   const handleLunchSubmit = async (e) => {

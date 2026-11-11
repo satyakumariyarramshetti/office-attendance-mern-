@@ -285,11 +285,26 @@ router.post('/save', async (req, res) => {
   submittedBy
 } = req.body;
 
-hours = hours ? Number(hours) : null;
+// "1", "1.5", "1.5H", "2 hrs" anni allow cheyyali
+hours = (hours !== undefined && hours !== null && String(hours).trim() !== '')
+  ? String(hours).trim()
+  : null;
 
-  if (!id || !date) {
-    return res.status(400).json({ error: 'ID and Date are required' });
-  }
+// Backend validation: number tho start avvali (1, 1.5, 1.5H, 2 hrs)
+if (hours && !/^\d+(\.\d+)?\s*(h|hr|hrs|hour|hours)?$/i.test(hours)) {
+  return res.status(400).json({ error: 'Invalid hours format. Use like 1, 1.5, 1.5H or 2 hrs.' });
+}
+
+// (Optional) Clean number ga save cheyyali ante, ee 2 lines kuda add cheyandi.
+// "1.5H" -> "1.5" ga save avthundi. Original text kavali ante ee 2 lines vaddu.
+if (hours) {
+  const parsedHours = parseFloat(hours);
+  hours = Number.isFinite(parsedHours) ? String(parsedHours) : null;
+}
+
+if (!id || !date) {
+  return res.status(400).json({ error: 'ID and Date are required' });
+}
 
   // --- LATE MARK VALIDATION BLOCK --- (keep as is)
   if (inTime && inTime > '09:15') {
