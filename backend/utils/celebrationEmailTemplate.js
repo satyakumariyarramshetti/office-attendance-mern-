@@ -135,38 +135,27 @@ const goldDivider = (lineW = 70, margin = '8px auto 10px auto') => `
   </tr>
 </table>`;
 
-const buildBgLayout = ({
-  bgUrl,
-  bgColor = '#fff6e0',
-  contentHtml,
-  preheader,
-  width = 700,
-  height = 440,
-  padTop = 34,
-  padLeft = 125,
-  padRight = 145,
-  padBottom = 20,
-}) => `<!DOCTYPE html>
+const buildBgLayout = ({ bgUrl, bgColor = '#fff6e0', contentHtml, preheader,
+  width = 700, height = 440, padTop = 34, padLeft = 125, padRight = 145, padBottom = 20 }) => `<!DOCTYPE html>
 <html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!--[if gte mso 9]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
 </head>
-<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',Arial,sans-serif;">
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',Arial,sans-serif;-webkit-text-size-adjust:none;text-size-adjust:none;">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(preheader)}</div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:16px 8px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:16px 0;">
     <tr><td align="center">
-      <table role="presentation" width="${width}" cellpadding="0" cellspacing="0" style="max-width:${width}px;width:100%;">
+      <table role="presentation" width="${width}" cellpadding="0" cellspacing="0" style="width:${width}px;min-width:${width}px;">
         <tr>
           <td background="${bgUrl}" bgcolor="${bgColor}" width="${width}" height="${height}" valign="top"
-              style="background-color:${bgColor};background-image:url('${bgUrl}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;">
+              style="width:${width}px;height:${height}px;background-color:${bgColor};background-image:url('${bgUrl}');background-size:${width}px ${height}px;background-position:center;background-repeat:no-repeat;">
             <!--[if gte mso 9]>
             <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:${width}px;height:${height}px;">
               <v:fill type="frame" src="${bgUrl}" color="${bgColor}" />
               <v:textbox inset="0,0,0,0">
             <![endif]-->
-            <div style="padding:${padTop}px ${padRight}px ${padBottom}px ${padLeft}px;text-align:center;">
+            <div style="height:${height}px;overflow:hidden;padding:${padTop}px ${padRight}px ${padBottom}px ${padLeft}px;text-align:center;box-sizing:border-box;">
               ${contentHtml}
             </div>
             <!--[if gte mso 9]></v:textbox></v:rect><![endif]-->
@@ -197,6 +186,7 @@ const buildBirthdayEmail = ({ name, message }) => {
 
   return buildBgLayout({
     bgUrl: `${ASSET_BASE}/birthday-bg.png`,
+    bgColor: '#f5f9ff',
     contentHtml,
     preheader: `🎂 Happy Birthday ${name}!`,
     height: 440,

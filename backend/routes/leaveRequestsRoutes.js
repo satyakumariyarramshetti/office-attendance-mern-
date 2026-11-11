@@ -9,7 +9,6 @@ const adminEmails = {
   Satya: "praxsolengineering@gmail.com",
   Mohan: "mohan.praxsol@gmail.com	",
   Rajesh: "rajesh.praxsol@gmail.com",
-  
   Ankita: "ankita.praxsol@gmail.com",
   Pradeep: "pradeep.praxsol@gmail.com	"
   
